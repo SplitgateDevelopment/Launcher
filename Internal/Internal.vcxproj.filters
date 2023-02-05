@@ -35,8 +35,5 @@
     <ClCompile Include="Util.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="Enums.h">
-      <Filter>File di origine</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
