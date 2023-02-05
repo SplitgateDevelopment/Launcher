@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "Enums.h"
 
 struct FNameEntryHandle {
 	uint32_t Block = 0;
@@ -220,11 +219,11 @@ struct APlayerController : AController {
 	class UPlayer* Player; // 0x298 (0x08)
 	class APawn* AcknowledgedPawn; // 0x2a0 (0x08)
 	bool ProjectWorldLocationToScreen(FVector& WorldLocation, FVector2D& ScreenLocation);
-	void SwitchLevel(FString URL);
-	void FOV(float NewFOV);
-	void EnableCheats();
-	Enums::EMouseCursor CurrentMouseCursor;
+	void SwitchLevel(struct FString URL); // Function Engine.PlayerController.SwitchLevel // (Exec|Native|Public) // @ game+0x37b6640
+	void FOV(float NewFOV); // Function Engine.PlayerController.FOV // (Exec|Native|Public) // @ game+0x37b1830
+	void EnableCheats(); // Function Engine.PlayerController.EnableCheats // (Exec|Native|Public) // @ game+0x37b1810
 	class APlayerCameraManager* PlayerCameraManager;
+	void SetName(FString S); // Function Engine.PlayerController.SetName // (Exec|Native|Public) // @ game+0x37b5690
 };
 
 // Class Engine.Pawn 

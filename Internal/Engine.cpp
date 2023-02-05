@@ -83,6 +83,7 @@ UWorld* WRLD = nullptr;
 UObject* SwitchLevelUFunc;
 UObject* EnableCheatsUFunc;
 UObject* FOVUFunc;
+UObject* SetNameUFunc;
 
 uintptr_t GetBoneMatrixF;
 
@@ -114,6 +115,16 @@ void APlayerController::FOV(float NewFOV)
 	ProcessEvent(FOVUFunc, &Parameters);
 }
 
+void APlayerController::SetName(FString S)
+{
+	struct {
+		FString S;
+	} Parameters;
+	Parameters.S = S;
+
+	ProcessEvent(SetNameUFunc, &Parameters);
+}
+
 bool EngineInit()
 {
 	auto main = GetModuleHandleA(nullptr);
@@ -133,6 +144,7 @@ bool EngineInit()
 	SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
 	EnableCheatsUFunc = ObjObjects->FindObject("Function Engine.PlayerController.EnableCheats");
 	FOVUFunc = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
+	SetNameUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
 
 	return true;
 }
