@@ -4,6 +4,11 @@
 #include <iostream>
 #include <format>
 #include "Engine.h"
+#include "logger.h"
+
+Logger* logger = new Logger({
+    FALSE,
+});
 
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
@@ -22,10 +27,18 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
 		if (!PlayerController) break;
 		
-		if (GetAsyncKeyState(VK_INSERT)) {
-			MessageBoxA(0, "Loading map", "INFO", MB_OK);
+		if (GetAsyncKeyState(VK_INSERT) & 1) {
+			logger->log("INFO", "Loading map");
 			PlayerController->SwitchLevel(L"Simulation_Alpha?gameMode=SHOTSNIP");
 		};
+
+        if (GetAsyncKeyState(VK_DELETE) & 1) {
+            float newFov = 120;
+            logger->log("INFO", "Changing fov");
+
+            PlayerController->FOV(newFov);
+            logger->log("INFO", std::format("Changed fov to {}", newFov));
+        };
 	} while (false);
 
 	OPostRender(UGameViewportClient, canvas);
@@ -33,43 +46,43 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 
 __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam) {
     MSG* msg = (MSG*)lparam;
-    if (msg->message != (69 * 420)) return CallNextHookEx(0, code, wparam, lparam);
+    if (msg->message != HCBT_CREATEWND) return CallNextHookEx(0, code, wparam, lparam);
 
     if (!EngineInit()) {
-        MessageBoxA(0, "No engine init", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No engine init");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     UWorld* World = *(UWorld**)(WRLD);
     if (!World) {
-        MessageBoxA(0, "No World", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No World");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     UGameInstance* OwningGameInstance = World->OwningGameInstance;
     if (!OwningGameInstance) {
-        MessageBoxA(0, "No owning game instance", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No owning game instance");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     TArray<UPlayer*>LocalPlayers = OwningGameInstance->LocalPlayers;
 
     UPlayer* LocalPlayer = LocalPlayers[0];
     if (!LocalPlayer) {
-        MessageBoxA(0, "No LocalPlayer", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No LocalPlayer");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     UGameViewportClient* ViewPortClient = LocalPlayer->ViewportClient;
     if (!ViewPortClient) {
-        MessageBoxA(0, "No UGameViewportClient", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No UGameViewportClient");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     void** ViewPortClientVTable = ViewPortClient->VFTable;
     if (!ViewPortClientVTable) {
-        MessageBoxA(0, "No ViewPortClientVTable", "ERROR", MB_OK);
-        return CallNextHookEx(0, code, wparam, lparam);
+        logger->log("ERROR", "No ViewPortClientVTable");
+        return CallNextHookEx(NULL, code, wparam, HCBT_CREATEWND);
     };
 
     DWORD protecc;
@@ -78,8 +91,8 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
     ViewPortClientVTable[100] = &PostRender;
     VirtualProtect(&ViewPortClientVTable[100], 8, protecc, 0);
 
-    MessageBoxA(0, "Injected", "SUCCESS", MB_OK);
-    MessageBoxA(0, std::format("Base Address: 0x{:x}\n", (uintptr_t)GetModuleHandleW(0)).c_str(), "INFO", MB_OK);
+    logger->log("SUCCESS", "Injected");
+    logger->log("INFO", std::format("Base Address: 0x{:x}\n", (uintptr_t)GetModuleHandleW(0)).c_str());
 
-    return CallNextHookEx(0, code, wparam, lparam);
+    return CallNextHookEx(NULL, code, wparam, lparam);
 }
