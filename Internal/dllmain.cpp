@@ -26,6 +26,8 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
 		if (!PlayerController) break;
+
+        PlayerController->SetName(L"SplitgateDevelopment");
 		
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 			logger->log("INFO", "Loading map");
