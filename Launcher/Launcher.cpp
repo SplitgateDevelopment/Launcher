@@ -47,7 +47,7 @@ int main() {
 	};
 	logger->success("Placed hook!");
 
-	PostThreadMessageW(ThreadID, 69*420, 0, reinterpret_cast<LPARAM>(hook));
+	PostThreadMessageW(ThreadID, HCBT_CREATEWND, 0, reinterpret_cast<LPARAM>(hook));
 
 	logger->success("DLL injected into process!");
 
