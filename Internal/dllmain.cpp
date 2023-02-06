@@ -4,22 +4,9 @@
 #include <iostream>
 #include <format>
 #include "Engine.h"
-#include "logger.h"
+#include "Hook.h"
 
-HHOOK g_hook;
-Logger* logger = new Logger({
-    FALSE,
-});
-
-void swapRender(void** ViewPortClientVTable, void (*NPostRender)(UGameViewportClient* UGameViewportClient, Canvas* canvas)) {
-
-    DWORD protecc;
-    VirtualProtect(&ViewPortClientVTable[100], 8, PAGE_EXECUTE_READWRITE, &protecc);
-    ViewPortClientVTable[100] = NPostRender;
-    VirtualProtect(&ViewPortClientVTable[100], 8, protecc, 0);
-
-    logger->log("INFO", "Swapped PostRender functions");
-}
+Hook* hook = new Hook();
 
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
@@ -38,76 +25,68 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
 		if (!PlayerController) break;
 
-        PlayerController->SetName(L"SplitgateDevelopment");
-		
+		PlayerController->SetName(L"SplitgateDevelopment");
+
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
-			logger->log("INFO", "Loading map");
+			hook->logger->log("INFO", "Loading map");
 			PlayerController->SwitchLevel(L"Simulation_Alpha?Name=SplitgateDevelopment&gameMode=SHOTSNIP");
 		};
 
-        if (GetAsyncKeyState(VK_DELETE) && 1) {
-            swapRender(LocalPlayer->ViewportClient->VFTable, OPostRender);
-            UnhookWindowsHookEx(g_hook);
-        }
+		if (GetAsyncKeyState(VK_DELETE) && 1) {
+			hook->swapRender(LocalPlayer->ViewportClient->VFTable, OPostRender);
+			UnhookWindowsHookEx(hook->g_hook);
+		}
 
-        if (GetAsyncKeyState(VK_RCONTROL) & 1) {
-            float newFov = 140;
-            logger->log("INFO", "Changing fov");
+		if (GetAsyncKeyState(VK_RCONTROL) & 1) hook->logger->log("INFO", std::format("Changed fov to {}", hook->features->updateFov()));
 
-            PlayerController->FOV(newFov);
-            logger->log("INFO", std::format("Changed fov to {}", newFov));
-        };
+		if (GetAsyncKeyState(VK_RSHIFT) & 1) {
+			hook->features->GodMode = !hook->features->GodMode;
+			hook->logger->log("INFO", std::format("Changed hook->features->GodMode to {}", hook->features->GodMode));
+		};
+
+		if (GetAsyncKeyState(VK_F1) & 1) {
+			hook->features->IncreasedSpeed = !hook->features->IncreasedSpeed;
+			hook->logger->log("INFO", std::format("Changed hook->features->IncreasedSpeed to {}", hook->features->IncreasedSpeed));
+		}
+
+		if (GetAsyncKeyState(VK_F2) & 1) {
+			hook->features->SuperiorMelee = !hook->features->SuperiorMelee;
+			hook->logger->log("INFO", std::format("Changed hook->features->SuperiorMelee to {}", hook->features->SuperiorMelee));
+		}
+
+		if (GetAsyncKeyState(VK_F3) & 1) {
+			hook->features->InfiniteJetpack = !hook->features->InfiniteJetpack;
+			hook->logger->log("INFO", std::format("Changed hook->features->InfiniteJetpack to {}", hook->features->InfiniteJetpack));
+		}
+
+		if (GetAsyncKeyState(VK_F4) & 1) {
+			hook->features->DisableOutOfBounds = !hook->features->DisableOutOfBounds;
+			hook->logger->log("INFO", std::format("Changed hook->features->DisableOutOfBounds to {}", hook->features->DisableOutOfBounds));
+		}
+
+		if (GetAsyncKeyState(VK_F5) & 1) {
+			hook->features->ExtendedSprays = !hook->features->ExtendedSprays;
+			hook->logger->log("INFO", std::format("Changed hook->features->ExtendedSprays to {}", hook->features->ExtendedSprays));
+		}
+
+		hook->features->handle(PlayerController);
 	} while (false);
 
 	OPostRender(UGameViewportClient, canvas);
 }
 
+
 __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam) {
     MSG* msg = (MSG*)lparam;
     if (msg->message != HCBT_CREATEWND) return CallNextHookEx(0, code, wparam, lparam);
 
-    if (!EngineInit()) {
-        logger->log("ERROR", "No engine init");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
+    if (!hook->Init()) return CallNextHookEx(hook->g_hook, code, wparam, HCBT_CREATEWND);
 
-    UWorld* World = *(UWorld**)(WRLD);
-    if (!World) {
-        logger->log("ERROR", "No World");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
+	OPostRender = reinterpret_cast<decltype(OPostRender)>(hook->VTABLE[100]);
+	hook->swapRender(hook->VTABLE, PostRender);
 
-    UGameInstance* OwningGameInstance = World->OwningGameInstance;
-    if (!OwningGameInstance) {
-        logger->log("ERROR", "No owning game instance");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
+	hook->logger->log("SUCCESS", "Injected");
+	hook->logger->log("INFO", std::format("Base Address: 0x{:x}\n", (uintptr_t)GetModuleHandleW(0)).c_str());
 
-    TArray<UPlayer*>LocalPlayers = OwningGameInstance->LocalPlayers;
-
-    UPlayer* LocalPlayer = LocalPlayers[0];
-    if (!LocalPlayer) {
-        logger->log("ERROR", "No LocalPlayer");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
-
-    UGameViewportClient* ViewPortClient = LocalPlayer->ViewportClient;
-    if (!ViewPortClient) {
-        logger->log("ERROR", "No UGameViewportClient");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
-
-    void** ViewPortClientVTable = ViewPortClient->VFTable;
-    if (!ViewPortClientVTable) {
-        logger->log("ERROR", "No ViewPortClientVTable");
-        return CallNextHookEx(g_hook, code, wparam, HCBT_CREATEWND);
-    };
-
-    OPostRender = reinterpret_cast<decltype(OPostRender)>(ViewPortClientVTable[100]);
-    swapRender(ViewPortClientVTable, PostRender);
-
-    logger->log("SUCCESS", "Injected");
-    logger->log("INFO", std::format("Base Address: 0x{:x}\n", (uintptr_t)GetModuleHandleW(0)).c_str());
-
-    return CallNextHookEx(g_hook, code, wparam, lparam);
+    return CallNextHookEx(hook->g_hook, code, wparam, lparam);
 }
