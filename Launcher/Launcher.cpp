@@ -52,10 +52,11 @@ int main() {
 	logger->success("DLL injected into process!");
 
 	while (FindWindowA(0, "PortalWars  ")) {
-		std::cin.ignore(1);
-		std::cin.get();
+		if (GetAsyncKeyState(VK_DELETE)) {
+			logger->info("Unloading");
+			break;
+		}
 	}
 
-	logger->info("Game window closed");
-	return stop(0);
+	return 0;
 }
