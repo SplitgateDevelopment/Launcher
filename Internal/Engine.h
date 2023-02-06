@@ -236,8 +236,25 @@ struct APawn : AActor {
 	class USkeletalMeshComponent* Mesh; // 0x280 (0x08) 
 	char pad_0003[0x264];// 0x288 (0x264)
 	float Health; // 0x4ec (0x04)
+	float MaxHealth;
+	float healthRechargeDelay;
 	char pad_0004[0x300];// 0x4F0 (0x300)
 	class AGun* CurrentWeapon; // 0x7f0 (0x08)
+	float SprintingSpeedModifier;
+	float MeleeRange;
+	float TimeBetweenMelee;
+	float MeleeApplyDmgAngle;
+	float MeleeApplyDmgRange;
+	float MeleeApplyDmgRangeXY;
+	float thrustAmountPerTick;
+	float thrusterVelocityThreshhold;
+	float thrusterRechargeDelay;
+	float thrusterTotalTime;
+	float curTimeOutOfBounds;
+	float maxTimeOutOfBounds;
+	float SprayRange;
+	float SprayLifetime;
+	float TimeBetweenSprays;
 };
 
 // Class PortalWars.Gun
@@ -252,7 +269,7 @@ struct AGun {
 };
 
 // Class Engine.Level
-struct ULevel {
+struct ULevel : UObject {
 	char pad_0000[0x98]; // 0x00 (0x98)
 	TArray<AActor*> Actors; // 0x98 (0x10)
 	char pad_0001[0x10]; // 0xA8 (0x10)
@@ -297,6 +314,10 @@ struct USceneComponent {
 	struct FRotator RelativeRotation; // 0x128(0x0C)
 };
 
+struct ULevelStreaming : UObject {
+	FName PackageNameToLoad;
+};
+
 // Class Engine.World 
 struct UWorld {
 	char pad_0000[0x30]; // 0x0 (0x30)
@@ -304,6 +325,7 @@ struct UWorld {
 	char pad_0001[0x148]; // 0x38 (0x148)
 	class UGameInstance* OwningGameInstance; // 0x180 (0x08)
 	TArray<ULevel*> Levels;
+	TArray<ULevelStreaming*> StreamingLevels;
 };
 
 // Class Engine.Canvas
