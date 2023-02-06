@@ -24,6 +24,12 @@
     <ClInclude Include="Logger.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="Hook.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Features.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
