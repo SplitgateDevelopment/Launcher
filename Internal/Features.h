@@ -23,15 +23,17 @@ public:
 			if (!ExistCharacter(PlayerController)) break;
 			APawn* Instigator = PlayerController->AcknowledgedPawn->Instigator;
 
-			if (GodMode) {
-				Instigator->MaxHealth = 999999;
-				Instigator->Health = 999999;
-				Instigator->healthRechargeDelay = 0;
+			if (GodMode && Instigator->Health != 0) {
+				float health = 999999;
+				if (Instigator->MaxHealth != health) Instigator->MaxHealth = health;
+				if (Instigator->Health != health) Instigator->Health = health;
+
+				//Instigator->healthRechargeDelay = 0.1f;
 			};
 
 			if (FovMode && FovMode < sizeof(fovs) && FovMode >= 0) PlayerController->FOV(fovs[FovMode]);
 
-			if (IncreasedSpeed) Instigator->SprintingSpeedModifier = 3;
+			if (IncreasedSpeed); //Instigator->SprintingSpeedModifier = 1.35f;
 
 			if (SuperiorMelee) {
 				//Instigator->MeleeRange = 9999;
