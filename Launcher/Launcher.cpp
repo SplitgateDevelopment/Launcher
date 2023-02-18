@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "Logger.h"
+#include "utils/Logger.h"
 
 int stop(int code) {
 	std::cin.get();
