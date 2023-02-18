@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Logger.h"
-#include "Engine.h"
 #include <format>
 #include "Features.h"
 
@@ -9,11 +7,9 @@ class Hook {
 
 public:
 	HHOOK g_hook;
-	Logger* logger = new Logger({
-		FALSE,
-	});
 	Features* features = new Features();
 	void** VTABLE;
+	Logger* logger = features->logger;
 
 	bool Init() {
 		if (!EngineInit()) {
@@ -66,4 +62,8 @@ public:
 
 		logger->log("INFO", "Swapped PostRender functions");
 	}
+
+	bool isKeyPressed(UCHAR key) {
+		return GetAsyncKeyState(key) & 1 && GetAsyncKeyState(key) & 0x8000;
+	};
 };
