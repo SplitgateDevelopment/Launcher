@@ -203,6 +203,9 @@ struct AActor : UObject {
 	class APawn* Instigator; // 0x118 (0x08) 
 	char pad_0002[0x10]; // 0x120 (0x10)
 	class USceneComponent* RootComponent; // 0x130 (0x08)
+	bool K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRotation); // Function Engine.Actor.K2_TeleportTo // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x368c880
+	struct FRotator K2_GetActorRotation(); // Function Engine.Actor.K2_GetActorRotation // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x368ba80
+	struct FVector K2_GetActorLocation(); // Function Engine.Actor.K2_GetActorLocation // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x368ba00
 };
 
 // Class Engine.Controller 
@@ -219,6 +222,7 @@ struct APlayerController : AController {
 	class UPlayer* Player; // 0x298 (0x08)
 	class APawn* AcknowledgedPawn; // 0x2a0 (0x08)
 	bool ProjectWorldLocationToScreen(FVector& WorldLocation, FVector2D& ScreenLocation);
+	void GetViewportSize(INT& X, INT& Y);
 	void SwitchLevel(struct FString URL); // Function Engine.PlayerController.SwitchLevel // (Exec|Native|Public) // @ game+0x37b6640
 	void FOV(float NewFOV); // Function Engine.PlayerController.FOV // (Exec|Native|Public) // @ game+0x37b1830
 	void EnableCheats(); // Function Engine.PlayerController.EnableCheats // (Exec|Native|Public) // @ game+0x37b1810
@@ -290,6 +294,139 @@ struct UPlayer {
 	class UGameViewportClient* ViewportClient; // 0x70 (0x08)
 };
 
+struct ULocalPlayer : UObject {
+	char pad_48[0x28]; // 0x48(0x28)
+	struct UGameViewportClient* ViewportClient; // 0x70(0x08)
+	char pad_78[0x1c]; // 0x78(0x1c)
+	char pad_95[0x3]; // 0x95(0x03)
+	struct APlayerController* PendingLevelPlayerControllerClass; // 0x98(0x08)
+	char bSentSplitJoin : 1; // 0xa0(0x01)
+	char pad_A0_1 : 7; // 0xa0(0x01)
+	char pad_A1[0x17]; // 0xa1(0x17)
+	int32_t ControllerId; // 0xb8(0x04)
+	char pad_BC[0x19c]; // 0xbc(0x19c)
+};
+
+// Class PortalWars.PortalWarsLocalPlayer
+// Size: 0x5e8 (Inherited: 0x258)
+struct UPortalWarsLocalPlayer : ULocalPlayer {
+	char pad_258[0x30]; // 0x258(0x30)
+	struct UTexture* PlayerAvatar; // 0x288(0x08)
+	char pad_290[0x228]; // 0x290(0x228)
+	struct TArray<struct UObject*> CachedCustomizationObjects; // 0x4b8(0x10)
+	char pad_4C8[0x30]; // 0x4c8(0x30)
+	struct UPortalWarsNotificationManager* NotificationManager; // 0x4f8(0x08)
+	struct UPortalWarsNotificationManager* NotificationManagerClass; // 0x500(0x08)
+	struct UPortalWarsInviteManager* InviteManager; // 0x508(0x08)
+	struct UPortalWarsInviteManager* InviteManagerClass; // 0x510(0x08)
+	char pad_578[0x38]; // 0x578(0x38)
+	struct UPortalWarsSaveGame* UserSaveGameData; // 0x5b0(0x08)
+	char pad_5B8[0x30]; // 0x5b8(0x30)
+
+	void SetPlayerAvatar(struct UTexture* avatar); // Function PortalWars.PortalWarsLocalPlayer.SetPlayerAvatar // (Final|Native|Protected) // @ game+0x16a7ef0
+	void OnUserCustomizationsUpdate(); // Function PortalWars.PortalWarsLocalPlayer.OnUserCustomizationsUpdate // (Final|Native|Protected) // @ game+0x16a7eb0
+	void OnUserChosenCustomizationsUpdate(); // Function PortalWars.PortalWarsLocalPlayer.OnUserChosenCustomizationsUpdate // (Final|Native|Protected) // @ game+0x16a7e90
+	void OnCustomizationsLoaded(); // Function PortalWars.PortalWarsLocalPlayer.OnCustomizationsLoaded // (Final|Native|Protected) // @ game+0x16a7b50
+	void LoadUserSaveGame(); // Function PortalWars.PortalWarsLocalPlayer.LoadUserSaveGame // (Final|Native|Public) // @ game+0x16a7af0
+	struct UPortalWarsSaveGame* GetUserSaveGame(); // Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame // (Final|Native|Public|Const) // @ game+0x16a7910
+};
+
+struct UPortalWarsSaveGame : UObject {
+	char pad_28[0xc]; // 0x28(0x0c)
+	float FOV; // 0x34(0x04)
+	int32_t ColorblindMode; // 0x38(0x04)
+	float ColorblindModeIntensity; // 0x3c(0x04)
+	float MasterVolume; // 0x40(0x04)
+	float MusicVolume; // 0x44(0x04)
+	float GameplayVolume; // 0x48(0x04)
+	float AnnouncerVolume; // 0x4c(0x04)
+	float AmbientVolume; // 0x50(0x04)
+	float VOIPVolume; // 0x54(0x04)
+	bool bOpenMic; // 0x58(0x01)
+	bool bProximityEnabled; // 0x59(0x01)
+	char pad_5A[0x6]; // 0x5a(0x06)
+	struct FString VoiceChatInputDevice; // 0x60(0x10)
+	struct FString VoiceChatOutputDevice; // 0x70(0x10)
+	bool bMuteWhileMinimized; // 0x80(0x01)
+	bool ToggleCrouch; // 0x81(0x01)
+	bool ToggleZoom; // 0x82(0x01)
+	bool ToggleSprint; // 0x83(0x01)
+	float HorizontalMouseSensitivity; // 0x84(0x04)
+	float VerticalMouseSensitivity; // 0x88(0x04)
+	float MouseZoomSensitivityMultiplier; // 0x8c(0x04)
+	bool MouseInverted; // 0x90(0x01)
+	bool MouseAutosprint; // 0x91(0x01)
+	bool EnableMouseSmoothing; // 0x92(0x01)
+	char pad_93[0x5]; // 0x93(0x05)
+	struct TArray<struct FKeyConfigurationInfo> KeyBindings; // 0x98(0x10)
+	float HorizontalControllerSensitivity; // 0xa8(0x04)
+	float VerticalControllerSensitivity; // 0xac(0x04)
+	float ControllerAccelerationSensitivity; // 0xb0(0x04)
+	float ControllerZoomSensitivityMultiplier; // 0xb4(0x04)
+	float ControllerInnerDeadzone; // 0xb8(0x04)
+	float ControllerOuterDeadzone; // 0xbc(0x04)
+	float ControllerAimAssistStrength; // 0xc0(0x04)
+	bool ControllerInverted; // 0xc4(0x01)
+	bool ControllerAutosprint; // 0xc5(0x01)
+	bool ControllerTapToInteract; // 0xc6(0x01)
+	bool ControllerVibrationEnabled; // 0xc7(0x01)
+	int32_t ControllerGameplayPreset; // 0xc8(0x04)
+	char pad_CC[0x4]; // 0xcc(0x04)
+	char pad_1B8[0x1]; // 0x1b8(0x01)
+	bool ShouldShowBlood; // 0x1b9(0x01)
+	char pad_1BA[0x2]; // 0x1ba(0x02)
+	int32_t PlayKillcamMode; // 0x1bc(0x04)
+	bool ShouldPlayKillcam; // 0x1c0(0x01)
+	bool ShouldRecordReplay; // 0x1c1(0x01)
+	char pad_1C2[0x2]; // 0x1c2(0x02)
+	int32_t ClamberMode; // 0x1c4(0x04)
+	bool EnableHighSpeedFOVChange; // 0x1c8(0x01)
+	char pad_1C9[0x3]; // 0x1c9(0x03)
+	int32_t InputDevice; // 0x1cc(0x04)
+	struct FLinearColor EnemyColor; // 0x1d0(0x10)
+	struct FLinearColor EnemyOutlineColor; // 0x1e0(0x10)
+	struct FLinearColor AllyOutlineColor; // 0x1f0(0x10)
+	struct FLinearColor AllyColorThroughWalls; // 0x200(0x10)
+	bool bShouldAutoSave; // 0x210(0x01)
+	bool ShowFPS; // 0x211(0x01)
+	bool ShowLatency; // 0x212(0x01)
+	bool ShowPing; // 0x213(0x01)
+	bool ShowNetInfo; // 0x214(0x01)
+	bool ShowSubtitles; // 0x215(0x01)
+	bool ShowDamageNumbers; // 0x216(0x01)
+	bool ShowLowAmmo; // 0x217(0x01)
+	bool ShowSprintCrosshair; // 0x218(0x01)
+	char pad_219[0x7]; // 0x219(0x07)
+	struct FLinearColor CustomCrosshairColor; // 0x270(0x10)
+	struct FLinearColor EnemyCustomCrosshairColor; // 0x280(0x10)
+	bool WantsToCrossPlay; // 0x290(0x01)
+	bool bAnonymousMode; // 0x291(0x01)
+	bool bHideNames; // 0x292(0x01)
+	bool bPartyChatOnly; // 0x293(0x01)
+	bool bHasCompletedTutorial; // 0x294(0x01)
+	char pad_295[0x3]; // 0x295(0x03)
+	int32_t TutorialStageID; // 0x298(0x04)
+	bool bHasWatchedIntroVideo; // 0x29c(0x01)
+	bool bHasSeenBattlePassDialog; // 0x29d(0x01)
+	char pad_29E[0x2]; // 0x29e(0x02)
+	char pad_2B1[0x7]; // 0x2b1(0x07)
+	struct TArray<struct FCustomizationId> ViewedCustomizations; // 0x2b8(0x10)
+	bool bHasSeenLocker; // 0x318(0x01)
+	char pad_319[0x7]; // 0x319(0x07)
+	bool bHasSyncedNewCustomizations; // 0x370(0x01)
+	char pad_371[0x7]; // 0x371(0x07)
+	struct TArray<struct FStoreItemInfo> ViewedStoreItems; // 0x378(0x10)
+	struct TArray<struct FString> ViewedLimitedTimeOffers; // 0x388(0x10)
+	struct TArray<struct FStoreItemInfo> LastViewedStore; // 0x398(0x10)
+	struct TArray<struct FChallengeData> ViewedChallenges; // 0x3a8(0x10)
+	struct TArray<struct FString> MuteList; // 0x3b8(0x10)
+	struct FString LoginAuthToken; // 0x3d0(0x10)
+	struct FString PreferredMatchmakingRegionName; // 0x3e0(0x10)
+	struct FString PreferredCustomRegionName; // 0x3f0(0x10)
+	struct FString LastGameVersion; // 0x588(0x10)
+	char pad_598[0x28]; // 0x598(0x28)
+};
+
 // Class Engine.PlayerState
 struct APlayerState {
 	char pad_0000[0x280]; // 0x0 (0x280)
@@ -347,9 +484,6 @@ struct APlayerCameraManager {
 extern FNamePool* NamePoolData;
 extern TUObjectArray* ObjObjects;
 extern UWorld* WRLD;
-extern UObject* SwitchLevelUFunc;
-extern UObject* EnableCheatsUFunc;
-extern UObject* FOVUFunc;
 extern void(*OPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas);
 
 bool EngineInit();

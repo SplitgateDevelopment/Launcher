@@ -1,6 +1,7 @@
 #include "Engine.h"
-#include "Util.h"
+#include "../../utils/Util.h"
 #include <Psapi.h>
+#include "UObjects.h"
 
 std::string FNameEntry::String()
 {
@@ -80,11 +81,6 @@ FNamePool* NamePoolData = nullptr;
 TUObjectArray* ObjObjects = nullptr;
 UWorld* WRLD = nullptr;
 
-UObject* SwitchLevelUFunc;
-UObject* EnableCheatsUFunc;
-UObject* FOVUFunc;
-UObject* SetNameUFunc;
-
 uintptr_t GetBoneMatrixF;
 
 void(*OPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
@@ -96,13 +92,7 @@ void APlayerController::SwitchLevel(FString URL)
 	} Parameters;
 	Parameters.URL = URL;
 
-	ProcessEvent(SwitchLevelUFunc, &Parameters);
-}
-
-void APlayerController::EnableCheats()
-{
-	struct {} Parameters;
-	ProcessEvent(EnableCheatsUFunc, &Parameters);
+	ProcessEvent(UObjects::SwitchLevelUFunc, &Parameters);
 }
 
 void APlayerController::FOV(float NewFOV)
@@ -112,7 +102,7 @@ void APlayerController::FOV(float NewFOV)
 	} Parameters;
 	Parameters.NewFOV = NewFOV;
 
-	ProcessEvent(FOVUFunc, &Parameters);
+	ProcessEvent(UObjects::FOVUFunc, &Parameters);
 }
 
 void APlayerController::SetName(FString S)
@@ -122,8 +112,66 @@ void APlayerController::SetName(FString S)
 	} Parameters;
 	Parameters.S = S;
 
-	ProcessEvent(SetNameUFunc, &Parameters);
+	ProcessEvent(UObjects::SetNameUFunc, &Parameters);
 }
+
+void Canvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FLOAT Thickness, FLinearColor Color)
+{
+	struct {
+		FVector2D ScreenPositionA;
+		FVector2D ScreenPositionB;
+		FLOAT Thickness;
+		FLinearColor Color;
+	} Parameters;
+
+	Parameters.ScreenPositionA = ScreenPositionA;
+	Parameters.ScreenPositionB = ScreenPositionB;
+	Parameters.Thickness = Thickness;
+	Parameters.Color = Color;
+
+	ProcessEvent(UObjects::K2_DrawLineUFunc, &Parameters);
+}
+
+void Canvas::K2_DrawText(FString RenderText, FVector2D ScreenPosition, FVector2D Scale, FLinearColor RenderColor, float Kerning, FLinearColor ShadowColor, FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, FLinearColor OutlineColor)
+{
+	struct {
+		UObject* RenderFont; //UFont* 
+		FString RenderText;
+		FVector2D ScreenPosition;
+		FVector2D Scale;
+		FLinearColor RenderColor;
+		float Kerning;
+		FLinearColor ShadowColor;
+		FVector2D ShadowOffset;
+		bool bCentreX;
+		bool bCentreY;
+		bool bOutlined;
+		FLinearColor OutlineColor;
+	} Parameters;
+
+	Parameters.RenderFont = UObjects::Font;
+	Parameters.RenderText = RenderText;
+	Parameters.ScreenPosition = ScreenPosition;
+	Parameters.Scale = Scale;
+	Parameters.RenderColor = RenderColor;
+	Parameters.Kerning = Kerning;
+	Parameters.ShadowColor = ShadowColor;
+	Parameters.ShadowOffset = ShadowOffset;
+	Parameters.bCentreX = bCentreX;
+	Parameters.bCentreY = bCentreY;
+	Parameters.bOutlined = bOutlined;
+
+	ProcessEvent(UObjects::K2_DrawTextUFunc, &Parameters);
+};
+
+UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame() {
+	struct {
+		UPortalWarsSaveGame* ReturnValue;
+	} Parameters;
+
+	ProcessEvent(UObjects::GetSaveGameUFUnc, &Parameters);
+	return Parameters.ReturnValue;
+};
 
 bool EngineInit()
 {
@@ -141,10 +189,14 @@ bool EngineInit()
 	WRLD = reinterpret_cast<decltype(WRLD)>(FindPointer(main, worldSig, sizeof(worldSig), 0));
 	if (!WRLD) return false;
 
-	SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
-	EnableCheatsUFunc = ObjObjects->FindObject("Function Engine.PlayerController.EnableCheats");
-	FOVUFunc = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
-	SetNameUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
+	UObjects::SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
+	UObjects::FOVUFunc = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
+	UObjects::SetNameUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
+	UObjects::K2_DrawLineUFunc = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawLine");
+	UObjects::K2_DrawTextUFunc = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawText");
+	UObjects::Font = ObjObjects->FindObject("Font Roboto.Roboto");
+	UObjects::GetSaveGameUFUnc = ObjObjects->FindObject("Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame");
+	UObjects::K2_GetPawnUFunc = ObjObjects->FindObject("Function Engine.Controller.K2_GetPawn");
 
 	return true;
 }
