@@ -15,19 +15,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine.h">
+    <ClInclude Include="cheat\UnrealEngine\Engine.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="Util.h">
+    <ClInclude Include="utils\Logger.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="cheat\Hook.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="Hook.h">
+    <ClInclude Include="cheat\Features.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="Features.h">
+    <ClInclude Include="menu\Menu.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\Util.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\Settings.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\ZeroGUI.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\ZeroInput.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="cheat\UnrealEngine\UObjects.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,10 +50,10 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="Engine.cpp">
+    <ClCompile Include="cheat\UnrealEngine\Engine.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="Util.cpp">
+    <ClCompile Include="utils\Util.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
