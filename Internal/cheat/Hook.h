@@ -50,6 +50,13 @@ public:
 		};
 
 		VTABLE = ViewPortClientVTable;
+
+		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
+		if (UserSave) {
+			logger->log("INFO", "Got user save game");
+			Settings::FOV = UserSave->FOV;
+		};
+
 		return TRUE;
 	}
 
