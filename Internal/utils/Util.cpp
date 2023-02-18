@@ -24,4 +24,4 @@ void* FindPointer(HMODULE mod, byte* sig, uint64_t size, int addition)
     for (; sig[k]; k++);
     auto offset = *reinterpret_cast<int*>(address + k);
     return address + k + 4 + offset + addition;
-}
+};

@@ -99,7 +99,7 @@ private:
             SetStdHandle(STD_OUTPUT_HANDLE, hStdout);
             SetStdHandle(STD_INPUT_HANDLE, hStdin);
             return;
-        }
+        };
 
         FILE* file = new FILE();
         freopen_s(&file, "CONOUT$", "w", stdout);
