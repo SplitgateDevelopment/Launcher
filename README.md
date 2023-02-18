@@ -10,4 +10,4 @@
   
   • Run Launcher.exe
   
-  • Use the `Ins` button to load inside the simulation map
+  • Use the `Ins` button to show/hide the gui
