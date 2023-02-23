@@ -463,6 +463,7 @@ struct UWorld {
 	class UGameInstance* OwningGameInstance; // 0x180 (0x08)
 	TArray<ULevel*> Levels;
 	TArray<ULevelStreaming*> StreamingLevels;
+	void** VFTable;
 };
 
 // Class Engine.Canvas
@@ -484,6 +485,5 @@ struct APlayerCameraManager {
 extern FNamePool* NamePoolData;
 extern TUObjectArray* ObjObjects;
 extern UWorld* WRLD;
-extern void(*OPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas);
 
 bool EngineInit();
