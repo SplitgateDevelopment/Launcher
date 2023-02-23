@@ -83,8 +83,6 @@ UWorld* WRLD = nullptr;
 
 uintptr_t GetBoneMatrixF;
 
-void(*OPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
-
 void APlayerController::SwitchLevel(FString URL)
 {
 	struct {
@@ -189,14 +187,6 @@ bool EngineInit()
 	WRLD = reinterpret_cast<decltype(WRLD)>(FindPointer(main, worldSig, sizeof(worldSig), 0));
 	if (!WRLD) return false;
 
-	UObjects::SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
-	UObjects::FOVUFunc = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
-	UObjects::SetNameUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
-	UObjects::K2_DrawLineUFunc = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawLine");
-	UObjects::K2_DrawTextUFunc = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawText");
-	UObjects::Font = ObjObjects->FindObject("Font Roboto.Roboto");
-	UObjects::GetSaveGameUFUnc = ObjObjects->FindObject("Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame");
-	UObjects::K2_GetPawnUFunc = ObjObjects->FindObject("Function Engine.Controller.K2_GetPawn");
-
+	UObjects::Init();
 	return true;
 }
