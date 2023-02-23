@@ -28,9 +28,17 @@ public:
 			}
 			else if (tab == 1)
 			{
+				ZeroGUI::Checkbox("Watermark", &Settings::ShowWatermark);
 				ZeroGUI::Button("Unload", FVector2D{ 110, 25 });
 			};
 		}
 		ZeroGUI::Render();
-	}
+	};
+
+	void DrawWatermark(Canvas* canvas) {
+		if (!Settings::ShowWatermark) return;
+
+		canvas->K2_DrawText(L"github.com/SplitgateDevelopment", { 15.f, 15.f }, { 1.f, 1.f }, ZeroGUI::Colors::Window_Header, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, false, false, true, ZeroGUI::Colors::Window_Header);
+		return;
+	};;
 };
