@@ -7,9 +7,17 @@ class Hook {
 
 public:
 	HHOOK g_hook;
+
 	Features* features = new Features();
-	void** VTABLE;
 	Logger* logger = features->logger;
+
+	void** PostRenderVTable;
+	void(*OriginalPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
+	int PostRenderIndex = 100;
+
+	void** ProcessEventVTable;
+	void (*OriginalProcessEvent)(UObject*, UObject*, void* params) = nullptr;
+	int ProcessEventIndex = 68;
 
 	bool Init() {
 		if (!EngineInit()) {
@@ -49,26 +57,32 @@ public:
 			return FALSE;
 		};
 
-		VTABLE = ViewPortClientVTable;
+		PostRenderVTable = ViewPortClientVTable;
+		ProcessEventVTable = World->VFTable;
 
 		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
 		if (UserSave) {
-			logger->log("INFO", "Got user save game");
+			logger->log("SUCCESS", "Got user save game");
 			Settings::FOV = UserSave->FOV;
 		};
+
+		logger->log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));;
 
 		return TRUE;
 	}
 
-	void swapRender(void** ViewPortClientVTable, void (*NPostRender)(UGameViewportClient* UGameViewportClient, Canvas* canvas)) {
+	BYTE* setHook(void** VTable, int index, void* TargetFunction) {
+		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
 
 		DWORD protecc;
-		VirtualProtect(&ViewPortClientVTable[100], 8, PAGE_EXECUTE_READWRITE, &protecc);
-		ViewPortClientVTable[100] = NPostRender;
-		VirtualProtect(&ViewPortClientVTable[100], 8, protecc, 0);
+		VirtualProtect(&VTable[index], 8, PAGE_EXECUTE_READWRITE, &protecc);
+		VTable[index] = TargetFunction;
+		VirtualProtect(&VTable[index], 8, protecc, 0);
 
-		logger->log("INFO", "Swapped PostRender functions");
-	}
+		logger->log("INFO", "Set hook");
+
+		return original;
+	};
 
 	bool isKeyPressed(UCHAR key) {
 		return GetAsyncKeyState(key) & 1 && GetAsyncKeyState(key) & 0x8000;
