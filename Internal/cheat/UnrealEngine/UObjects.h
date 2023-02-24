@@ -2,14 +2,14 @@
 #include "Engine.h"
 
 namespace UObjects {
-	UObject* SwitchLevelUFunc;
-	UObject* FOVUFunc;
-	UObject* SetNameUFunc;
-	UObject* K2_DrawLineUFunc;
-	UObject* K2_DrawTextUFunc;
-	UObject* Font;
-	UObject* GetSaveGameUFUnc;
-	UObject* K2_GetPawnUFunc;
+	UObject* SwitchLevelUFunc = 0;
+	UObject* FOVUFunc = 0;
+	UObject* SetNameUFunc = 0;
+	UObject* K2_DrawLineUFunc = 0;
+	UObject* K2_DrawTextUFunc = 0;
+	UObject* Font = 0;
+	UObject* GetSaveGameUFUnc = 0;
+	UObject* K2_GetPawnUFunc = 0;
 
 	void Init() {
 		SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
