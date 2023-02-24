@@ -45,6 +45,9 @@
     <ClInclude Include="cheat\UnrealEngine\UObjects.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="discord\DiscordRPC.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
