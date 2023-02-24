@@ -15,11 +15,13 @@ public:
 			PlayerController->FOV(Settings::FOV);
 
 			if (Settings::LoadIntoMap) {
+				logger->log("INFO", "Loading into map");
 				PlayerController->SwitchLevel(L"Simulation_Alpha");
 				Settings::LoadIntoMap = false;
 			};
 
 			if (!ExistCharacter(PlayerController)) break;
+
 			APawn* Player = PlayerController->AcknowledgedPawn->Instigator;
 
 			if (Settings::GodMode && Player->Health != 0) {
