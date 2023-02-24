@@ -71,7 +71,7 @@ public:
 		return TRUE;
 	}
 
-	BYTE* setHook(void** VTable, int index, void* TargetFunction) {
+	BYTE* SetHook(void** VTable, int index, void* TargetFunction) {
 		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
 
 		DWORD protecc;
@@ -83,6 +83,16 @@ public:
 
 		return original;
 	};
+
+	void UnHook() {
+		SetHook(PostRenderVTable, PostRenderIndex, OriginalPostRender);
+
+		logger->log("INFO", "Unloading");
+		logger->DestroyConsole();
+
+		UnhookWindowsHookEx(g_hook);
+		return;
+	}
 
 	bool isKeyPressed(UCHAR key) {
 		return GetAsyncKeyState(key) & 1 && GetAsyncKeyState(key) & 0x8000;
