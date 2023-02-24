@@ -21,16 +21,27 @@ public:
         CreateConsole();
     }
 
-    void log(const string title, const string message) {
+    void log(const string title, const string message)
+    {
         time_t now = time(0);
         tm tstruct;
         char buf[80];
         localtime_s(&tstruct, &now);
         strftime(buf, sizeof(buf), "[%H:%M:%S]", &tstruct);
+
+        setColor(title);
         std::cout << buf << " [" << title << "] " << message << std::endl;
 
         if (useMsgBox) MessageBoxA(0, message.c_str(), title.c_str(), MB_OK);
+
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         return;
+    }
+
+
+    void DestroyConsole() {
+        fclose(file);
+        FreeConsole();
     }
 
 private:
@@ -38,6 +49,7 @@ private:
     HANDLE g_hChildStd_IN_Wr = NULL;
     HANDLE g_hChildStd_OUT_Rd = NULL;
     HANDLE g_hChildStd_OUT_Wr = NULL;
+    FILE* file = new FILE();
 
     void CreateConsole()
     {
@@ -101,8 +113,14 @@ private:
             return;
         };
 
-        FILE* file = new FILE();
         freopen_s(&file, "CONOUT$", "w", stdout);
-    }
+    };
 
+    BOOL setColor(const string title) {
+        if (title == "INFO") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        if (title == "ERROR") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
+        if (title == "SUCCESS") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+        return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    }
 };
