@@ -6,4 +6,5 @@ namespace Settings {
 	bool GodMode = false;
 	bool LoadIntoMap = false;
 	bool ShowWatermark = true;
+	float Unload = false;
 }
