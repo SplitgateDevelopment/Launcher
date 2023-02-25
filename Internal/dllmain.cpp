@@ -5,11 +5,9 @@
 #include "cheat/UnrealEngine/Engine.h"
 #include "cheat/Hook.h"
 #include "menu/Menu.h"
-#include "discord/DiscordRPC.h"
 
 Hook* hook = new Hook();
 Menu* menu = new Menu();
-DiscordRPC* rpc = new DiscordRPC();
 
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
@@ -57,8 +55,8 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 	hook->logger->log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
 	hook->logger->log("SUCCESS", "Press Ins to hide/show the menu");
 
-	rpc->Init("1078744504066117703", hook->logger);
-	rpc->UpdatePresence();
+	hook->features->rpc->Init("1078744504066117703");
+	hook->features->rpc->UpdatePresence();
 
 	return CallNextHookEx(hook->g_hook, code, wparam, lparam);
 }
