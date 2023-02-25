@@ -2,12 +2,14 @@
 #include "UnrealEngine/Engine.h"
 #include "../menu/Settings.h"
 #include "../utils/Logger.h"
+#include "../discord/DiscordRPC.h"
 
 class Features {
 public:
 	Logger* logger = new Logger({
 		FALSE,
 	});
+	DiscordRPC* rpc = new DiscordRPC(logger);
 
 	void handle(APlayerController* PlayerController) {
 		do {
@@ -20,9 +22,13 @@ public:
 				Settings::LoadIntoMap = false;
 			};
 
-			if (!ExistCharacter(PlayerController)) break;
+			if (!isIngame(PlayerController)) {
+				SetState("In Menu");
+				break;
+			};
+			SetState("In game");
 
-			APawn* Player = PlayerController->AcknowledgedPawn->Instigator;
+			APawn* Player = PlayerController->PlayerState->PawnPrivate;
 
 			if (Settings::GodMode && Player->Health != 0) {
 				float health = 999999;
@@ -37,7 +43,12 @@ public:
 	};
 
 private:
-	bool ExistCharacter(APlayerController* PlayerController) {
+	bool isIngame(APlayerController* PlayerController) {
 		return (PlayerController->AcknowledgedPawn);
+	}
+
+	void SetState(const char* state) {
+		if (rpc->GetState() == state) return;
+		return rpc->UpdateState(state);
 	}
 };
