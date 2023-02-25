@@ -7,4 +7,5 @@ namespace Settings {
 	bool LoadIntoMap = false;
 	bool ShowWatermark = true;
 	float Unload = false;
+	const char* Watermark = "github.com/SplitgateDevelopment/Launcher";
 }
