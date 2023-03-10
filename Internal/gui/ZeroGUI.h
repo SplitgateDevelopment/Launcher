@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ZeroInput.h"
-#include "./crypt_str.h"
 #include "../cheat/UnrealEngine/Engine.h"
 
 wchar_t* s2wc(const char* c)
@@ -900,7 +899,7 @@ namespace ZeroGUI
 		FVector2D textPos = FVector2D{ pos.X + size.X / 2, pos.Y + size.Y / 2 };
 		if (active_hotkey == elements_count)
 		{
-			TextCenter(crypt_str("[Press Key]"), textPos, Colors::Text, false);
+			TextCenter("[Press Key]", textPos, Colors::Text, false);
 
 			if (!ZeroGUI::Input::IsAnyMouseDown())
 			{
