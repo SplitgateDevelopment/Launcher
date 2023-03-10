@@ -1,6 +1,5 @@
 #pragma once
 
-#include "./stdafx.h"
 #include "ZeroInput.h"
 #include "./crypt_str.h"
 #include "../cheat/UnrealEngine/Engine.h"
@@ -26,6 +25,7 @@ namespace ZeroGUI
 
 		FLinearColor Window_Background{ 1.0f, 1.0f, 1.f, 1.0f };
 		FLinearColor Window_Header{ 255.0f, 0.0f, 0.0f, 1.0f };
+		FLinearColor Window_Tabs_Background{ 0.006f, 0.006f, 0.006f, 1.0f };
 
 		FLinearColor Button_Idle{ 255.0f, 0.0f, 0.0f, 1.0f };
 		FLinearColor Button_Hovered{ 255.0f, 0.0f, 0.0f, 1.0f };
@@ -341,7 +341,7 @@ namespace ZeroGUI
 
 		//Bg
 		drawFilledRect(FVector2D{ pos->X, pos->Y }, size.X, size.Y, Colors::Window_Background);
-		//drawFilledRect(FVector2D{ pos->X, pos->Y }, 122, size.Y, FLinearColor{ 0.006f, 0.006f, 0.006f, 1.0f });//My tabs bg
+		drawFilledRect(FVector2D{ pos->X, pos->Y }, 122, size.Y, Colors::Window_Tabs_Background);
 
 		//Header
 		drawFilledRect(FVector2D{ pos->X, pos->Y }, size.X, 25.0f, Colors::Window_Header);
@@ -897,10 +897,9 @@ namespace ZeroGUI
 		if (!sameLine)
 			offset_y += size.Y + padding.Y;
 
+		FVector2D textPos = FVector2D{ pos.X + size.X / 2, pos.Y + size.Y / 2 };
 		if (active_hotkey == elements_count)
 		{
-			//Text
-			FVector2D textPos = FVector2D{ pos.X + size.X / 2, pos.Y + size.Y / 2 };
 			TextCenter(crypt_str("[Press Key]"), textPos, Colors::Text, false);
 
 			if (!ZeroGUI::Input::IsAnyMouseDown())
@@ -922,8 +921,6 @@ namespace ZeroGUI
 		}
 		else
 		{
-			//Text
-			FVector2D textPos = FVector2D{ pos.X + size.X / 2, pos.Y + size.Y / 2 };
 			TextCenter((char*)VirtualKeyCodeToString(*key).c_str(), textPos, Colors::Text, false);
 
 			if (isHovered)
