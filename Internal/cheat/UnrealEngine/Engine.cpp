@@ -171,6 +171,87 @@ UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame() {
 	return Parameters.ReturnValue;
 };
 
+void USkeletalMeshComponent::K2_SetRelativeRotation(FRotator NewRotation, bool bSweep, bool bTeleport)
+{
+	struct {
+		FRotator NewRotation;
+		bool bSweep;
+		FHitResult SweepHitResult;
+		bool bTeleport;
+	} Parameters;
+	Parameters.NewRotation = NewRotation;
+	Parameters.bSweep = bSweep;
+	Parameters.bTeleport = bTeleport;
+
+	ProcessEvent(UObjects::K2_SetRelativeRotationUFunc, &Parameters);
+}
+
+bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRotation) {
+	struct {
+		FVector DestLocation;
+		FRotator DestRotation;
+		bool ReturnValue;
+	} Parameters;
+	Parameters.DestLocation = DestLocation;
+	Parameters.DestRotation = DestRotation;
+
+	ProcessEvent(UObjects::K2_TeleportTo, &Parameters);
+	return Parameters.ReturnValue;
+};
+
+FVector AActor::K2_GetActorLocation() {
+	struct {
+		FVector ReturnValue;
+	} Parameters;
+
+	ProcessEvent(UObjects::K2_GetActorLocation, &Parameters);
+	return Parameters.ReturnValue;
+};
+
+FRotator AActor::K2_GetActorRotation() {
+	struct {
+		FRotator ReturnValue;
+	} Parameters;
+
+	ProcessEvent(UObjects::K2_GetActorRotation, &Parameters);
+	return Parameters.ReturnValue;
+};
+
+void AActor::SetActorEnableCollision(bool bNewActorEnableCollision) {
+	struct {
+		bool bNewActorEnableCollision;
+	} Parameters;
+	Parameters.bNewActorEnableCollision = bNewActorEnableCollision;
+
+	ProcessEvent(UObjects::SetActorEnableCollision, &Parameters);
+};
+
+bool AActor::GetActorEnableCollision() {
+	struct {
+		bool ReturnValue;
+	} Parameters;
+
+	ProcessEvent(UObjects::GetActorEnableCollision, &Parameters);
+	return Parameters.ReturnValue;
+};
+
+bool AActor::K2_SetActorLocation(FVector NewLocation, bool bSweep, bool bTeleport)
+{
+	struct {
+		FVector NewLocation;
+		bool bSweep;
+		FHitResult SweepHitResult;
+		bool bTeleport;
+		bool ReturnValue;
+	} Parameters;
+	Parameters.NewLocation = NewLocation;
+	Parameters.bSweep = bSweep;
+	Parameters.bTeleport = bTeleport;
+
+	ProcessEvent(UObjects::K2_SetActorLocation, &Parameters);
+	return Parameters.ReturnValue;
+}
+
 bool EngineInit()
 {
 	auto main = GetModuleHandleA(nullptr);

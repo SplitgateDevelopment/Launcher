@@ -10,6 +10,13 @@ namespace UObjects {
 	UObject* Font = 0;
 	UObject* GetSaveGameUFUnc = 0;
 	UObject* K2_GetPawnUFunc = 0;
+	UObject* K2_SetRelativeRotationUFunc = 0;
+	UObject* K2_TeleportTo = 0;
+	UObject* K2_GetActorLocation = 0;
+	UObject* K2_GetActorRotation = 0;
+	UObject* SetActorEnableCollision = 0;
+	UObject* GetActorEnableCollision = 0;
+	UObject* K2_SetActorLocation = 0;
 
 	void Init() {
 		SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
@@ -20,5 +27,12 @@ namespace UObjects {
 		Font = ObjObjects->FindObject("Font Roboto.Roboto");
 		GetSaveGameUFUnc = ObjObjects->FindObject("Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame");
 		K2_GetPawnUFunc = ObjObjects->FindObject("Function Engine.Controller.K2_GetPawn");
+		K2_SetRelativeRotationUFunc = ObjObjects->FindObject("Function Engine.SceneComponent.K2_SetRelativeRotation");
+		K2_TeleportTo = ObjObjects->FindObject("Function Engine.Actor.K2_TeleportTo");
+		K2_GetActorLocation = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorLocation");
+		K2_GetActorRotation = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorRotation");
+		SetActorEnableCollision = ObjObjects->FindObject("Function Engine.Actor.SetActorEnableCollision");
+		GetActorEnableCollision = ObjObjects->FindObject("Function Engine.Actor.GetActorEnableCollision");
+		K2_SetActorLocation = ObjObjects->FindObject("Function Engine.Actor.K2_SetActorLocation");
 	}
 }

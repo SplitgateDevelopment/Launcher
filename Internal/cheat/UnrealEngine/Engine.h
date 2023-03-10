@@ -206,6 +206,10 @@ struct AActor : UObject {
 	bool K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRotation); // Function Engine.Actor.K2_TeleportTo // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x368c880
 	struct FRotator K2_GetActorRotation(); // Function Engine.Actor.K2_GetActorRotation // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x368ba80
 	struct FVector K2_GetActorLocation(); // Function Engine.Actor.K2_GetActorLocation // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x368ba00
+	void SetActorEnableCollision(bool bNewActorEnableCollision);
+	bool GetActorEnableCollision();
+	bool K2_SetActorLocation(FVector NewLocation, bool bSweep, bool bTeleport);
+	void SetActorHiddenInGame(bool bNewHidden);
 };
 
 // Class Engine.Controller 
@@ -243,22 +247,176 @@ struct APawn : AActor {
 	float MaxHealth;
 	float healthRechargeDelay;
 	char pad_0004[0x300];// 0x4F0 (0x300)
-	class AGun* CurrentWeapon; // 0x7f0 (0x08)
-	float SprintingSpeedModifier;
-	float MeleeRange;
-	float TimeBetweenMelee;
-	float MeleeApplyDmgAngle;
-	float MeleeApplyDmgRange;
-	float MeleeApplyDmgRangeXY;
-	float thrustAmountPerTick;
-	float thrusterVelocityThreshhold;
-	float thrusterRechargeDelay;
-	float thrusterTotalTime;
-	float curTimeOutOfBounds;
-	float maxTimeOutOfBounds;
-	float SprayRange;
-	float SprayLifetime;
-	float TimeBetweenSprays;
+	struct UAkAudioEvent* HealthRechargeStartEvent; // 0x500(0x08)
+	struct UAkAudioEvent* HealthRechargeStopEvent; // 0x508(0x08)
+	struct UAkAudioEvent* LowHealthStartEvent; // 0x510(0x08)
+	struct UAkAudioEvent* LowHealthStopEvent; // 0x518(0x08)
+	struct UAkAudioEvent* KillHealthLoopEvents; // 0x520(0x08)
+	char pad_528[0x10]; // 0x528(0x10)
+	float RagdollLifetime; // 0x538(0x04)
+	char pad_53C[0xf4]; // 0x53c(0xf4)
+	char LastCausedHitInfo[0xf0]; // 0x630(0xf0)
+	char pad_720[0x10]; // 0x720(0x10)
+	struct UAnimMontage* upperBodyFlinchMontage; // 0x730(0x08)
+	struct UAnimMontage* lowerBodyFlinchMontage; // 0x738(0x08)
+	struct UAnimMontage* headFlinchMontage; // 0x740(0x08)
+	char pad_748[0x8]; // 0x748(0x08)
+	struct UDamageType* SuicideDamageType; // 0x750(0x08)
+	struct UDamageType* portalDamageType; // 0x758(0x08)
+	struct UAkAudioEvent* PlayerTakeDamageEvent; // 0x760(0x08)
+	struct UAkAudioEvent* RagdollCollisionEvent; // 0x768(0x08)
+	float RagdollImpactSFXThreshold; // 0x770(0x04)
+	float PostDeathPortalLifetime; // 0x774(0x04)
+	char pad_778[0x10]; // 0x778(0x10)
+	struct TArray<struct APortalWarsAIController*> TargetingBots; // 0x788(0x10)
+	struct UCameraComponent* ThirdPersonCamera; // 0x798(0x08)
+	struct USpringArmComponent* ThirdPersonCameraArm; // 0x7a0(0x08)
+	char pad_7A8[0x8]; // 0x7a8(0x08)
+	struct UCameraComponent* SpectatorFirstPersonCamera; // 0x7b0(0x08)
+	struct USpringArmComponent* SpectatorFirstPersonCameraArm; // 0x7b8(0x08)
+	char pad_7C0[0x20]; // 0x7c0(0x20)
+	char DefaultInventoryClasses[0x10]; // 0x7e0(0x10)
+	struct TArray<struct AGun*> Inventory; // 0x7f0(0x10)
+	struct AGun* CurrentWeapon; // 0x800(0x08)
+	char pad_808[0x8]; // 0x808(0x08)
+	struct AGun* Fists; // 0x810(0x08)
+	struct AGun* FistsClass; // 0x818(0x08)
+	struct AGun* CurrentWeaponClass; // 0x820(0x08)
+	char pad_828[0x38]; // 0x828(0x38)
+	struct FName WeaponAttachPoint; // 0x860(0x08)
+	struct FName GrendadeAttachPoint; // 0x868(0x08)
+	struct APortalLauncher* portalLauncherClass; // 0x870(0x08)
+	struct APortalLauncher* PortalLauncher; // 0x878(0x08)
+	struct FName PortalLauncherAttachPoint; // 0x880(0x08)
+	char pad_888[0x8]; // 0x888(0x08)
+	struct USceneComponent* FirstPersonArmsRoot; // 0x890(0x08)
+	char pad_898[0x10]; // 0x898(0x10)
+	struct USkeletalMeshComponent* Mesh1P; // 0x8a8(0x08)
+	struct USkeletalMeshComponent* Jetpack; // 0x8b0(0x08)
+	char JetpackFlameMeshes[0x50]; // 0x8b8(0x50)
+	char pad_908[0x20]; // 0x908(0x20)
+	int32_t FriendlyStencilValue; // 0x928(0x04)
+	int32_t EnemyStencilValue; // 0x92c(0x04)
+	int32_t AlphaTeamStencilValue; // 0x930(0x04)
+	int32_t BravoTeamStencilValue; // 0x934(0x04)
+	struct FLinearColor BlueOutlineColor; // 0x938(0x10)
+	struct FLinearColor RedOutlineColor; // 0x948(0x10)
+	float ColorIntensity3P; // 0x958(0x04)
+	float ColorIntensity1P; // 0x95c(0x04)
+	char pad_960[0x50]; // 0x960(0x50)
+	struct ACharacterSkin* DefaultCharacterSkinClass; // 0x9b0(0x08)
+	struct ACharacterSkin* CharacterSkin; // 0x9b8(0x08)
+	struct ACharacterSkin* CharacterSkinClass; // 0x9c0(0x08)
+	struct AJetpackSkin* DefaultJetpackSkinClass; // 0x9c8(0x08)
+	struct AJetpackSkin* JetpackSkin; // 0x9d0(0x08)
+	struct AJetpackSkin* JetpackSkinClass; // 0x9d8(0x08)
+	char pad_9E0[0x20]; // 0x9e0(0x20)
+	struct UAnimSequence* EmoteSequenceCurrentlyPlayingInMenu; // 0xa00(0x08)
+	float SprayRange; // 0xa08(0x04)
+	float SprayLifetime; // 0xa0c(0x04)
+	float TimeBetweenSprays; // 0xa10(0x04)
+	char pad_A14[0x4]; // 0xa14(0x04)
+	struct TArray<struct FSavedPosition> SavedPositions; // 0xa18(0x10)
+	char pad_A28[0x8]; // 0xa28(0x08)
+	char bIsSprinting : 1; // 0xa30(0x01)
+	char pad_A30_1 : 7; // 0xa30(0x01)
+	char pad_A31[0x7]; // 0xa31(0x07)
+	struct UMatineeCameraShake* SprintCamShake; // 0xa38(0x08)
+	char pad_A40[0x4]; // 0xa40(0x04)
+	float SprintingSpeedModifier; // 0xa44(0x04)
+	char pad_A48[0x10]; // 0xa48(0x10)
+	struct APortalWarsTeabagZone* TeabagZone; // 0xa58(0x08)
+	char pad_A60[0x8]; // 0xa60(0x08)
+	float CrouchCameraSpeed; // 0xa68(0x04)
+	char pad_A6C[0x4]; // 0xa6c(0x04)
+	struct UAkAudioEvent* CrouchEvent; // 0xa70(0x08)
+	struct UAkAudioEvent* UncrouchEvent; // 0xa78(0x08)
+	float BaseTurnRate; // 0xa80(0x04)
+	float BaseLookUpRate; // 0xa84(0x04)
+	char pad_A88[0x98]; // 0xa88(0x98)
+	float ControllerMaxAccelMultiplier; // 0xb20(0x04)
+	char pad_B24[0x74]; // 0xb24(0x74)
+	float rotateToUprightSpeed; // 0xb98(0x04)
+	char DoRep_collisionProfile; // 0xb9c(0x01)
+	char pad_B9D[0x13]; // 0xb9d(0x13)
+	struct UAkAudioEvent* TeleportEvent; // 0xbb0(0x08)
+	struct UAkAudioEvent* LocalPlayerTeleportEvent; // 0xbb8(0x08)
+	char pad_BC0[0x10]; // 0xbc0(0x10)
+	struct AGrenadeLauncher* GrenadeLauncher; // 0xbd0(0x08)
+	struct AGrenadeLauncher* GrenadeLauncherClass; // 0xbd8(0x08)
+	struct UAkAudioEvent* ThrowGrenadeEvent; // 0xbe0(0x08)
+	char IgnoreServerCorrections[0x02]; // 0xbe8(0x02)
+	char pad_BEA[0x6]; // 0xbea(0x06)
+	float MeleeApplyDmgRange; // 0xbf0(0x04)
+	float MeleeApplyDmgRangeXY; // 0xbf4(0x04)
+	float MeleeApplyDmgAngle; // 0xbf8(0x04)
+	float MeleeRange; // 0xbfc(0x04)
+	float TimeBetweenMelee; // 0xc00(0x04)
+	float MeleeConeHalfAngle; // 0xc04(0x04)
+	char pad_C08[0x34]; // 0xc08(0x34)
+	float MeleeMaxRotationAngle; // 0xc3c(0x04)
+	char pad_C40[0x10]; // 0xc40(0x10)
+	struct UDamageType* MeleeDamageType; // 0xc50(0x08)
+	char pad_C58[0x10]; // 0xc58(0x10)
+	struct UAkAudioEvent* InstantMeleeSpeedReachedEvent; // 0xc68(0x08)
+	struct UAkAudioEvent* InstantMeleeSpeedStopEvent; // 0xc70(0x08)
+	char pad_C78[0x1]; // 0xc78(0x01)
+	char bIsThrusting : 1; // 0xc79(0x01)
+	char pad_C79_1 : 7; // 0xc79(0x01)
+	char pad_C7A[0x2]; // 0xc7a(0x02)
+	float thrustAmountPerTick; // 0xc7c(0x04)
+	float thrusterVelocityThreshhold; // 0xc80(0x04)
+	float thrusterRechargeDelay; // 0xc84(0x04)
+	float thrusterTotalTime; // 0xc88(0x04)
+	float thrusterCurrentTime; // 0xc8c(0x04)
+	char pad_C90[0x8]; // 0xc90(0x08)
+	struct UAkAudioEvent* JetPackStartEvent; // 0xc98(0x08)
+	struct UAkAudioEvent* JetPackEndEvent; // 0xca0(0x08)
+	char pad_CA8[0x10]; // 0xca8(0x10)
+	char bIsClambering : 1; // 0xcb8(0x01)
+	char pad_CB8_1 : 7; // 0xcb8(0x01)
+	char pad_CB9[0x3]; // 0xcb9(0x03)
+	float ClamberCameraShakeDelay; // 0xcbc(0x04)
+	struct UCameraShakeBase* ClamberCameraShake; // 0xcc0(0x08)
+	char bIsZooming : 1; // 0xcc8(0x01)
+	char pad_CC8_1 : 7; // 0xcc8(0x01)
+	char pad_CC9[0x3]; // 0xcc9(0x03)
+	float maxTimeOutOfBounds; // 0xccc(0x04)
+	float curTimeOutOfBounds; // 0xcd0(0x04)
+	char pad_CD4[0x4]; // 0xcd4(0x04)
+	struct UAkAudioEvent* OutOfBoundsStartEvent; // 0xcd8(0x08)
+	struct UAkAudioEvent* OutofBoundsEndEvent; // 0xce0(0x08)
+	char pad_CE8[0x8]; // 0xce8(0x08)
+	struct UPortalWarsAnimInstanceV2* Animation; // 0xcf0(0x08)
+	char pad_CF8[0x20]; // 0xcf8(0x20)
+	struct UAkAudioEvent* DeathEvent; // 0xd18(0x08)
+	struct UAkAudioEvent* RespawnEvent; // 0xd20(0x08)
+	struct UAkAudioEvent* SprayEvent; // 0xd28(0x08)
+	struct UAkAudioEvent* Footstep3pEvent; // 0xd30(0x08)
+	struct UAkAudioEvent* Footstep1pEvent; // 0xd38(0x08)
+	struct UAkAudioEvent* Land3pEvent; // 0xd40(0x08)
+	struct UAkAudioEvent* Land1pEvent; // 0xd48(0x08)
+	struct UAkAudioEvent* Jump3pEvent; // 0xd50(0x08)
+	struct UAkAudioEvent* Jump1pEvent; // 0xd58(0x08)
+	struct UPortalWarsAkComponent* AkFirstPerson; // 0xd60(0x08)
+	struct UPortalWarsAkComponent* AkThirdPerson; // 0xd68(0x08)
+	struct UPortalWarsAkComponent* AkFoot; // 0xd70(0x08)
+	struct UPortalWarsAkComponent* AkJetPack; // 0xd78(0x08)
+	struct UPortalWarsAkComponent* AkGunLocation; // 0xd80(0x08)
+	struct UPortalWarsAkComponent* AkMoveable; // 0xd88(0x08)
+	struct UAkAudioEvent* RespawnCountdownEvent; // 0xd90(0x08)
+	struct UAkAudioEvent* RespawnCountdownStopEvent; // 0xd98(0x08)
+	float FootstepLoudnessForBots; // 0xda0(0x04)
+	float ThrusterLoudnessForBots; // 0xda4(0x04)
+	char pad_DA8[0x8]; // 0xda8(0x08)
+	struct UPortalWarsIndicatorWidget* NameIndicatorWidget; // 0xdb0(0x08)
+	struct UPortalWarsRadarMarkerWidget* RadarMarkerWidget; // 0xdb8(0x08)
+	struct APortalWarsPlayerState* LastPlayerState; // 0xdc0(0x08)
+	char pad_DC8[0x4]; // 0xdc8(0x04)
+	uint16_t RemotePitch; // 0xdcc(0x02)
+	uint16_t RemoteYaw; // 0xdce(0x02)
+	uint16_t RemoteRoll; // 0xdd0(0x02)
+	char pad_DD2[0xe]; // 0xdd2(0x0e)
 };
 
 // Class PortalWars.Gun
@@ -427,6 +585,135 @@ struct UPortalWarsSaveGame : UObject {
 	char pad_598[0x28]; // 0x598(0x28)
 };
 
+struct FMinimalViewInfo {
+	struct FVector Location; // 0x00(0x0c)
+	struct FRotator Rotation; // 0x0c(0x0c)
+	float FOV; // 0x18(0x04)
+	float DesiredFOV; // 0x1c(0x04)
+	float OrthoWidth; // 0x20(0x04)
+	float OrthoNearClipPlane; // 0x24(0x04)
+	float OrthoFarClipPlane; // 0x28(0x04)
+	float AspectRatio; // 0x2c(0x04)
+	char bConstrainAspectRatio : 1; // 0x30(0x01)
+	char bUseFieldOfViewForLOD : 1; // 0x30(0x01)
+	char pad_30_2 : 6; // 0x30(0x01)
+	char pad_31[0x3]; // 0x31(0x03)
+	char ProjectionMode; // 0x34(0x01)
+	char pad_35[0x3]; // 0x35(0x03)
+	float PostProcessBlendWeight; // 0x38(0x04)
+	char pad_3C[0x4]; // 0x3c(0x04)
+	char PostProcessSettings[0x560]; // 0x40(0x560)
+	struct FVector2D OffCenterProjectionOffset; // 0x5a0(0x08)
+	char pad_5A8[0x48]; // 0x5a8(0x48)
+};
+
+// ScriptStruct Engine.CameraCacheEntry
+// Size: 0x600 (Inherited: 0x00)
+struct FCameraCacheEntry {
+	float Timestamp; // 0x00(0x04)
+	char pad_4[0xc]; // 0x04(0x0c)
+	struct FMinimalViewInfo POV; // 0x10(0x5f0)
+};
+
+// ScriptStruct Engine.TViewTarget
+// Size: 0x610 (Inherited: 0x00)
+struct FTViewTarget {
+	struct AActor* Target; // 0x00(0x08)
+	char pad_8[0x8]; // 0x08(0x08)
+	struct FMinimalViewInfo POV; // 0x10(0x5f0)
+	struct APlayerState* PlayerState; // 0x600(0x08)
+	char pad_608[0x8]; // 0x608(0x08)
+};
+
+// Class Engine.PlayerCameraManager
+// Size: 0x2810 (Inherited: 0x220)
+struct APlayerCameraManager : AActor {
+	struct APlayerController* PCOwner; // 0x220(0x08)
+	struct USceneComponent* TransformComponent; // 0x228(0x08)
+	char pad_230[0x8]; // 0x230(0x08)
+	float DefaultFOV; // 0x238(0x04)
+	char pad_23C[0x4]; // 0x23c(0x04)
+	float DefaultOrthoWidth; // 0x240(0x04)
+	char pad_244[0x4]; // 0x244(0x04)
+	float DefaultAspectRatio; // 0x248(0x04)
+	char pad_24C[0x44]; // 0x24c(0x44)
+	struct FCameraCacheEntry CameraCache; // 0x290(0x600)
+	struct FCameraCacheEntry LastFrameCameraCache; // 0x890(0x600)
+	struct FTViewTarget ViewTarget; // 0xe90(0x610)
+	struct FTViewTarget PendingViewTarget; // 0x14a0(0x610)
+	char pad_1AB0[0x30]; // 0x1ab0(0x30)
+	struct FCameraCacheEntry CameraCachePrivate; // 0x1ae0(0x600)
+	struct FCameraCacheEntry LastFrameCameraCachePrivate; // 0x20e0(0x600)
+	struct TArray<struct UCameraModifier*> ModifierList; // 0x26e0(0x10)
+	struct TArray<struct UCameraModifier*> DefaultModifiers; // 0x26f0(0x10)
+	float FreeCamDistance; // 0x2700(0x04)
+	struct FVector FreeCamOffset; // 0x2704(0x0c)
+	struct FVector ViewTargetOffset; // 0x2710(0x0c)
+	char pad_271C[0x4]; // 0x271c(0x04)
+	char OnAudioFadeChangeEvent[0x10]; // 0x2720(0x10)
+	char pad_2730[0x10]; // 0x2730(0x10)
+	struct TArray<struct AEmitterCameraLensEffectBase*> CameraLensEffects; // 0x2740(0x10)
+	struct UCameraModifier_CameraShake* CachedCameraShakeMod; // 0x2750(0x08)
+	struct UCameraAnimInst* AnimInstPool[0x8]; // 0x2758(0x40)
+	struct TArray<struct FPostProcessSettings> PostProcessBlendCache; // 0x2798(0x10)
+	char pad_27A8[0x10]; // 0x27a8(0x10)
+	struct TArray<struct UCameraAnimInst*> ActiveAnims; // 0x27b8(0x10)
+	struct TArray<struct UCameraAnimInst*> FreeAnims; // 0x27c8(0x10)
+	struct ACameraActor* AnimCameraActor; // 0x27d8(0x08)
+	char bIsOrthographic : 1; // 0x27e0(0x01)
+	char bDefaultConstrainAspectRatio : 1; // 0x27e0(0x01)
+	char pad_27E0_2 : 4; // 0x27e0(0x01)
+	char bClientSimulatingViewTarget : 1; // 0x27e0(0x01)
+	char bUseClientSideCameraUpdates : 1; // 0x27e0(0x01)
+	char pad_27E1_0 : 2; // 0x27e1(0x01)
+	char bGameCameraCutThisFrame : 1; // 0x27e1(0x01)
+	char pad_27E1_3 : 5; // 0x27e1(0x01)
+	char pad_27E2[0x2]; // 0x27e2(0x02)
+	float ViewPitchMin; // 0x27e4(0x04)
+	float ViewPitchMax; // 0x27e8(0x04)
+	float ViewYawMin; // 0x27ec(0x04)
+	float ViewYawMax; // 0x27f0(0x04)
+	float ViewRollMin; // 0x27f4(0x04)
+	float ViewRollMax; // 0x27f8(0x04)
+	char pad_27FC[0x4]; // 0x27fc(0x04)
+	float ServerUpdateCameraTimeout; // 0x2800(0x04)
+	char pad_2804[0xc]; // 0x2804(0x0c)
+
+	void SwapPendingViewTargetWhenUsingClientSideCameraUpdates(); // Function Engine.PlayerCameraManager.SwapPendingViewTargetWhenUsingClientSideCameraUpdates // (Final|Native|Protected) // @ game+0x37b6620
+	void StopCameraShake(struct UCameraShakeBase* ShakeInstance, bool bImmediately); // Function Engine.PlayerCameraManager.StopCameraShake // (Native|Public|BlueprintCallable) // @ game+0x37b64d0
+	void StopCameraFade(); // Function Engine.PlayerCameraManager.StopCameraFade // (Native|Public|BlueprintCallable) // @ game+0x37b64b0
+	void StopCameraAnimInst(struct UCameraAnimInst* AnimInst, bool bImmediate); // Function Engine.PlayerCameraManager.StopCameraAnimInst // (Native|Public|BlueprintCallable) // @ game+0x37b63e0
+	void StopAllInstancesOfCameraShakeFromSource(struct UCameraShakeBase* Shake, struct UCameraShakeSourceComponent* SourceComponent, bool bImmediately); // Function Engine.PlayerCameraManager.StopAllInstancesOfCameraShakeFromSource // (Native|Public|BlueprintCallable) // @ game+0x37b62d0
+	void StopAllInstancesOfCameraShake(struct UCameraShakeBase* Shake, bool bImmediately); // Function Engine.PlayerCameraManager.StopAllInstancesOfCameraShake // (Native|Public|BlueprintCallable) // @ game+0x37b6200
+	void StopAllInstancesOfCameraAnim(struct UCameraAnim* Anim, bool bImmediate); // Function Engine.PlayerCameraManager.StopAllInstancesOfCameraAnim // (Native|Public|BlueprintCallable) // @ game+0x37b6130
+	void StopAllCameraShakesFromSource(struct UCameraShakeSourceComponent* SourceComponent, bool bImmediately); // Function Engine.PlayerCameraManager.StopAllCameraShakesFromSource // (Native|Public|BlueprintCallable) // @ game+0x37b6060
+	void StopAllCameraShakes(bool bImmediately); // Function Engine.PlayerCameraManager.StopAllCameraShakes // (Native|Public|BlueprintCallable) // @ game+0x37b5fd0
+	void StopAllCameraAnims(bool bImmediate); // Function Engine.PlayerCameraManager.StopAllCameraAnims // (Native|Public|BlueprintCallable) // @ game+0x37b5f40
+	struct UCameraShakeBase* StartCameraShakeFromSource(struct UCameraShakeBase* ShakeClass, struct UCameraShakeSourceComponent* SourceComponent, float Scale, enum class ECameraShakePlaySpace PlaySpace, struct FRotator UserPlaySpaceRot); // Function Engine.PlayerCameraManager.StartCameraShakeFromSource // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b5cd0
+	struct UCameraShakeBase* StartCameraShake(struct UCameraShakeBase* ShakeClass, float Scale, enum class ECameraShakePlaySpace PlaySpace, struct FRotator UserPlaySpaceRot); // Function Engine.PlayerCameraManager.StartCameraShake // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b5b50
+	void StartCameraFade(float FromAlpha, float ToAlpha, float Duration, struct FLinearColor Color, bool bShouldFadeAudio, bool bHoldWhenFinished); // Function Engine.PlayerCameraManager.StartCameraFade // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b5960
+	void SetManualCameraFade(float InFadeAmount, struct FLinearColor Color, bool bInFadeAudio); // Function Engine.PlayerCameraManager.SetManualCameraFade // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b53c0
+	void SetGameCameraCutThisFrame(); // Function Engine.PlayerCameraManager.SetGameCameraCutThisFrame // (Final|Native|Public|BlueprintCallable) // @ game+0x37b5290
+	bool RemoveCameraModifier(struct UCameraModifier* ModifierToRemove); // Function Engine.PlayerCameraManager.RemoveCameraModifier // (Native|Public|BlueprintCallable) // @ game+0x37b3c80
+	void RemoveCameraLensEffect(struct AEmitterCameraLensEffectBase* Emitter); // Function Engine.PlayerCameraManager.RemoveCameraLensEffect // (Native|Public|BlueprintCallable) // @ game+0x1669390
+	struct UCameraAnimInst* PlayCameraAnim(struct UCameraAnim* Anim, float Rate, float Scale, float BlendInTime, float BlendOutTime, bool bLoop, bool bRandomStartTime, float Duration, enum class ECameraShakePlaySpace PlaySpace, struct FRotator UserPlaySpaceRot); // Function Engine.PlayerCameraManager.PlayCameraAnim // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b3420
+	void PhotographyCameraModify(struct FVector NewCameraLocation, struct FVector PreviousCameraLocation, struct FVector OriginalCameraLocation, struct FVector& ResultCameraLocation); // Function Engine.PlayerCameraManager.PhotographyCameraModify // (BlueprintCosmetic|Native|Event|Public|HasOutParms|HasDefaults|BlueprintEvent) // @ game+0x37b3290
+	void OnPhotographySessionStart(); // Function Engine.PlayerCameraManager.OnPhotographySessionStart // (BlueprintCosmetic|Native|Event|Public|BlueprintEvent) // @ game+0x165c3b0
+	void OnPhotographySessionEnd(); // Function Engine.PlayerCameraManager.OnPhotographySessionEnd // (BlueprintCosmetic|Native|Event|Public|BlueprintEvent) // @ game+0x16f3390
+	void OnPhotographyMultiPartCaptureStart(); // Function Engine.PlayerCameraManager.OnPhotographyMultiPartCaptureStart // (BlueprintCosmetic|Native|Event|Public|BlueprintEvent) // @ game+0x16a2a70
+	void OnPhotographyMultiPartCaptureEnd(); // Function Engine.PlayerCameraManager.OnPhotographyMultiPartCaptureEnd // (BlueprintCosmetic|Native|Event|Public|BlueprintEvent) // @ game+0x164ce00
+	struct APlayerController* GetOwningPlayerController(); // Function Engine.PlayerCameraManager.GetOwningPlayerController // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2d60
+	float GetFOVAngle(); // Function Engine.PlayerCameraManager.GetFOVAngle // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36c9d80
+	struct FRotator GetCameraRotation(); // Function Engine.PlayerCameraManager.GetCameraRotation // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b19a0
+	struct FVector GetCameraLocation(); // Function Engine.PlayerCameraManager.GetCameraLocation // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1960
+	struct UCameraModifier* FindCameraModifierByClass(struct UCameraModifier* ModifierClass); // Function Engine.PlayerCameraManager.FindCameraModifierByClass // (Native|Public|BlueprintCallable) // @ game+0x37b18c0
+	void ClearCameraLensEffects(); // Function Engine.PlayerCameraManager.ClearCameraLensEffects // (Native|Public|BlueprintCallable) // @ game+0x16a3ab0
+	bool BlueprintUpdateCamera(struct AActor* CameraTarget, struct FVector& NewCameraLocation, struct FRotator& NewCameraRotation, float& NewCameraFOV); // Function Engine.PlayerCameraManager.BlueprintUpdateCamera // (BlueprintCosmetic|Event|Public|HasOutParms|HasDefaults|BlueprintEvent) // @ game+0x1a5c6b0
+	struct UCameraModifier* AddNewCameraModifier(struct UCameraModifier* ModifierClass); // Function Engine.PlayerCameraManager.AddNewCameraModifier // (Native|Public|BlueprintCallable) // @ game+0x37ae5e0
+	struct AEmitterCameraLensEffectBase* AddCameraLensEffect(struct AEmitterCameraLensEffectBase* LensEffectEmitterClass); // Function Engine.PlayerCameraManager.AddCameraLensEffect // (Native|Public|BlueprintCallable) // @ game+0x37ae540
+	void SetCameraCachePOV(const FMinimalViewInfo& InPOV);
+};
+
 // Class Engine.PlayerState
 struct APlayerState {
 	char pad_0000[0x280]; // 0x0 (0x280)
@@ -437,11 +724,38 @@ struct APlayerState {
 	BYTE TeamNum; // 0x338 (0x01)
 };
 
+// ScriptStruct Engine.HitResult
+// Size: 0x88 (Inherited: 0x00)
+struct FHitResult {
+	int32_t FaceIndex; // 0x00(0x04)
+	float Time; // 0x04(0x04)
+	float Distance; // 0x08(0x04)
+	char Location[0x0c]; // 0x0c(0x0c)
+	char ImpactPoint[0x0c]; // 0x18(0x0c)
+	char Normal[0x0c]; // 0x24(0x0c)
+	char ImpactNormal[0x0c]; // 0x30(0x0c)
+	char TraceStart[0x0c]; // 0x3c(0x0c)
+	char TraceEnd[0x0c]; // 0x48(0x0c)
+	float PenetrationDepth; // 0x54(0x04)
+	int32_t Item; // 0x58(0x04)
+	char ElementIndex; // 0x5c(0x01)
+	char bBlockingHit : 1; // 0x5d(0x01)
+	char bStartPenetrating : 1; // 0x5d(0x01)
+	char pad_5D_2 : 6; // 0x5d(0x01)
+	char pad_5E[0x2]; // 0x5e(0x02)
+	char PhysMaterial[0x08]; // 0x60(0x08)
+	char Actor[0x08]; // 0x68(0x08)
+	char Component[0x08]; // 0x70(0x08)
+	struct FName BoneName; // 0x78(0x08)
+	struct FName MyBoneName; // 0x80(0x08)
+};
+
 // Class Engine.SkinnedMeshComponent
 struct USkeletalMeshComponent : UObject {
 	char pad_0000[0x00]; // 0x28
 	FName GetBoneName(INT BoneIndex);
 	FVector GetBoneMatrix(INT index);
+	void K2_SetRelativeRotation(FRotator NewRotation, bool bSweep, bool bTeleport);
 };
 
 // Class Engine.SceneComponent
@@ -476,10 +790,6 @@ struct Canvas : UObject {
 // Class Engine.GameViewportClient
 struct UGameViewportClient : UObject {
 	char pad_0000[0x00]; // 0x28 
-};
-
-struct APlayerCameraManager {
-	float DefaultFOV;
 };
 
 extern FNamePool* NamePoolData;
