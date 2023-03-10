@@ -24,12 +24,19 @@ public:
 			{
 				ZeroGUI::SliderFloat("Player FOV", &Settings::FOV, 80.0f, 160.0f);
 				ZeroGUI::Checkbox("God Mode", &Settings::GodMode);
+				ZeroGUI::Checkbox("Spin Bot", &Settings::SpinBot);
+
+				ZeroGUI::Text("No Clip", false, true);
+				ZeroGUI::SameLine();
+				ZeroGUI::Hotkey("No Clip", FVector2D{ 110, 25 }, &Settings::NoClip);
 				if (ZeroGUI::Button("Load in map", FVector2D{ 110, 25 })) Settings::LoadIntoMap = true;
 			}
 			else if (tab == 1)
 			{
 				ZeroGUI::Checkbox("Watermark", &Settings::ShowWatermark);
-				ZeroGUI::Button("Unload", FVector2D{ 110, 25 });
+				//if (ZeroGUI::Button("Destroy Console", FVector2D{ 110, 25 })) Settings::DestroyConsole = true;
+				//ZeroGUI::SameLine();
+				//if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings::Unload = true;
 			};
 		}
 		ZeroGUI::Render();
