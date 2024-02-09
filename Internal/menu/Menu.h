@@ -17,22 +17,26 @@ public:
 		{
 			static int tab = 0;
 			if (ZeroGUI::ButtonTab("Misc", FVector2D{ 110, 25 }, tab == 0)) tab = 0;
-			if (ZeroGUI::ButtonTab("Settings", FVector2D{ 110, 25 }, tab == 1)) tab = 1;
+			if (ZeroGUI::ButtonTab("Exploits", FVector2D{ 110, 25 }, tab == 1)) tab = 1;
+			if (ZeroGUI::ButtonTab("Settings", FVector2D{ 110, 25 }, tab == 2)) tab = 2;
 			ZeroGUI::NextColumn(130.0f);
 
-			if (tab == 0)
-			{
+			switch (tab) {
+			case 0:
 				ZeroGUI::SliderFloat("Player FOV", &Settings.EXPLOITS.FOV, 80.0f, 160.0f);
+				if (ZeroGUI::Button("Load in map", FVector2D{ 110, 25 })) Settings.MISC.LoadIntoMap = true;
+
+				break;
+			case 1:
 				ZeroGUI::Checkbox("God Mode", &Settings.EXPLOITS.GodMode);
 				ZeroGUI::Checkbox("Spin Bot", &Settings.EXPLOITS.SpinBot);
 
 				ZeroGUI::Text("No Clip", false, true);
 				ZeroGUI::SameLine();
 				ZeroGUI::Hotkey("No Clip", FVector2D{ 110, 25 }, &Settings.EXPLOITS.NoClip);
-				if (ZeroGUI::Button("Load in map", FVector2D{ 110, 25 })) Settings.MISC.LoadIntoMap = true;
-			}
-			else if (tab == 1)
-			{
+
+				break;
+			case 2:
 				//ZeroGUI::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
 
 				if (ZeroGUI::Button("Save", FVector2D{ 110, 25 })) {
@@ -40,7 +44,7 @@ public:
 				};
 
 				ZeroGUI::SameLine();
-				
+
 				if (ZeroGUI::Button("Reset", FVector2D{ 110, 25 })) {
 					SettingsHelper::Reset();
 				};
@@ -52,6 +56,9 @@ public:
 				if (ZeroGUI::Button("Detach Console", FVector2D{ 110, 25 })) Settings.MISC.DestroyConsole = true;
 				ZeroGUI::SameLine();
 				if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings.MISC.Unload = true;
+				break;
+			default:
+				break;
 			};
 		}
 		ZeroGUI::Render();
