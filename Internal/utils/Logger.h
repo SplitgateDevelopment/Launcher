@@ -61,6 +61,8 @@ private:
         freopen_s(&file, "CONIN$", "r", stdin);
         freopen_s(&file, "CONOUT$", "w", stderr);
         freopen_s(&file, "CONOUT$", "w", stdout);
+
+        SetConsoleTitleA("Splitgate Internal");
     };
 
     BOOL setColor(const string title) {
