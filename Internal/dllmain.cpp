@@ -1,4 +1,3 @@
-// dllmain.cpp : Definisce il punto di ingresso per l'applicazione DLL.
 #include <Windows.h>
 #include <iostream>
 #include <format>
@@ -12,7 +11,7 @@ Menu* menu = new Menu();
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
 	do {
-		if (Settings::Unload) return hook->UnHook();
+		if (Settings.MISC.Unload) return hook->UnHook();
 
 		ZeroGUI::SetupCanvas(canvas);
 		menu->Tick();

@@ -60,13 +60,15 @@ public:
 		PostRenderVTable = ViewPortClientVTable;
 		ProcessEventVTable = World->VFTable;
 
+		if (SettingsHelper::Init()) logger->log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetPath()));
+
 		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
 		if (UserSave) {
 			logger->log("SUCCESS", "Got user save game");
-			Settings::FOV = UserSave->FOV;
+			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
 
-		logger->log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));;
+		logger->log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));
 
 		return TRUE;
 	}

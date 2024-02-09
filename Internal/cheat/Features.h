@@ -1,6 +1,6 @@
 #pragma once
 #include "UnrealEngine/Engine.h"
-#include "../menu/Settings.h"
+#include "../settings/Settings.h"
 #include "../utils/Logger.h"
 #include "../discord/DiscordRPC.h"
 
@@ -13,15 +13,18 @@ public:
 
 	void handle(APlayerController* PlayerController) {
 		do {
-			//if (Settings::DestroyConsole) logger->DestroyConsole();
+			//if (Settings.MISC.DestroyConsole) logger->DestroyConsole();
 			
-			PlayerController->SetName(L"SplitgateDevelopement");
-			PlayerController->FOV(Settings::FOV);
+			std::string name = Settings.MISC.PlayerName;
+			LPCWSTR playerName = std::wstring(name.begin(), name.end()).c_str();
 
-			if (Settings::LoadIntoMap) {
+			PlayerController->SetName(playerName);
+			PlayerController->FOV(Settings.EXPLOITS.FOV);
+
+			if (Settings.MISC.LoadIntoMap) {
 				logger->log("INFO", "Loading into map");
 				PlayerController->SwitchLevel(L"Simulation_Alpha");
-				Settings::LoadIntoMap = false;
+				Settings.MISC.LoadIntoMap = false;
 			};
 
 			if (!isIngame(PlayerController)) {
@@ -34,13 +37,13 @@ public:
 			USkeletalMeshComponent* Mesh = Player->Mesh;
 
 			collision = false;
-			if (GetAsyncKeyState(Settings::NoClip)) collision = !collision;
+			if (GetAsyncKeyState(Settings.EXPLOITS.NoClip)) collision = !collision;
 
 			if (collision && Player->GetActorEnableCollision()) Player->SetActorEnableCollision(false);
 			else if (!collision && !Player->GetActorEnableCollision()) Player->SetActorEnableCollision(true);
 			
 
-			if (Settings::GodMode && Player->Health != 0) {
+			if (Settings.EXPLOITS.GodMode && Player->Health != 0) {
 				float health = 999999;
 				if (Player->MaxHealth != health) Player->MaxHealth = health;
 				if (Player->Health != health) Player->Health = health;
@@ -48,7 +51,7 @@ public:
 				//Instigator->healthRechargeDelay = 0.1f;
 			};
 
-			if (Settings::SpinBot && Mesh) {
+			if (Settings.EXPLOITS.SpinBot && Mesh) {
 				if (spin_yaw > 360.f) spin_yaw = 0.f;
 
 				Mesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, false);

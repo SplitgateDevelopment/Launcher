@@ -33,9 +33,6 @@
     <ClInclude Include="utils\Util.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="menu\Settings.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="gui\ZeroGUI.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -48,6 +45,9 @@
     <ClInclude Include="discord\DiscordRPC.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="settings\Settings.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -57,6 +57,9 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="utils\Util.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="settings\Settings.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>

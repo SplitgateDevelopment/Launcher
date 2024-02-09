@@ -176,17 +176,18 @@
     <ClInclude Include="cheat\Hook.h" />
     <ClInclude Include="cheat\Features.h" />
     <ClInclude Include="discord\DiscordRPC.h" />
+    <ClInclude Include="settings\Settings.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="cheat\UnrealEngine\UObjects.h" />
     <ClInclude Include="utils\Util.h" />
     <ClInclude Include="menu\Menu.h" />
-    <ClInclude Include="menu\Settings.h" />
     <ClInclude Include="gui\ZeroGUI.h" />
     <ClInclude Include="gui\ZeroInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="cheat\UnrealEngine\Engine.cpp" />
+    <ClCompile Include="settings\Settings.cpp" />
     <ClCompile Include="utils\Util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

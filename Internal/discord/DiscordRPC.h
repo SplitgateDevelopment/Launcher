@@ -30,11 +30,11 @@ public:
 
 		memset(&discordPresence, 0, sizeof(discordPresence));
 		discordPresence.state = "Injected";
-		discordPresence.details = Settings::Watermark;
+		discordPresence.details = Settings.MENU.Watermark.data();
 		discordPresence.startTimestamp = StartTime;
 		discordPresence.endTimestamp = NULL;
 		discordPresence.largeImageKey = "icon";
-		discordPresence.largeImageText = Settings::Watermark;
+		discordPresence.largeImageText = Settings.MENU.Watermark.data();
 		discordPresence.instance = 1;
 		discordPresence.partySize = 1;
 		discordPresence.partyMax = 1;
