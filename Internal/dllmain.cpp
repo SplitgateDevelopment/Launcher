@@ -11,7 +11,10 @@ Menu* menu = new Menu();
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
 	do {
-		if (Settings.MISC.Unload) return hook->UnHook();
+		if (Settings.MISC.Unload) {
+			Settings.MISC.Unload = false;
+			return hook->UnHook();
+		}
 
 		ZeroGUI::SetupCanvas(canvas);
 		menu->Tick();
