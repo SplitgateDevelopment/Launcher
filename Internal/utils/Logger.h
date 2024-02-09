@@ -45,7 +45,6 @@ public:
 
     void DestroyConsole() {
         log("INFO", "Destroying console");
-        fclose(file);
         if (FreeConsole())
         {
             fflush(stdout);
