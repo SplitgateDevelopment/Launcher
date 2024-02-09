@@ -43,12 +43,8 @@ public:
 			else if (!collision && !Player->GetActorEnableCollision()) Player->SetActorEnableCollision(true);
 			
 
-			if (Settings.EXPLOITS.GodMode && Player->Health != 0) {
-				float health = 999999;
-				if (Player->MaxHealth != health) Player->MaxHealth = health;
-				if (Player->Health != health) Player->Health = health;
-
-				//Instigator->healthRechargeDelay = 0.1f;
+			if (Player->Health != 0) {
+				UpdatePlayerHealth(Player);
 			};
 
 			if (Settings.EXPLOITS.SpinBot && Mesh) {
@@ -73,5 +69,26 @@ private:
 	void SetState(const char* state) {
 		if (rpc->GetState() == state) return;
 		return rpc->UpdateState(state);
+	}
+
+	void UpdatePlayerHealth(APawn* Player) {
+		if (Settings.EXPLOITS.GodMode) {
+			float health = 999999;
+			if (Player->MaxHealth != health) Player->MaxHealth = health;
+			if (Player->Health != health) Player->Health = health;
+
+			//Instigator->healthRechargeDelay = 0.1f;
+
+			return;
+		}
+
+		if (Player->Health > 100) {
+			Player->MaxHealth = 100;
+			Player->Health = 100;
+
+			return;
+		}
+
+		return;
 	}
 };
