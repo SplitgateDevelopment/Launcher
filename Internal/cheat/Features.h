@@ -13,7 +13,7 @@ public:
 
 	void handle(APlayerController* PlayerController) {
 		do {
-			//if (Settings.MISC.DestroyConsole) logger->DestroyConsole();
+			if (Settings.MISC.DestroyConsole) logger->DestroyConsole();
 			
 			std::string name = Settings.MISC.PlayerName;
 			LPCWSTR playerName = std::wstring(name.begin(), name.end()).c_str();
