@@ -18,6 +18,8 @@ namespace ZeroGUI
 {
 	namespace Colors
 	{
+		FLinearColor MainColor{ 255.0f, 0.0f, 0.0f, 1.0f };
+
 		FLinearColor Text{ 0.0f, 0.0f, 0.0f, 1.0f };
 		FLinearColor Text_Shadow{ 236.0f, 236.0f, 236.0f, 1.0f };
 		FLinearColor Text_Outline{ 255.0f, 255.0f, 255.0f, 1.0f };
@@ -343,7 +345,7 @@ namespace ZeroGUI
 		drawFilledRect(FVector2D{ pos->X, pos->Y }, 122, size.Y, Colors::Window_Tabs_Background);
 
 		//Header
-		drawFilledRect(FVector2D{ pos->X, pos->Y }, size.X, 25.0f, Colors::Window_Header);
+		drawFilledRect(FVector2D{ pos->X, pos->Y }, size.X, 25.0f, Colors::MainColor);
 
 		offset_y += 25.0f;
 
@@ -413,16 +415,16 @@ namespace ZeroGUI
 		//Bg
 		if (active)
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Active);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 		}
 		else if (isHovered)
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Hovered);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 			hover_element = true;
 		}
 		else
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Idle);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 		}
 
 		if (!sameLine)
@@ -467,12 +469,12 @@ namespace ZeroGUI
 		//Bg
 		if (isHovered)
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Hovered);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 			hover_element = true;
 		}
 		else
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Idle);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 		}
 
 		if (!sameLine)
@@ -519,12 +521,12 @@ namespace ZeroGUI
 		//Bg
 		if (isHovered)
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::Checkbox_Hovered);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::MainColor);
 			hover_element = true;
 		}
 		else
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::Checkbox_Idle);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::MainColor);
 		}
 
 		if (!sameLine)
@@ -885,12 +887,12 @@ namespace ZeroGUI
 		//Bg
 		if (isHovered)
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Hovered);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 			hover_element = true;
 		}
 		else
 		{
-			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::Button_Idle);
+			drawFilledRect(FVector2D{ pos.X, pos.Y }, size.X, size.Y, Colors::MainColor);
 		}
 
 		if (!sameLine)
@@ -1199,12 +1201,12 @@ namespace ZeroGUI
 			//Bg
 			if (isHovered)
 			{
-				drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::Checkbox_Hovered);
+				drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::MainColor);
 				hover_element = true;
 			}
 			else
 			{
-				drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::Checkbox_Idle);
+				drawFilledRect(FVector2D{ pos.X, pos.Y }, size, size, Colors::MainColor);
 			}
 
 			//Color
