@@ -24,7 +24,7 @@ public:
 			switch (tab) {
 			case 0:
 				ZeroGUI::SliderFloat("Player FOV", &Settings.EXPLOITS.FOV, 80.0f, 160.0f);
-				if (ZeroGUI::Button("Load in map", FVector2D{ 110, 25 })) Settings.MISC.LoadIntoMap = true;
+				if (ZeroGUI::Button("Load into map", FVector2D{ 110, 25 })) Settings.MISC.LoadIntoMap = true;
 
 				break;
 			case 1:
@@ -37,8 +37,6 @@ public:
 
 				break;
 			case 2:
-				//ZeroGUI::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
-
 				if (ZeroGUI::Button("Save", FVector2D{ 110, 25 })) {
 					SettingsHelper::Save();
 				};
@@ -56,6 +54,10 @@ public:
 				if (ZeroGUI::Button("Detach Console", FVector2D{ 110, 25 })) Settings.MISC.DestroyConsole = true;
 				ZeroGUI::SameLine();
 				if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings.MISC.Unload = true;
+
+				ZeroGUI::ColorPicker("Menu Color", &ZeroGUI::Colors::MainColor);
+				ZeroGUI::SameLine();
+				ZeroGUI::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
 				break;
 			default:
 				break;
@@ -70,7 +72,7 @@ public:
 		std::string str = Settings.MENU.Watermark;
 		LPCWSTR watermark = std::wstring(str.begin(), str.end()).c_str();
 
-		canvas->K2_DrawText(watermark, {15.f, 15.f}, {1.f, 1.f}, ZeroGUI::Colors::Window_Header, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, false, false, true, ZeroGUI::Colors::Window_Header);
+		canvas->K2_DrawText(watermark, {15.f, 15.f}, {1.f, 1.f}, ZeroGUI::Colors::MainColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, false, false, true, ZeroGUI::Colors::MainColor);
 		return;
 	};;
 };
