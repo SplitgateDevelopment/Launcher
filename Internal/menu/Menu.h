@@ -11,7 +11,7 @@ public:
 	{
 		ZeroGUI::Input::Handle();
 
-		if (GetAsyncKeyState(VK_INSERT) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 
 		if (ZeroGUI::Window("Splitgate Internal", &pos, FVector2D{ 500.0f, 400.0f }, Settings.MENU.ShowMenu))
 		{
@@ -45,9 +45,13 @@ public:
 					SettingsHelper::Reset();
 				};
 
-				//if (ZeroGUI::Button("Destroy Console", FVector2D{ 110, 25 })) Settings.MISC.DestroyConsole = true;
-				//ZeroGUI::SameLine();
-				//if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings.MISC.Unload = true;
+				ZeroGUI::Text("Menu Hotkey", false, true);
+				ZeroGUI::SameLine();
+				ZeroGUI::Hotkey("Menu Hotkey", FVector2D{ 110, 25 }, &Settings.MENU.ShowHotkey);
+
+				if (ZeroGUI::Button("Detach Console", FVector2D{ 110, 25 })) Settings.MISC.DestroyConsole = true;
+				ZeroGUI::SameLine();
+				if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings.MISC.Unload = true;
 			};
 		}
 		ZeroGUI::Render();
