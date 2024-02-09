@@ -5,6 +5,7 @@ typedef struct {
 		bool ShowMenu;
 		bool ShowWatermark;
 		std::string Watermark;
+		int ShowHotkey;
 	} MENU;
 
 	struct {
