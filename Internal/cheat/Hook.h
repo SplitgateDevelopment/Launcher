@@ -81,19 +81,18 @@ public:
 		VTable[index] = TargetFunction;
 		VirtualProtect(&VTable[index], 8, protecc, 0);
 
-		logger->log("INFO", "Set hook");
+		char buffer[256];
+		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", VTable[index], reinterpret_cast<uintptr_t>(&VTable[index]));
+		logger->log("SUCCESS", buffer);
 
 		return original;
 	};
 
 	void UnHook() {
-		SetHook(PostRenderVTable, PostRenderIndex, OriginalPostRender);
-
 		logger->log("INFO", "Unloading");
+		
+		SetHook(PostRenderVTable, PostRenderIndex, OriginalPostRender);
 		logger->DestroyConsole();
-
-		UnhookWindowsHookEx(g_hook);
-		return;
 	}
 
 	bool isKeyPressed(UCHAR key) {
