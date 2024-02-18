@@ -2,7 +2,7 @@
 #include "UnrealEngine/Engine.h"
 #include "../settings/Settings.h"
 #include "../utils/Logger.h"
-#include "../discord/DiscordRPC.h"
+#include "../discord/rpc.h"
 
 class Features {
 public:

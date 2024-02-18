@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
-#include "include/discord_rpc.h"
-#include "include/discord_register.h"
+#include "../external/discord-rpc/include/discord_rpc.h"
+#include "../external/discord-rpc/include/discord_register.h"
 #include "../utils/Logger.h"
 
 #pragma comment(lib, "discord-rpc.lib")
