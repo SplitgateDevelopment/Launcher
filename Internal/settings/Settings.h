@@ -20,6 +20,7 @@ typedef struct {
 		float Unload;
 		bool DestroyConsole;
 		std::string PlayerName;
+		const char* DiscordAppID;
 	} MISC;
 } SETTINGS;
 

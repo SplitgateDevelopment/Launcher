@@ -55,9 +55,9 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 
 	Logger::Log("SUCCESS", "Injected");
 	Logger::Log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
-	Logger::Log("SUCCESS", "Press Ins to hide/show the menu");
+	Logger::Log("SUCCESS", std::format("Press {} to hide/show the menu", ZeroGUI::VirtualKeyCodeToString(Settings.MENU.ShowHotkey)));
 
-	hook->features->rpc->Init("1078744504066117703");
+	hook->features->rpc->Init(Settings.MISC.DiscordAppID);
 	hook->features->rpc->UpdatePresence();
 
 	return CallNextHookEx(hook->g_hook, code, wparam, lparam);

@@ -84,6 +84,7 @@ namespace SettingsHelper {
 		Settings.MISC.Unload = false;
 		Settings.MISC.DestroyConsole = false;
 		Settings.MISC.PlayerName = "SplitgateDevelopement";
+		Settings.MISC.DiscordAppID = "1078744504066117703";
 
 		Save();
 	}
