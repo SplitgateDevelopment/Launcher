@@ -89,7 +89,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)discord\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)external\discord-rpc\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -175,7 +175,7 @@
     <ClInclude Include="cheat\UnrealEngine\Engine.h" />
     <ClInclude Include="cheat\Hook.h" />
     <ClInclude Include="cheat\Features.h" />
-    <ClInclude Include="discord\DiscordRPC.h" />
+    <ClInclude Include="discord\rpc.h" />
     <ClInclude Include="settings\Settings.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="cheat\UnrealEngine\UObjects.h" />

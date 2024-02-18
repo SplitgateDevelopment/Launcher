@@ -42,7 +42,7 @@
     <ClInclude Include="cheat\UnrealEngine\UObjects.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="discord\DiscordRPC.h">
+    <ClInclude Include="discord\rpc.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="settings\Settings.h">
