@@ -3,26 +3,21 @@
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../external/discord-rpc/include/discord_register.h"
 #include "../utils/Logger.h"
+#include "handlers.h"
 
 #pragma comment(lib, "discord-rpc.lib")
 
 class DiscordRPC {
 public:
-	Logger* gLogger;
-
-	DiscordRPC(Logger* logger)
-	{
-		gLogger = logger;
+	~DiscordRPC() {
+		Discord_Shutdown();
 	};
 
 	void Init(const char* appId) {
+		DiscordHandlers::Init();
 
-		DiscordEventHandlers handlers;
-		memset(&handlers, 0, sizeof(handlers));
-		gLogger->log("RPC", "Loaded handlers");
-
-		Discord_Initialize(appId, &handlers, 1, "677620");
-		gLogger->log("RPC", "Initialized RPC");
+		Discord_Initialize(appId, &DiscordRPCHandlers, 1, "677620");
+		Logger::Log("RPC", "Initialized RPC");
 	}
 
 	void UpdatePresence() {
@@ -44,13 +39,13 @@ public:
 		discordPresence.matchSecret = "dddd";
 
 		Discord_UpdatePresence(&discordPresence);
-		gLogger->log("RPC", "Updated presence");
+		Logger::Log("RPC", "Updated presence");
 	};
 
 	void UpdateState(const char* state) {
 		discordPresence.state = state;
 		Discord_UpdatePresence(&discordPresence);
-		gLogger->log("RPC", format("Updated to state [{}]", state));
+		Logger::Log("RPC", format("Updated to state [{}]", state));
 	}
 
 	const char* GetState() {
