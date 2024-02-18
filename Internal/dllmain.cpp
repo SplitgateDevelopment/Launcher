@@ -53,9 +53,9 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 	hook->OriginalPostRender = reinterpret_cast<decltype(hook->OriginalPostRender)>(hook->SetHook(hook->PostRenderVTable, hook->PostRenderIndex, &PostRender));
 	//hook->OriginalProcessEvent = reinterpret_cast<decltype(hook->OriginalProcessEvent)>(hook->SetHook(hook->ProcessEventVTable, hook->ProcessEventIndex, &ProcessEvent));
 
-	hook->logger->log("SUCCESS", "Injected");
-	hook->logger->log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
-	hook->logger->log("SUCCESS", "Press Ins to hide/show the menu");
+	Logger::Log("SUCCESS", "Injected");
+	Logger::Log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
+	Logger::Log("SUCCESS", "Press Ins to hide/show the menu");
 
 	hook->features->rpc->Init("1078744504066117703");
 	hook->features->rpc->UpdatePresence();

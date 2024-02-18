@@ -175,6 +175,7 @@
     <ClInclude Include="cheat\UnrealEngine\Engine.h" />
     <ClInclude Include="cheat\Hook.h" />
     <ClInclude Include="cheat\Features.h" />
+    <ClInclude Include="discord\handlers.h" />
     <ClInclude Include="discord\rpc.h" />
     <ClInclude Include="settings\Settings.h" />
     <ClInclude Include="utils\Logger.h" />

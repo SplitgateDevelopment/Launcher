@@ -48,6 +48,9 @@
     <ClInclude Include="settings\Settings.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="discord\handlers.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

@@ -6,16 +6,13 @@
 
 class Features {
 public:
-	Logger* logger = new Logger({
-		FALSE,
-	});
-	DiscordRPC* rpc = new DiscordRPC(logger);
+	DiscordRPC* rpc = new DiscordRPC();
 
 	void handle(APlayerController* PlayerController) {
 		do {
 			if (Settings.MISC.DestroyConsole) {
 				Settings.MISC.DestroyConsole = false;
-				logger->DestroyConsole();
+				Logger::DestroyConsole();
 			}
 			
 			std::string name = Settings.MISC.PlayerName;
@@ -25,7 +22,7 @@ public:
 			PlayerController->FOV(Settings.EXPLOITS.FOV);
 
 			if (Settings.MISC.LoadIntoMap) {
-				logger->log("INFO", "Loading into map");
+				Logger::Log("INFO", "Loading into map");
 				PlayerController->SwitchLevel(L"Simulation_Alpha");
 				Settings.MISC.LoadIntoMap = false;
 			};
