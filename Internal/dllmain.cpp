@@ -18,7 +18,6 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 
 		ZeroGUI::SetupCanvas(canvas);
 		menu->Tick();
-		menu->DrawWatermark(canvas);
 
 		UWorld* World = *(UWorld**)(WRLD);
 		if (!World) break;
