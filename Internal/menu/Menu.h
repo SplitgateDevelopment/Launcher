@@ -3,17 +3,24 @@
 #include "../gui/ZeroGUI.h"
 #include "../settings/Settings.h"
 
-class Menu {
-private:
-	FVector2D pos;
-public:
+namespace Menu {
+	void DrawWatermark() {
+		if (!Settings.MENU.ShowWatermark || !ZeroGUI::canvas) return;
+
+		std::string str = Settings.MENU.Watermark;
+		LPCWSTR watermark = std::wstring(str.begin(), str.end()).c_str();
+
+		ZeroGUI::canvas->K2_DrawText(watermark, { 15.f, 15.f }, { 1.f, 1.f }, ZeroGUI::Colors::MainColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, false, false, true, ZeroGUI::Colors::MainColor);
+		return;
+	};
+
 	void Tick()
 	{
 		ZeroGUI::Input::Handle();
 
 		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 
-		if (ZeroGUI::Window("Splitgate Internal", &pos, FVector2D{ 500.0f, 400.0f }, Settings.MENU.ShowMenu))
+		if (ZeroGUI::Window("Splitgate Internal", &Settings.MENU.MenuPosition, FVector2D{ 500.0f, 400.0f }, Settings.MENU.ShowMenu))
 		{
 			static int tab = 0;
 			if (ZeroGUI::ButtonTab("Misc", FVector2D{ 110, 25 }, tab == 0)) tab = 0;
@@ -67,14 +74,4 @@ public:
 		ZeroGUI::Render();
 		DrawWatermark();
 	};
-
-	void DrawWatermark() {
-		if (!Settings.MENU.ShowWatermark || !ZeroGUI::canvas) return;
-
-		std::string str = Settings.MENU.Watermark;
-		LPCWSTR watermark = std::wstring(str.begin(), str.end()).c_str();
-
-		ZeroGUI::canvas->K2_DrawText(watermark, {15.f, 15.f}, {1.f, 1.f}, ZeroGUI::Colors::MainColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, false, false, true, ZeroGUI::Colors::MainColor);
-		return;
-	};;
 };
