@@ -158,6 +158,9 @@ namespace ZeroGUI
 	{
 		POINT cursorPos;
 		GetCursorPos(&cursorPos);
+
+		ScreenToClient(GetActiveWindow(), &cursorPos);
+
 		return FVector2D{ (float)cursorPos.x, (float)cursorPos.y };
 	}
 	bool MouseInZone(FVector2D pos, FVector2D size)
@@ -289,9 +292,11 @@ namespace ZeroGUI
 	bool Window(const char* name, FVector2D* pos, FVector2D size, bool isOpen)
 	{
 		elements_count = 0;
+		static HWND HWND = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
 
-		if (!isOpen)
+		if (!isOpen || (GetActiveWindow() != HWND)) {
 			return false;
+		};
 
 		bool isHovered = MouseInZone(FVector2D{ pos->X, pos->Y }, size);
 
