@@ -8,16 +8,22 @@
 using namespace std;
 
 FILE* logFile = new FILE();
+HANDLE g_Handle;
+HWND g_hWnd;
 
 namespace Logger
 {
-    BOOL SetConsoleColor(const string title) {
-        if (title == "INFO") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-        if (title == "ERROR") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
-        if (title == "SUCCESS") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-        if (title == "RPC") return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+    BOOL ResetConsoleColor() {
+        return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    }
 
-        return SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    BOOL SetConsoleColor(const string title) {
+        if (title == "INFO") return SetConsoleTextAttribute(g_Handle, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        if (title == "ERROR") return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        if (title == "SUCCESS") return SetConsoleTextAttribute(g_Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        if (title == "RPC") return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+        return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
     void Log(const string title, const string message)
@@ -30,28 +36,32 @@ namespace Logger
 
         SetConsoleColor(title);
         std::cout << buf << " [" << title << "] " << message << std::endl;
+        ResetConsoleColor();
 
-        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         return;
     }
 
 
     void DestroyConsole() {
         Log("INFO", "Destroying console");
-        if (FreeConsole())
-        {
-            fflush(stdout);
-            fflush(stderr);
-        };
+
+        fclose(logFile);
+        DestroyWindow(g_hWnd);
+        FreeConsole();
     }
 
     void CreateConsole()
     {
         if (!AllocConsole()) return;
+
+        g_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+        g_hWnd = GetConsoleWindow();
+
+        freopen_s(&logFile, "CONOUT$", "w", stdout);
         freopen_s(&logFile, "CONIN$", "r", stdin);
         freopen_s(&logFile, "CONOUT$", "w", stderr);
-        freopen_s(&logFile, "CONOUT$", "w", stdout);
 
         SetConsoleTitleA("Splitgate Internal");
+        ShowWindow(g_hWnd, SW_SHOW);
     };
 };
