@@ -15,16 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cheat\UnrealEngine\Engine.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="utils\Logger.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="cheat\Hook.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="cheat\Features.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="menu\Menu.h">
@@ -39,9 +30,6 @@
     <ClInclude Include="gui\ZeroInput.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="cheat\UnrealEngine\UObjects.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="discord\rpc.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -51,18 +39,36 @@
     <ClInclude Include="discord\handlers.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="hook\functions\PostRender.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\functions\ProcessEvent.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\Engine.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\Features.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\Hook.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\UObjects.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="cheat\UnrealEngine\Engine.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="utils\Util.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\Engine.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>

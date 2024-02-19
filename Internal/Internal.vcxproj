@@ -172,14 +172,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="cheat\UnrealEngine\Engine.h" />
-    <ClInclude Include="cheat\Hook.h" />
-    <ClInclude Include="cheat\Features.h" />
+    <ClInclude Include="ue\Engine.h" />
+    <ClInclude Include="hook\Hook.h" />
+    <ClInclude Include="hook\Features.h" />
     <ClInclude Include="discord\handlers.h" />
     <ClInclude Include="discord\rpc.h" />
+    <ClInclude Include="hook\functions\PostRender.h" />
+    <ClInclude Include="hook\functions\ProcessEvent.h" />
     <ClInclude Include="settings\Settings.h" />
     <ClInclude Include="utils\Logger.h" />
-    <ClInclude Include="cheat\UnrealEngine\UObjects.h" />
+    <ClInclude Include="ue\UObjects.h" />
     <ClInclude Include="utils\Util.h" />
     <ClInclude Include="menu\Menu.h" />
     <ClInclude Include="gui\ZeroGUI.h" />
@@ -187,7 +189,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="cheat\UnrealEngine\Engine.cpp" />
+    <ClCompile Include="ue\Engine.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
     <ClCompile Include="utils\Util.cpp" />
   </ItemGroup>
