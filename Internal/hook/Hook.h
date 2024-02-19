@@ -3,8 +3,7 @@
 #include <format>
 #include "Features.h"
 
-class Hook {
-public:
+namespace Hook {
 	HHOOK g_hook;
 
 	Features* features = new Features();
@@ -17,11 +16,9 @@ public:
 	void (*OriginalProcessEvent)(UObject*, UObject*, void* params) = nullptr;
 	int ProcessEventIndex = 68;
 
-	Hook() {
-		Logger::CreateConsole();
-	};
-
 	bool Init() {
+		Logger::CreateConsole();
+
 		if (!EngineInit()) {
 			Logger::Log("ERROR", "No engine init");
 			return FALSE;
