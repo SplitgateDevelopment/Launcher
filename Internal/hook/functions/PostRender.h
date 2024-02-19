@@ -29,7 +29,7 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
 		if (!PlayerController) break;
 
-		//hook->features->handle(PlayerController);
+		Hook::features->handle(PlayerController);
 	} while (false);
 
 	return Hook::OriginalPostRender(UGameViewportClient, canvas);
