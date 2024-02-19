@@ -74,6 +74,7 @@ namespace SettingsHelper {
 		Settings.MENU.ShowWatermark = true;
 		Settings.MENU.Watermark = "github.com/SplitgateDevelopment/Launcher";
 		Settings.MENU.ShowHotkey = VK_INSERT;
+		Settings.MENU.MenuPosition = {};
 
 		Settings.EXPLOITS.FOV = 80;
 		Settings.EXPLOITS.GodMode = false;

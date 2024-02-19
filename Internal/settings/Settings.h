@@ -1,11 +1,14 @@
 #pragma once
 
+#include "../ue/Engine.h"
+
 typedef struct {
 	struct {
 		bool ShowMenu;
 		bool ShowWatermark;
 		std::string Watermark;
 		int ShowHotkey;
+		FVector2D MenuPosition;
 	} MENU;
 
 	struct {
