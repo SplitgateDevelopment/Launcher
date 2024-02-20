@@ -3,6 +3,7 @@
 #include "../settings/Settings.h"
 #include "../utils/Logger.h"
 #include "../discord/rpc.h"
+#include "../scripting/Scripts.h"
 
 class Features {
 public:
@@ -10,11 +11,13 @@ public:
 
 	void handle(APlayerController* PlayerController) {
 		do {
+			ExecuteUserScripts();
+
 			if (Settings.MISC.DestroyConsole) {
 				Settings.MISC.DestroyConsole = false;
 				Logger::DestroyConsole();
 			}
-			
+
 			std::string name = Settings.MISC.PlayerName;
 			LPCWSTR playerName = std::wstring(name.begin(), name.end()).c_str();
 
@@ -90,5 +93,14 @@ private:
 		}
 
 		return;
+	}
+
+	void ExecuteUserScripts() {
+		if (!Settings.MISC.UserScriptsEnabled) return;
+
+		for (int i = 0; i < Scripts::scriptList.size(); i++)
+		{
+			Scripts::Execute(i);
+		}
 	}
 };
