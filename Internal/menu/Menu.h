@@ -2,19 +2,13 @@
 
 #include "../gui/ZeroGUI.h"
 #include "../settings/Settings.h"
-#include "../scripting/Scripts.h"
+#include "sections/Misc.h"
+#include "sections/Exploits.h"
+#include "sections/Scripts.h"
+#include "sections/Settings.h"
+#include "sections/Watermark.h"
 
 namespace Menu {
-	void DrawWatermark() {
-		if (!Settings.MENU.ShowWatermark || !ZeroGUI::canvas) return;
-
-		std::string str = Settings.MENU.Watermark;
-		LPCWSTR watermark = std::wstring(str.begin(), str.end()).c_str();
-
-		ZeroGUI::canvas->K2_DrawText(watermark, { 15.f, 15.f }, { 1.f, 1.f }, ZeroGUI::Colors::MainColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, false, false, true, ZeroGUI::Colors::MainColor);
-		return;
-	};
-
 	void Tick()
 	{
 		ZeroGUI::Input::Handle();
@@ -32,48 +26,16 @@ namespace Menu {
 
 			switch (tab) {
 			case 0:
-				ZeroGUI::SliderFloat("Player FOV", &Settings.EXPLOITS.FOV, 80.0f, 160.0f);
-				if (ZeroGUI::Button("Load into map", FVector2D{ 110, 25 })) Settings.MISC.LoadIntoMap = true;
-
+				Sections::MiscTab();
 				break;
 			case 1:
-				ZeroGUI::Checkbox("God Mode", &Settings.EXPLOITS.GodMode);
-				ZeroGUI::Checkbox("Spin Bot", &Settings.EXPLOITS.SpinBot);
-
-				ZeroGUI::Text("No Clip", false, true);
-				ZeroGUI::SameLine();
-				ZeroGUI::Hotkey("No Clip", FVector2D{ 110, 25 }, &Settings.EXPLOITS.NoClip);
-
+				Sections::ExploitsTab();
 				break;
 			case 2:
-				ZeroGUI::Checkbox("Enabled", &Settings.MISC.UserScriptsEnabled);
-				ZeroGUI::Text("Loaded Scripts:");
-				for (const auto& script : Scripts::scriptList) {
-					ZeroGUI::Text(std::format(" - {}", script).c_str());
-				}
+				Sections::ScriptsTab();
 				break;
 			case 3:
-				if (ZeroGUI::Button("Save", FVector2D{ 110, 25 })) {
-					SettingsHelper::Save();
-				};
-
-				ZeroGUI::SameLine();
-
-				if (ZeroGUI::Button("Reset", FVector2D{ 110, 25 })) {
-					SettingsHelper::Reset();
-				};
-
-				ZeroGUI::Text("Menu Hotkey", false, true);
-				ZeroGUI::SameLine();
-				ZeroGUI::Hotkey("Menu Hotkey", FVector2D{ 110, 25 }, &Settings.MENU.ShowHotkey);
-
-				if (ZeroGUI::Button("Detach Console", FVector2D{ 110, 25 })) Settings.MISC.DestroyConsole = true;
-				ZeroGUI::SameLine();
-				if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) Settings.MISC.Unload = true;
-
-				ZeroGUI::ColorPicker("Menu Color", &ZeroGUI::Colors::MainColor);
-				ZeroGUI::SameLine();
-				ZeroGUI::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
+				Sections::SettingsTab();
 				break;
 			default:
 				break;
@@ -81,6 +43,6 @@ namespace Menu {
 		}
 
 		ZeroGUI::Render();
-		DrawWatermark();
+		Sections::Watermark();
 	};
 };

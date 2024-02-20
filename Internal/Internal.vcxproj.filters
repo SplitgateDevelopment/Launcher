@@ -28,6 +28,9 @@
     <Filter Include="scripting">
       <UniqueIdentifier>{f2659618-d54d-4744-bfb0-d89f547fa5c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="menu\sections">
+      <UniqueIdentifier>{f4b49e8e-b3f4-4f17-9cc1-efdab6535cc7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ue\Engine.h">
@@ -74,6 +77,21 @@
     </ClInclude>
     <ClInclude Include="scripting\Scripts.h">
       <Filter>scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Settings.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Misc.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Scripts.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Exploits.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Watermark.h">
+      <Filter>menu\sections</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
