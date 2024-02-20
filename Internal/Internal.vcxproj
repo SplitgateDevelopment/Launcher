@@ -178,6 +178,8 @@
     <ClInclude Include="menu\sections\Scripts.h" />
     <ClInclude Include="menu\sections\Settings.h" />
     <ClInclude Include="menu\sections\Watermark.h" />
+    <ClInclude Include="scripting\modules\Logger.h" />
+    <ClInclude Include="scripting\modules\Settings.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
     <ClInclude Include="hook\Hook.h" />

@@ -5,11 +5,14 @@
 #include <filesystem>
 #include <vector>
 #include <fstream>
+#include "../utils/Logger.h"
+#include "../settings/Settings.h"
 
 #include <Python.h>
 #include <pybind11/embed.h>
-#include "../utils/Logger.h"
-#include "../settings/Settings.h"
+
+#include "modules/Logger.h"
+#include "modules/Settings.h"
 
 namespace py = pybind11;
 namespace fs = std::filesystem;
@@ -18,12 +21,8 @@ PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m) {
 
 	m.doc() = "Splitgate Internal plugin";
 
-	auto logger = m.def_submodule("Logger");
-	logger.def("Log", &Logger::Log);
-
-	auto settings = m.def_submodule("Settings");
-	settings.def("Reset", &SettingsHelper::Reset);
-	settings.def("Save", &SettingsHelper::Save);
+	Scripts::Modules::Logger(m);
+	Scripts::Modules::Settings(m);
 }
 
 namespace Scripts {
@@ -39,6 +38,8 @@ namespace Scripts {
 		fs::path file("UserScripts");
 		fs::path full_path = path / file;
 		scriptsPath = full_path.string();
+
+		Logger::Log("INFO", std::format("Loading scripts from {}", scriptsPath));
 
 		if (!fs::exists(full_path) || !fs::is_directory(full_path)) {
 			Logger::Log("ERROR", "UserScripts directory does not exist or is not a valid directory.");

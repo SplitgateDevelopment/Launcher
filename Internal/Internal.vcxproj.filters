@@ -31,6 +31,9 @@
     <Filter Include="menu\sections">
       <UniqueIdentifier>{f4b49e8e-b3f4-4f17-9cc1-efdab6535cc7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scripting\modules">
+      <UniqueIdentifier>{3bbda6fb-899a-4a39-b721-74e64b3e7eab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ue\Engine.h">
@@ -92,6 +95,12 @@
     </ClInclude>
     <ClInclude Include="menu\sections\Watermark.h">
       <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="scripting\modules\Logger.h">
+      <Filter>scripting\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="scripting\modules\Settings.h">
+      <Filter>scripting\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
