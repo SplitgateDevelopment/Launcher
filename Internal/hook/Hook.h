@@ -59,15 +59,17 @@ namespace Hook {
 		PostRenderVTable = ViewPortClientVTable;
 		ProcessEventVTable = World->VFTable;
 
-		if (SettingsHelper::Init()) Logger::Log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetPath()));
-
 		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
 		if (UserSave) {
 			Logger::Log("SUCCESS", "Got user save game");
 			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
+		
+		if (SettingsHelper::Init()) Logger::Log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetPath()));
 
 		Logger::Log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));
+		
+		Scripts::Init();
 
 		return TRUE;
 	}
