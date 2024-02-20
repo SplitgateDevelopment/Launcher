@@ -11,15 +11,6 @@ namespace SettingsHelper {
 
 	std::string GetPath() {
 		std::string filename = "splitgate.settings";
-		/*
-			WCHAR szPath[MAX_PATH];
-			GetModuleFileName(NULL, szPath, MAX_PATH);
-
-			std::wstring ws(szPath);
-			std::string path(ws.begin(), ws.end());
-			
-			path += filename;
-		*/
 
 		CHAR path[0xFF] = { 0 };
 		GetTempPathA(sizeof(path) / sizeof(path[0]), path);
@@ -84,8 +75,9 @@ namespace SettingsHelper {
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.Unload = false;
 		Settings.MISC.DestroyConsole = false;
-		Settings.MISC.PlayerName = "SplitgateDevelopement";
+		Settings.MISC.PlayerName = "SplitgateDevelopment";
 		Settings.MISC.DiscordAppID = "1078744504066117703";
+		Settings.MISC.UserScriptsEnabled = false;
 
 		Save();
 	}

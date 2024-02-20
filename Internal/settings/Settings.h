@@ -24,6 +24,7 @@ typedef struct {
 		bool DestroyConsole;
 		std::string PlayerName;
 		const char* DiscordAppID;
+		bool UserScriptsEnabled;
 	} MISC;
 } SETTINGS;
 
