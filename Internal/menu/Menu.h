@@ -2,6 +2,7 @@
 
 #include "../gui/ZeroGUI.h"
 #include "../settings/Settings.h"
+#include "../scripting/Scripts.h"
 
 namespace Menu {
 	void DrawWatermark() {
@@ -25,7 +26,8 @@ namespace Menu {
 			static int tab = 0;
 			if (ZeroGUI::ButtonTab("Misc", FVector2D{ 110, 25 }, tab == 0)) tab = 0;
 			if (ZeroGUI::ButtonTab("Exploits", FVector2D{ 110, 25 }, tab == 1)) tab = 1;
-			if (ZeroGUI::ButtonTab("Settings", FVector2D{ 110, 25 }, tab == 2)) tab = 2;
+			if (ZeroGUI::ButtonTab("User Scripts", FVector2D{ 110, 25 }, tab == 2)) tab = 2;
+			if (ZeroGUI::ButtonTab("Settings", FVector2D{ 110, 25 }, tab == 2)) tab = 3;
 			ZeroGUI::NextColumn(130.0f);
 
 			switch (tab) {
@@ -44,6 +46,13 @@ namespace Menu {
 
 				break;
 			case 2:
+				ZeroGUI::Checkbox("Enabled", &Settings.MISC.UserScriptsEnabled);
+				ZeroGUI::Text("Loaded Scripts:");
+				for (const auto& script : Scripts::scriptList) {
+					ZeroGUI::Text(std::format(" - {}", script).c_str());
+				}
+				break;
+			case 3:
 				if (ZeroGUI::Button("Save", FVector2D{ 110, 25 })) {
 					SettingsHelper::Save();
 				};
