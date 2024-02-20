@@ -1,78 +1,91 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="File di origine">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="ue">
+      <UniqueIdentifier>{cba0e87a-7725-4fbc-852a-e49c67c0cf54}</UniqueIdentifier>
     </Filter>
-    <Filter Include="File di intestazione">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="settings">
+      <UniqueIdentifier>{ade22a2e-c9d7-474f-85b4-d6ae11a5a684}</UniqueIdentifier>
     </Filter>
-    <Filter Include="File di risorse">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="utils">
+      <UniqueIdentifier>{fb1a82ea-1ead-4dab-bdb5-80ef90eb19c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="menu">
+      <UniqueIdentifier>{165791b0-7abe-4d0b-9a3a-f9c00f066876}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{83d0cb65-bdaa-4cf8-8428-b2dc7c056ea1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hook">
+      <UniqueIdentifier>{9801e037-7e0f-4372-ac26-114361471f3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hook\functions">
+      <UniqueIdentifier>{8f847682-7656-4f88-946c-1f9d0c174975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="discord">
+      <UniqueIdentifier>{f288a2eb-1b81-401e-a5b6-140931ba6bfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripting">
+      <UniqueIdentifier>{f2659618-d54d-4744-bfb0-d89f547fa5c7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils\Logger.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="menu\Menu.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\Util.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\ZeroGUI.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\ZeroInput.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="discord\rpc.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="settings\Settings.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="discord\handlers.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="hook\functions\PostRender.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="hook\functions\ProcessEvent.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="ue\Engine.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="hook\Features.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="hook\Hook.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>ue</Filter>
     </ClInclude>
     <ClInclude Include="ue\UObjects.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>ue</Filter>
+    </ClInclude>
+    <ClInclude Include="settings\Settings.h">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\Util.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\Logger.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\Menu.h">
+      <Filter>menu</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\ZeroGUI.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\ZeroInput.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\functions\PostRender.h">
+      <Filter>hook\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\Hook.h">
+      <Filter>hook</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\Features.h">
+      <Filter>hook</Filter>
+    </ClInclude>
+    <ClInclude Include="hook\functions\ProcessEvent.h">
+      <Filter>hook\functions</Filter>
+    </ClInclude>
+    <ClInclude Include="discord\rpc.h">
+      <Filter>discord</Filter>
+    </ClInclude>
+    <ClInclude Include="discord\handlers.h">
+      <Filter>discord</Filter>
     </ClInclude>
     <ClInclude Include="scripting\Scripts.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>scripting</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\Util.cpp">
-      <Filter>File di origine</Filter>
+    <ClCompile Include="ue\Engine.cpp">
+      <Filter>ue</Filter>
     </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>settings</Filter>
     </ClCompile>
-    <ClCompile Include="ue\Engine.cpp">
-      <Filter>File di origine</Filter>
+    <ClCompile Include="utils\Util.cpp">
+      <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="dllmain.cpp" />
   </ItemGroup>
 </Project>
