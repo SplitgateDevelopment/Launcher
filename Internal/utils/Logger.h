@@ -7,12 +7,12 @@
 
 using namespace std;
 
-FILE* logFile = new FILE();
-HANDLE g_Handle;
-HWND g_hWnd;
-
 namespace Logger
 {
+    FILE* logFile = new FILE();
+    HANDLE g_Handle;
+    HWND g_hWnd;
+
     BOOL ResetConsoleColor() {
         return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
