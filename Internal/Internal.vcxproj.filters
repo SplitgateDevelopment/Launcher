@@ -57,6 +57,9 @@
     <ClInclude Include="ue\UObjects.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="scripting\Scripts.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
