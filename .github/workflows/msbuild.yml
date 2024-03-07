@@ -20,6 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
+      id: cp310
       with:
         python-version: '3.10'
 
@@ -32,7 +33,7 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m -property:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}} -property:AdditionalLibPaths="${{ steps.cp310.outputs.python-path }}\libs;" -property:IncludePath="${{ steps.cp310.outputs.python-path }}\include;$(IncludePath)"
 
     - name: Upload Release Artifact
       uses: actions/upload-artifact@v4
