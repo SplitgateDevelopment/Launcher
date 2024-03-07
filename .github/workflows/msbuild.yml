@@ -33,7 +33,7 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m -property:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}} -property:AdditionalLibPaths="${{ steps.cp310.outputs.python-path }}\libs;" -property:IncludePath="${{ steps.cp310.outputs.python-path }}\include;$(IncludePath)"
+      run: msbuild /m -property:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}} -property:AdditionalLibPaths="${{ env.pythonLocation }}\libs;" -property:IncludePath="${{ env.pythonLocation }}\include;"
 
     - name: Upload Release Artifact
       uses: actions/upload-artifact@v4
