@@ -49,6 +49,11 @@ bool UObject::IsA(void* cmp)
 	return false;
 }
 
+bool UObject::IsDefaultObject() const
+{
+	return (ObjectFlags & 0x10) == 0x10;
+}
+
 UObject* TUObjectArray::GetObjectPtr(uint32_t id) const
 {
 	if (id >= NumElements) return nullptr;
@@ -235,7 +240,7 @@ bool AActor::GetActorEnableCollision() {
 	return Parameters.ReturnValue;
 };
 
-bool AActor::K2_SetActorLocation(FVector NewLocation, bool bSweep, bool bTeleport)
+bool AActor::K2_SetActorLocation(struct FVector NewLocation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport)
 {
 	struct {
 		FVector NewLocation;
@@ -244,13 +249,143 @@ bool AActor::K2_SetActorLocation(FVector NewLocation, bool bSweep, bool bTelepor
 		bool bTeleport;
 		bool ReturnValue;
 	} Parameters;
+
 	Parameters.NewLocation = NewLocation;
 	Parameters.bSweep = bSweep;
+	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
 	ProcessEvent(UObjects::K2_SetActorLocation, &Parameters);
 	return Parameters.ReturnValue;
 }
+
+struct UObject* UGameplayStatics::SpawnObject(struct UObject* ObjectClass, struct UObject* Outer)
+{
+	UObject* SpawnObject = ObjObjects->FindObject("Function Engine.GameplayStatics.SpawnObject");
+
+	struct
+	{
+		UObject* ObjectClass;
+		UObject* Outer;
+		UObject* ReturnValue;
+	} Parameters;
+
+	Parameters.ObjectClass = ObjectClass;
+	Parameters.Outer = Outer;
+
+	ProcessEvent(SpawnObject, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
+struct UClass* UEngine::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.Engine");
+}
+
+struct UEngine* UEngine::GetEngine()
+{
+	static UEngine* GEngine = nullptr;
+	static UClass* EngineClass = UEngine::StaticClass();
+
+	if (!GEngine)
+	{
+		for (auto i = 0u; i < ObjObjects->NumElements; i++)
+		{
+			auto object = ObjObjects->GetObjectPtr(i);
+
+			if (!object)
+				continue;
+
+			if (object->IsA(EngineClass) && !object->IsDefaultObject())
+			{
+				GEngine = static_cast<UEngine*>(object);
+				break;
+			}
+		}
+	}
+
+	return GEngine;
+}
+
+struct UWorld* UWorld::GetWorld()
+{
+	UWorld* World = *(UWorld**)(WRLD);
+	return World;
+}
+
+struct UClass* UInputSettings::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.InputSettings");
+}
+
+struct UInputSettings* UInputSettings::GetDefaultObj()
+{
+	static struct UInputSettings* Default = nullptr;
+
+	if (!Default)
+		Default = static_cast<UInputSettings*>((UObject*)UInputSettings::StaticClass());
+
+	return Default;
+}
+
+struct UInputSettings* UInputSettings::GetInputSettings()
+{
+	auto Func = ObjObjects->FindObject("Function Engine.InputSettings.GetInputSettings");
+
+	struct {
+		struct UInputSettings* ReturnValue;
+	} Parms;
+
+
+	UObject::ProcessEvent(Func, &Parms);
+
+	return Parms.ReturnValue;
+};
+
+struct UClass* UGameplayStatics::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.GameplayStatics");
+}
+
+struct UClass* UConsole::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.Console");
+}
+
+struct UClass* UKismetStringLibrary::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.KismetStringLibrary");
+}
+
+struct FName UKismetStringLibrary::Conv_StringToName(struct FString InString)
+{
+	auto Func = ObjObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToName");
+
+	struct {
+		struct FString InString;
+		struct FName ReturnValue;
+	} Parms;
+
+	Parms.InString = InString;
+
+	ProcessEvent(Func, &Parms);
+
+	return Parms.ReturnValue;
+};
+
+void APlayerController::ConsoleKey(struct FKey Key)
+{
+	auto Func = ObjObjects->FindObject("Function Engine.PlayerController.ConsoleKey");
+
+	struct {
+		struct FKey Key;
+	} Parms;
+
+	Parms.Key = Key;
+
+	ProcessEvent(Func, &Parms);
+};
 
 bool EngineInit()
 {
