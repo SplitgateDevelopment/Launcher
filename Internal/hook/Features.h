@@ -4,6 +4,7 @@
 #include "../utils/Logger.h"
 #include "../discord/rpc.h"
 #include "../scripting/Scripts.h"
+#include "../utils/Globals.h"
 
 class Features {
 public:
@@ -13,6 +14,8 @@ public:
 		do {
 			ExecuteUserScripts();
 
+			APortalWarsCharacter* Player = (APortalWarsCharacter*)PlayerController->Character;
+			
 			if (Settings.MISC.DestroyConsole) {
 				Settings.MISC.DestroyConsole = false;
 				Logger::DestroyConsole();
@@ -25,6 +28,10 @@ public:
 			PlayerController->FOV(Settings.EXPLOITS.FOV);
 
 			if (Settings.MISC.LoadIntoMap) {
+				//TODO Enable Play Button
+				//UPortalWarsPlayButtonWidget:UPortalWarsButtonWidget:UPortalWarsGenericButton:UPortalWarsUserWidget:UUserWidget:UWidget:UVisual:UObject
+				//bool IsEnabled(); // Function PortalWars.PortalWarsButtonWidget.IsEnabled // (Native|Public|Const) // @ game+0x1664af0
+
 				Logger::Log("INFO", "Loading into map");
 				PlayerController->SwitchLevel(L"Simulation_Alpha");
 				Settings.MISC.LoadIntoMap = false;
@@ -36,8 +43,7 @@ public:
 			};
 			SetState("In game");
 
-			APawn* Player = PlayerController->PlayerState->PawnPrivate;
-			USkeletalMeshComponent* Mesh = Player->Mesh;
+			USkeletalMeshComponent* Mesh = PlayerController->Character->Mesh;
 
 			collision = false;
 			if (GetAsyncKeyState(Settings.EXPLOITS.NoClip)) collision = !collision;
@@ -56,6 +62,7 @@ public:
 				Mesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, false);
 				spin_yaw += 20.f;
 			};
+
 		} while (false);
 
 		return;
@@ -74,9 +81,10 @@ private:
 		return rpc->UpdateState(state);
 	}
 
-	void UpdatePlayerHealth(APawn* Player) {
+	void UpdatePlayerHealth(APortalWarsCharacter* Player) {
 		if (Settings.EXPLOITS.GodMode) {
-			float health = 999999;
+			float health = 9999;
+
 			if (Player->MaxHealth != health) Player->MaxHealth = health;
 			if (Player->Health != health) Player->Health = health;
 
