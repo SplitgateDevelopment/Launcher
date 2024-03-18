@@ -2,6 +2,7 @@
 
 #include <format>
 #include "Features.h"
+#include "../utils/Globals.h"
 
 namespace Hook {
 	HHOOK g_hook;
@@ -23,14 +24,14 @@ namespace Hook {
 			Logger::Log("ERROR", "No engine init");
 			return FALSE;
 		};
+		Globals::Init();
 
-		UWorld* World = *(UWorld**)(WRLD);
-		if (!World) {
+		if (!Globals::World) {
 			Logger::Log("ERROR", "No World");
 			return FALSE;
 		};
 
-		UGameInstance* OwningGameInstance = World->OwningGameInstance;
+		UGameInstance* OwningGameInstance = Globals::World->OwningGameInstance;
 		if (!OwningGameInstance) {
 			Logger::Log("ERROR", "No owning game instance");
 			return FALSE;
@@ -57,7 +58,7 @@ namespace Hook {
 		};
 
 		PostRenderVTable = ViewPortClientVTable;
-		ProcessEventVTable = World->VFTable;
+		ProcessEventVTable = Globals::World->VFTable;
 
 		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
 		if (UserSave) {
@@ -69,6 +70,10 @@ namespace Hook {
 
 		Logger::Log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));
 		
+		UObject* NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
+		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
+		Logger::Log("SUCCESS", "UConsole spawned");
+
 		Scripts::Init();
 
 		return TRUE;
