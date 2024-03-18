@@ -102,6 +102,9 @@
     <ClInclude Include="scripting\modules\Settings.h">
       <Filter>scripting\modules</Filter>
     </ClInclude>
+    <ClInclude Include="utils\Globals.h">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">

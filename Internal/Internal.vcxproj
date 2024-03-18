@@ -189,6 +189,7 @@
     <ClInclude Include="hook\functions\PostRender.h" />
     <ClInclude Include="hook\functions\ProcessEvent.h" />
     <ClInclude Include="settings\Settings.h" />
+    <ClInclude Include="utils\Globals.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="ue\UObjects.h" />
     <ClInclude Include="utils\Util.h" />
