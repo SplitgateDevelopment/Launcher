@@ -1,14 +1,20 @@
 #pragma once
 
 #include "../ue/Engine.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+//don't use std::string
 
 typedef struct {
 	struct {
 		bool ShowMenu;
 		bool ShowWatermark;
-		std::string Watermark;
+		const char* Watermark;
 		int ShowHotkey;
 		FVector2D MenuPosition;
+		FLinearColor MenuColor;
 	} MENU;
 
 	struct {
@@ -20,19 +26,21 @@ typedef struct {
 
 	struct {
 		bool LoadIntoMap;
-		float Unload;
-		bool DestroyConsole;
-		std::string PlayerName;
+		bool ShowConsole;
+		const char* PlayerName;
 		const char* DiscordAppID;
 		bool UserScriptsEnabled;
+		bool LogProcessEvent;
 	} MISC;
 } SETTINGS;
 
 extern SETTINGS Settings;
 
 namespace SettingsHelper {
-	std::string GetPath();
+	fs::path GetAppPath();
+	std::string GetSettingsFilePath();
 	bool Init();
 	VOID Save();
 	VOID Reset();
+	VOID Delete();
 }
