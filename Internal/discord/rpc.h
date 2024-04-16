@@ -25,11 +25,11 @@ public:
 
 		memset(&discordPresence, 0, sizeof(discordPresence));
 		discordPresence.state = "Injected";
-		discordPresence.details = Settings.MENU.Watermark.data();
+		discordPresence.details = Settings.MENU.Watermark;
 		discordPresence.startTimestamp = StartTime;
 		discordPresence.endTimestamp = NULL;
 		discordPresence.largeImageKey = "icon";
-		discordPresence.largeImageText = Settings.MENU.Watermark.data();
+		discordPresence.largeImageText = Settings.MENU.Watermark;
 		discordPresence.instance = 1;
 		discordPresence.partySize = 1;
 		discordPresence.partyMax = 1;
@@ -45,7 +45,7 @@ public:
 	void UpdateState(const char* state) {
 		discordPresence.state = state;
 		Discord_UpdatePresence(&discordPresence);
-		Logger::Log("RPC", format("Updated to state [{}]", state));
+		Logger::Log("RPC", std::format("Updated to state [{}]", state));
 	}
 
 	const char* GetState() {
