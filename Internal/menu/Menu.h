@@ -12,6 +12,7 @@ namespace Menu {
 	void Tick()
 	{
 		ZeroGUI::Input::Handle();
+		ZeroGUI::Colors::MainColor = Settings.MENU.MenuColor;
 
 		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 
@@ -43,6 +44,7 @@ namespace Menu {
 		}
 
 		ZeroGUI::Render();
+		//ZeroGUI::Draw_Cursor(Settings.MENU.ShowHotkey);
 		Sections::Watermark();
 	};
 };
