@@ -2,20 +2,18 @@
 
 #include <format>
 #include "Features.h"
-#include "../utils/Globals.h"
+#include <MinHook.h>
+#include "functions/ProcessEvent.h"
 
 namespace Hook {
 	HHOOK g_hook;
-
 	Features* features = new Features();
 
-	void** PostRenderVTable;
-	void(*OriginalPostRender)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
-	int PostRenderIndex = 100;
-
-	void** ProcessEventVTable;
-	void (*OriginalProcessEvent)(UObject*, UObject*, void* params) = nullptr;
-	int ProcessEventIndex = 68;
+	namespace PostRender {
+		void** VTable;
+		void(*Original)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
+		int Index = 100;
+	}
 
 	bool Init() {
 		Logger::CreateConsole();
@@ -37,9 +35,9 @@ namespace Hook {
 			return FALSE;
 		};
 
-		TArray<UPlayer*>LocalPlayers = OwningGameInstance->LocalPlayers;
+		TArray<ULocalPlayer*>LocalPlayers = OwningGameInstance->LocalPlayers;
 
-		UPlayer* LocalPlayer = LocalPlayers[0];
+		UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
 		if (!LocalPlayer) {
 			Logger::Log("ERROR", "No LocalPlayer");
 			return FALSE;
@@ -57,24 +55,43 @@ namespace Hook {
 			return FALSE;
 		};
 
-		PostRenderVTable = ViewPortClientVTable;
-		ProcessEventVTable = Globals::World->VFTable;
+		PostRender::VTable = ViewPortClientVTable;
+		ProcessEvent::VTable = *reinterpret_cast<void***>(UObject::GetDefaultObj());
 
-		UPortalWarsSaveGame* UserSave = ((UPortalWarsLocalPlayer*)LocalPlayer)->GetUserSaveGame();
+		UPortalWarsSaveGame* UserSave = LocalPlayer->GetUserSaveGame();
 		if (UserSave) {
 			Logger::Log("SUCCESS", "Got user save game");
 			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
 		
-		if (SettingsHelper::Init()) Logger::Log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetPath()));
+		if (SettingsHelper::Init()) Logger::Log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetSettingsFilePath()));
 
-		Logger::Log("INFO", format("Found [{:d}] Objects", ObjObjects->NumElements));
+		Logger::Log("INFO", std::format("Found [{:d}] Objects", ObjObjects->NumElements));
 		
 		UObject* NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
 		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
 		Logger::Log("SUCCESS", "UConsole spawned");
 
 		Scripts::Init();
+
+		if (MH_Initialize() != MH_OK)
+		{
+			Logger::Log("ERROR", "MinHook not initialized");
+			return FALSE;
+		}
+
+		const auto& ProccessEventTarget = reinterpret_cast<decltype(ProcessEvent::Original)>(ProcessEvent::VTable[ProcessEvent::Index]);
+		ProcessEvent::Original = ProccessEventTarget;
+
+		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void**>(&ProcessEvent::Original));
+
+		if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK)
+		{
+			Logger::Log("ERROR", "Could not enable MinHook hooks");
+			return FALSE;
+		};
+
+		Logger::Log("SUCCESS", "Enabled MinHook hooks");
 
 		return TRUE;
 	}
@@ -96,9 +113,20 @@ namespace Hook {
 
 	void UnHook() {
 		Logger::Log("INFO", "Unloading");
-		
-		SetHook(PostRenderVTable, PostRenderIndex, OriginalPostRender);
+
+		if (MH_DisableHook(MH_ALL_HOOKS) != MH_OK)
+		{
+			Logger::Log("ERROR", "Could not disable MinHook hooks");
+		}
+		if (MH_Uninitialize() != MH_OK)
+		{
+			Logger::Log("ERROR", "MinHook uninitialization error");
+		}
+
+		SetHook(PostRender::VTable, PostRender::Index, PostRender::Original);
 		Logger::DestroyConsole();
+		ExceptionHandler::Disable();
+		UnhookWindowsHookEx(g_hook);
 	}
 
 	bool isKeyPressed(UCHAR key) {
