@@ -7,11 +7,6 @@
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
 	do {
-		if (Settings.MISC.Unload) {
-			Settings.MISC.Unload = false;
-			return Hook::UnHook();
-		}
-
 		ZeroGUI::SetupCanvas(canvas);
 		Menu::Tick();
 
@@ -21,9 +16,9 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		UGameInstance* OwningGameInstance = World->OwningGameInstance;
 		if (!OwningGameInstance) break;
 
-		TArray<UPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
+		TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
 
-		UPlayer* LocalPlayer = LocalPlayers[0];
+		UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
 		if (!LocalPlayer) break;
 
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
@@ -32,5 +27,5 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		Hook::features->handle(PlayerController);
 	} while (false);
 
-	return Hook::OriginalPostRender(UGameViewportClient, canvas);
+	return Hook::PostRender::Original(UGameViewportClient, canvas);
 }
