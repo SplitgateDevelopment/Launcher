@@ -5,10 +5,9 @@
 #include <io.h>
 #include <iostream>
 
-using namespace std;
-
 namespace Logger
 {
+    FILE* consoleStream = new FILE();
     FILE* logFile = new FILE();
     HANDLE g_Handle;
     HWND g_hWnd;
@@ -17,7 +16,7 @@ namespace Logger
         return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
-    BOOL SetConsoleColor(const string title) {
+    BOOL SetConsoleColor(const std::string title) {
         if (title == "INFO") return SetConsoleTextAttribute(g_Handle, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
         if (title == "ERROR") return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
         if (title == "SUCCESS") return SetConsoleTextAttribute(g_Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -26,7 +25,7 @@ namespace Logger
         return SetConsoleTextAttribute(g_Handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
-    void Log(const string title, const string message)
+    void Log(const std::string title, const std::string message)
     {
         time_t now = time(0);
         tm tstruct;
@@ -38,13 +37,22 @@ namespace Logger
         std::cout << buf << " [" << title << "] " << message << std::endl;
         ResetConsoleColor();
 
+        fprintf(logFile, "%s [%s] %s\n", buf, title.c_str(), message.c_str());
+        fflush(logFile);
+
         return;
     }
 
+    void SetConsoleVisibility(bool bShow)
+    {
+        ShowWindow(g_hWnd, bShow ? SW_SHOW : SW_HIDE);
+    };
 
     void DestroyConsole() {
         Log("INFO", "Destroying console");
+        SetConsoleVisibility(false);
 
+        fclose(consoleStream);
         fclose(logFile);
         DestroyWindow(g_hWnd);
         FreeConsole();
@@ -57,11 +65,17 @@ namespace Logger
         g_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
         g_hWnd = GetConsoleWindow();
 
-        freopen_s(&logFile, "CONOUT$", "w", stdout);
-        freopen_s(&logFile, "CONIN$", "r", stdin);
-        freopen_s(&logFile, "CONOUT$", "w", stderr);
+        fs::path logFilePath = SettingsHelper::GetAppPath() / "splitgate.log";
+        fopen_s(&logFile, logFilePath.string().c_str(), "a");
+
+        freopen_s(&consoleStream, "CONOUT$", "w", stdout);
+        freopen_s(&consoleStream, "CONIN$", "r", stdin);
+        freopen_s(&consoleStream, "CONOUT$", "w", stderr);
 
         SetConsoleTitleA("Splitgate Internal");
-        ShowWindow(g_hWnd, SW_SHOW);
+        SetConsoleVisibility(true);
+
+        Log("SUCCESS", "Created console");
+        Log("INFO", std::format("Logging to {}", logFilePath.string()));
     };
 };
