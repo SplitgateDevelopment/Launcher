@@ -15,13 +15,8 @@ public:
 			ExecuteUserScripts();
 
 			APortalWarsCharacter* Player = (APortalWarsCharacter*)PlayerController->Character;
-			
-			if (Settings.MISC.DestroyConsole) {
-				Settings.MISC.DestroyConsole = false;
-				Logger::DestroyConsole();
-			}
 
-			std::string name = Settings.MISC.PlayerName;
+			std::string name = std::string(Settings.MISC.PlayerName);
 			LPCWSTR playerName = std::wstring(name.begin(), name.end()).c_str();
 
 			PlayerController->SetName(playerName);
@@ -43,8 +38,6 @@ public:
 			};
 			SetState("In game");
 
-			USkeletalMeshComponent* Mesh = PlayerController->Character->Mesh;
-
 			collision = false;
 			if (GetAsyncKeyState(Settings.EXPLOITS.NoClip)) collision = !collision;
 
@@ -56,11 +49,18 @@ public:
 				UpdatePlayerHealth(Player);
 			};
 
-			if (Settings.EXPLOITS.SpinBot && Mesh) {
+			USkeletalMeshComponent* PlayerMesh = Player->Mesh;
+			AGun* PlayerGun = Player->CurrentWeapon;
+			USkeletalMeshComponent* WeaponMesh = PlayerGun->Mesh1P;
+
+			if (Settings.EXPLOITS.SpinBot && PlayerMesh && WeaponMesh) {
 				if (spin_yaw > 360.f) spin_yaw = 0.f;
 
-				Mesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, false);
-				spin_yaw += 20.f;
+				FHitResult result;
+				WeaponMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, result, false);
+				PlayerMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, result, false);
+
+				spin_yaw += 10.f;
 			};
 
 		} while (false);
