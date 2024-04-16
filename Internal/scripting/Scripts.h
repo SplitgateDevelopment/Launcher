@@ -29,26 +29,25 @@ namespace Scripts {
 
 	std::vector<std::string> scriptList{};
 	std::vector<pybind11::module_> loadedScripts{};
-	std::string scriptsPath;
+	fs::path scriptsPath;
 	py::scoped_interpreter guard{};
 
 	void Init()
 	{
-		fs::path path = fs::current_path();
-		fs::path file("UserScripts");
-		fs::path full_path = path / file;
-		scriptsPath = full_path.string();
+		fs::path scriptsFolder("UserScripts");
+		scriptsPath = SettingsHelper::GetAppPath() / scriptsFolder;
 
-		Logger::Log("INFO", std::format("Loading scripts from {}", scriptsPath));
+		Logger::Log("INFO", std::format("Loading scripts from {}", scriptsPath.string()));
 
-		if (!fs::exists(full_path) || !fs::is_directory(full_path)) {
+		if (!fs::exists(scriptsPath) || !fs::is_directory(scriptsPath)) {
 			Logger::Log("ERROR", "UserScripts directory does not exist or is not a valid directory.");
+			fs::create_directories(scriptsPath);
 			return;
 		}
 
 		try
 		{
-			for (const auto& entry : fs::directory_iterator(full_path)) {
+			for (const auto& entry : fs::directory_iterator(scriptsPath)) {
 				fs::path filename = entry.path().filename();
 
 				if (filename.string() != "__init__.py" && filename.string().find(".py") != std::string::npos) {
@@ -61,7 +60,7 @@ namespace Scripts {
 			Logger::Log("ERROR", e.what());
 		}
 
-		for (int i = 0; i < scriptList.size(); i++) //Iterate through valid scripts
+		for (int i = 0; i < scriptList.size(); i++)
 		{
 			try {
 				std::string filename = scriptList.at(i);
@@ -83,7 +82,7 @@ namespace Scripts {
 			}
 		}
 
-		Logger::Log("SUCCESS", std::format("Loaded {} scripts", scriptList.size()));
+		Logger::Log("SUCCESS", std::format("Loaded {} scripts", loadedScripts.size()));
 	};
 
 	void Execute(int loadedScriptIndex)
