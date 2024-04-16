@@ -82,6 +82,26 @@ void UObject::ProcessEvent(void* UFunction, void* Params)
 	reinterpret_cast<void(*)(void*, void*, void*)>(vtable[68])(this, UFunction, Params);
 }
 
+struct UClass* UObject::StaticClass()
+{
+	static struct UClass* Clss = nullptr;
+
+	if (!Clss)
+		Clss = (UClass*)ObjObjects->FindObject("Class CoreUObject.Object");
+
+	return Clss;
+}
+
+UObject* UObject::GetDefaultObj()
+{
+	static struct UObject* Default = nullptr;
+
+	if (!Default)
+		Default = static_cast<UObject*>(UObject::StaticClass());
+
+	return Default;
+}
+
 FNamePool* NamePoolData = nullptr;
 TUObjectArray* ObjObjects = nullptr;
 UWorld* WRLD = nullptr;
@@ -176,7 +196,7 @@ UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame() {
 	return Parameters.ReturnValue;
 };
 
-void USkeletalMeshComponent::K2_SetRelativeRotation(FRotator NewRotation, bool bSweep, bool bTeleport)
+void USceneComponent::K2_SetRelativeRotation(struct FRotator NewRotation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport)
 {
 	struct {
 		FRotator NewRotation;
@@ -186,6 +206,7 @@ void USkeletalMeshComponent::K2_SetRelativeRotation(FRotator NewRotation, bool b
 	} Parameters;
 	Parameters.NewRotation = NewRotation;
 	Parameters.bSweep = bSweep;
+	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
 	ProcessEvent(UObjects::K2_SetRelativeRotationUFunc, &Parameters);

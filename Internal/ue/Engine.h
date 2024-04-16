@@ -44,7 +44,14 @@ struct FName {
 	std::string GetName();
 };
 
+struct FText
+{
+	char pad_0[0x18];
+};
 
+
+// Class CoreUObject.Object
+// Size: 0x28 (Inherited: 0x00)
 struct UObject {
 	void** VFTable;
 	uint32_t ObjectFlags;
@@ -58,6 +65,9 @@ struct UObject {
 	bool IsA(void* cmp);
 	bool IsDefaultObject() const;
 	void ProcessEvent(void* fn, void* parms);
+
+	static struct UObject* GetDefaultObj();
+	static struct UClass* StaticClass();
 };
 
 // Class CoreUObject.Field
@@ -78,6 +88,12 @@ struct UStruct : UField {
 // Size: 0x230 (Inherited: 0xb0)
 struct UClass : UStruct {
 	char UnknownData_B0[0x180]; // 0xb0(0x180)
+};
+
+// Class CoreUObject.Function
+// Size: 0xe0 (Inherited: 0xb0)
+struct UFunction : UStruct {
+	char pad_B0[0x30]; // 0xb0(0x30)
 };
 
 struct TUObjectArray {
@@ -434,7 +450,8 @@ struct AActor : UObject {
 
 };
 
-// Class Engine.Controller 
+// Class Engine.Controller
+// Size: 0x298 (Inherited: 0x220)
 struct AController : AActor {
 	char pad_220[0x8]; // 0x220(0x08)
 	struct APlayerState* PlayerState; // 0x228(0x08)
@@ -1132,15 +1149,210 @@ struct APlayerController : AController {
 	void Camera(struct FName NewMode); // Function Engine.PlayerController.Camera // (Exec|Native|Public) // @ game+0x37ae830
 };
 
+// Enum PortalWars.EAmmoType
+enum class EAmmoType : uint8_t {
+	None = 0,
+	Bullet = 1,
+	Battery = 2,
+	EAmmoType_MAX = 3
+};
+
+// ScriptStruct PortalWars.WeaponData
+// Size: 0x2c (Inherited: 0x00)
+struct FWeaponData {
+	int32_t MaxAmmo; // 0x00(0x04)
+	int32_t AmmoPerClip; // 0x04(0x04)
+	int32_t InitialClips; // 0x08(0x04)
+	enum class EAmmoType AmmoType; // 0x0c(0x01)
+	char pad_D[0x3]; // 0x0d(0x03)
+	float TimeBetweenShots; // 0x10(0x04)
+	bool bIsSingleShot; // 0x14(0x01)
+	char pad_15[0x3]; // 0x15(0x03)
+	float NoAnimReloadDuration; // 0x18(0x04)
+	bool CanZoom; // 0x1c(0x01)
+	char pad_1D[0x3]; // 0x1d(0x03)
+	float ZoomFOV; // 0x20(0x04)
+	bool CanSwapForSameWeapon; // 0x24(0x01)
+	char pad_25[0x3]; // 0x25(0x03)
+	float MeleeDamage; // 0x28(0x04)
+};
+
+// Class PortalWars.CullableActor
+// Size: 0x220 (Inherited: 0x220)
+struct ACullableActor : AActor {
+};
+
+// Class PortalWars.BaseGun
+// Size: 0x2c0 (Inherited: 0x220)
+struct ABaseGun : ACullableActor {
+	char pad_220[0x10]; // 0x220(0x10)
+	struct UParticleSystem* MuzzleFX; // 0x230(0x08)
+	struct FVector Muzzle1pScale; // 0x238(0x0c)
+	struct FVector Muzzle3pScale; // 0x244(0x0c)
+	struct UParticleSystemComponent* MuzzlePSC_1P; // 0x250(0x08)
+	struct UParticleSystemComponent* MuzzlePSC_3P; // 0x258(0x08)
+	char bLoopedMuzzleFX : 1; // 0x260(0x01)
+	char pad_260_1 : 7; // 0x260(0x01)
+	char pad_261[0x7]; // 0x261(0x07)
+	struct APortalWarsCharacter* MyPawn; // 0x268(0x08)
+	struct USkeletalMeshComponent* Mesh1P; // 0x270(0x08)
+	struct UStaticMeshComponent* Mesh3P; // 0x278(0x08)
+	char SkinAssetType[0x08]; // 0x280(0x08)
+	char pad_288[0x18]; // 0x288(0x18)
+	struct ABaseGunSkin* DefaultWeaponSkinClass; // 0x2a0(0x08)
+	struct ABaseGunSkin* WeaponSkin; // 0x2a8(0x08)
+	struct ABaseGunSkin* WeaponSkinClass; // 0x2b0(0x08)
+	float LoudnessForBots; // 0x2b8(0x04)
+	char pad_2BC[0x4]; // 0x2bc(0x04)
+
+	void UpdateSkins(); // Function PortalWars.BaseGun.UpdateSkins // (Native|Protected) // @ game+0x8f5850
+	struct USkeletalMeshComponent* GetMesh1P(); // Function PortalWars.BaseGun.GetMesh1P // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x164ce50
+	int32_t GetControllingTeam(); // Function PortalWars.BaseGun.GetControllingTeam // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x164ce20
+	void ClientRemoved(); // Function PortalWars.BaseGun.ClientRemoved // (Net|NetReliableNative|Event|Protected|NetClient) // @ game+0x164ce00
+};
+
+// ScriptStruct PortalWars.AutoAimData
+// Size: 0x34 (Inherited: 0x00)
+struct FAutoAimData {
+	float AutoAimRadius; // 0x00(0x04)
+	float AutoAimRadiusZoomed; // 0x04(0x04)
+	float AutoAimMaxRadiusMultiplier; // 0x08(0x04)
+	float AutoAimMaxRadiusAutoScale; // 0x0c(0x04)
+	float AutoAimMinRadiusRange; // 0x10(0x04)
+	float AutoAimMaxRadiusRange; // 0x14(0x04)
+	float AutoAimThruPortalRadiusMultiplier; // 0x18(0x04)
+	float AutoAimRange; // 0x1c(0x04)
+	float MagnetismRange; // 0x20(0x04)
+	float MagnetismAngle; // 0x24(0x04)
+	bool ShouldUseMagnetism; // 0x28(0x01)
+	bool bDynamicAutoAimRadius; // 0x29(0x01)
+	bool bZoomAimAssistOnly; // 0x2a(0x01)
+	char pad_2B[0x1]; // 0x2b(0x01)
+	float OnTargetTurnRate; // 0x2c(0x04)
+	float OnTargetTurnRateConsole; // 0x30(0x04)
+};
+
+// ScriptStruct PortalWars.ShotInfo
+// Size: 0x02 (Inherited: 0x00)
+struct FShotInfo {
+	char ShotCounter; // 0x00(0x01)
+	bool bIsFiring; // 0x01(0x01)
+};
+
+// ScriptStruct PortalWars.FuzzyConfig
+// Size: 0x02 (Inherited: 0x00)
+struct FFuzzyConfig {
+	char Desirability[0x01]; // 0x00(0x01)
+	char Hedge[0x01]; // 0x01(0x01)
+};
+
 // Class PortalWars.Gun
-struct AGun {
-	char pad_0000[0x2FC]; // 0x0 (0x2FC)
-	int32_t CurrentAmmo; // 0x2FC(0x04)
-	int32_t CurrentAmmoInClip; // 0x300(0x04)
-	char pad_0002[0x14]; // 0x304 (0x14)
+// Size: 0x720 (Inherited: 0x2c0)
+struct AGun : ABaseGun {
+	char BodyPartTargetForBots[0x01]; // 0x2c0(0x01)
+	char pad_2C1[0x3]; // 0x2c1(0x03)
+	float TimeBetweenShotsForBots; // 0x2c4(0x04)
+	struct FWeaponData WeaponConfig; // 0x2c8(0x2c)
+	char pad_2F4[0x4]; // 0x2f4(0x04)
+	struct APortalWarsPickup* PickupClass; // 0x2f8(0x08)
+	char gunValue; // 0x300(0x01)
+	char pad_301[0x1]; // 0x301(0x01)
+	uint16_t CurrentAmmo; // 0x302(0x02)
+	char CurrentAmmoInClip; // 0x304(0x01)
+	char pad_305[0x13]; // 0x305(0x13)
 	float EquipTime; // 0x318(0x04)
-	char pad_0003[0x24]; // 0x31C (0x24)
-	FRecoilData recoilConfig; // 0x340(0x18)
+	char bAutoEquip : 1; // 0x31c(0x01)
+	char pad_31C_1 : 7; // 0x31c(0x01)
+	char pad_31D[0x7]; // 0x31d(0x07)
+	bool bCanFirePortalsWhileEquipped; // 0x324(0x01)
+	char pad_325[0x1b]; // 0x325(0x1b)
+	bool bIsChargingWeapon; // 0x340(0x01)
+	char pad_341[0x3]; // 0x341(0x03)
+	struct FRecoilData recoilConfig; // 0x344(0x18)
+	char pad_35C[0x24]; // 0x35c(0x24)
+	struct UCameraShakeBase* SpectatorCameraShake; // 0x380(0x08)
+	char pad_388[0x30]; // 0x388(0x30)
+	struct UAkAudioEvent* MeleeSwingEvent; // 0x3b8(0x08)
+	struct UAkAudioEvent* MeleeHitEvent; // 0x3c0(0x08)
+	char pad_3C8[0xc]; // 0x3c8(0x0c)
+	bool isMeleeWeapon; // 0x3d4(0x01)
+	char pad_3D5[0x3]; // 0x3d5(0x03)
+	struct UDamageType* MeleeDamageType; // 0x3d8(0x08)
+	float MinTimeBeforeApplyingMeleeDmg; // 0x3e0(0x04)
+	float MeleeRangeScaleOverride; // 0x3e4(0x04)
+	float MeleeHitCameraShakeScale; // 0x3e8(0x04)
+	float MeleeCameraShakeDelay; // 0x3ec(0x04)
+	char pad_3F0[0x8]; // 0x3f0(0x08)
+	struct UCameraShakeBase* MeleeHitCameraShake; // 0x3f8(0x08)
+	struct UCameraShakeBase* MeleeCameraShake; // 0x400(0x08)
+	char pad_408[0x8]; // 0x408(0x08)
+	int32_t GunID; // 0x410(0x04)
+	char pad_414[0x4]; // 0x414(0x04)
+	struct FString InternalName; // 0x418(0x10)
+	struct FText DisplayName; // 0x428(0x18)
+	struct FText ShortDisplayName; // 0x440(0x18)
+	struct UTexture2D* GunIcon; // 0x458(0x08)
+	struct FAutoAimData AutoAimConfig; // 0x460(0x34)
+	char pad_494[0xc]; // 0x494(0x0c)
+	char CurrentState[0x01]; // 0x4a0(0x01)
+	struct FShotInfo ShotInfo; // 0x4a1(0x02)
+	char pad_4A3[0x5]; // 0x4a3(0x05)
+	struct UForceFeedbackEffect* FireForceFeedback; // 0x4a8(0x08)
+	struct UForceFeedbackEffect* MeleeForceFeedback; // 0x4b0(0x08)
+	char WeaponSpecificAnimations[0x60]; // 0x4b8(0x60)
+	char pad_518[0x8]; // 0x518(0x08)
+	char EquipAnim[0x10]; // 0x520(0x10)
+	char FireAnim[0x10]; // 0x530(0x10)
+	char ReloadAnim[0x10]; // 0x540(0x10)
+	char ReloadShortAnim[0x10]; // 0x550(0x10)
+	char InspectWeaponAnim[0x10]; // 0x560(0x10)
+	char MeleeAnims[0x10]; // 0x570(0x10)
+	char ThrowGrenadeAnim[0x10]; // 0x580(0x10)
+	char FirePortalAnim[0x10]; // 0x590(0x10)
+	char SprintingFirePortalAnim[0x10]; // 0x5a0(0x10)
+	char ClosePortalAnim[0x10]; // 0x5b0(0x10)
+	char SprintingClosePortalAnim[0x10]; // 0x5c0(0x10)
+	struct UAnimMontage* EquipAnim_3P; // 0x5d0(0x08)
+	struct UAnimMontage* FireAnim_3P; // 0x5d8(0x08)
+	struct UAnimMontage* ReloadAnim_3P; // 0x5e0(0x08)
+	struct UAnimMontage* ReloadShortAnim_3P; // 0x5e8(0x08)
+	struct UAnimMontage* InspectWeaponAnim_3P; // 0x5f0(0x08)
+	struct UAnimMontage* MeleeAnim_3P; // 0x5f8(0x08)
+	struct UAnimMontage* ThrowGrenadeAnim_3P; // 0x600(0x08)
+	struct UAnimMontage* FirePortalAnim_3P; // 0x608(0x08)
+	struct UAnimMontage* SprintingFirePortalAnim_3P; // 0x610(0x08)
+	struct UAnimMontage* ClosePortalAnim_3P; // 0x618(0x08)
+	struct UAnimMontage* SprintingClosePortalAnim_3P; // 0x620(0x08)
+	char pad_628[0x8]; // 0x628(0x08)
+	struct UAkAudioEvent* AmmoPickupEvent; // 0x630(0x08)
+	struct UAkAudioEvent* GunCollisionEvent; // 0x638(0x08)
+	struct UAkAudioEvent* FireAudioEvent; // 0x640(0x08)
+	struct UAkAudioEvent* FireStopAudioEvent; // 0x648(0x08)
+	struct UAkAudioEvent* OutOfAmmoAudioEvent; // 0x650(0x08)
+	struct UAkAudioEvent* ZoomInAudioEvent; // 0x658(0x08)
+	struct UAkAudioEvent* ZoomOutAudioEvent; // 0x660(0x08)
+	struct UAkAudioEvent* EquipAudioEvent; // 0x668(0x08)
+	struct UAkAudioEvent* FireEvent; // 0x670(0x08)
+	struct UAkAudioEvent* FireStopEvent; // 0x678(0x08)
+	struct UAkAudioEvent* OutOfAmmoEvent; // 0x680(0x08)
+	struct UAkAudioEvent* ZoomInEvent; // 0x688(0x08)
+	struct UAkAudioEvent* ZoomOutEvent; // 0x690(0x08)
+	struct UAkAudioEvent* EquipEvent; // 0x698(0x08)
+	char pad_6A0[0x68]; // 0x6a0(0x68)
+	struct FFuzzyConfig FuzzyConfig[0x9]; // 0x708(0x12)
+	char pad_71A[0x6]; // 0x71a(0x06)
+
+	void ServerGoToState(enum class EWeaponState NewState); // Function PortalWars.Gun.ServerGoToState // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16544c0
+	void PlayMeleeCameraShake(); // Function PortalWars.Gun.PlayMeleeCameraShake // (Final|Native|Protected) // @ game+0x16544a0
+	void OnRep_ShotInfo(struct FShotInfo& PreviousValue); // Function PortalWars.Gun.OnRep_ShotInfo // (Final|Native|Protected|HasOutParms) // @ game+0x1654400
+	void OnRep_CurrentState(enum class EWeaponState PrevState); // Function PortalWars.Gun.OnRep_CurrentState // (Final|Native|Protected) // @ game+0x1654380
+	void OnRep_AmmoInClip(); // Function PortalWars.Gun.OnRep_AmmoInClip // (Native|Protected) // @ game+0x1654360
+	void OnRep_Ammo(); // Function PortalWars.Gun.OnRep_Ammo // (Native|Protected) // @ game+0x1654340
+	void OnGunImageLoaded(); // Function PortalWars.Gun.OnGunImageLoaded // (Final|Native|Protected) // @ game+0x1654320
+	bool GetCanZoom(); // Function PortalWars.Gun.GetCanZoom // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x16541d0
+	struct UPortalWarsAkComponent* GetAkComponent(); // Function PortalWars.Gun.GetAkComponent // (Final|Native|Public|BlueprintCallable) // @ game+0x1654180
+	void DisableNeedAnimInstanceUpdate(); // Function PortalWars.Gun.DisableNeedAnimInstanceUpdate // (Final|Native|Protected) // @ game+0x1654160
+	void ClientStartReload(); // Function PortalWars.Gun.ClientStartReload // (Net|NetReliableNative|Event|Protected|NetClient) // @ game+0x1654140
 };
 
 // Class Engine.Level
@@ -1152,23 +1364,60 @@ struct ULevel : UObject {
 };
 
 // Class Engine.GameInstance
-struct UGameInstance {
-	char pad_0000[0x38]; // 0x0 (0x38)
-	TArray<class UPlayer*> LocalPlayers; // 0x38(0x10)
+// Size: 0x1a8 (Inherited: 0x28)
+struct UGameInstance : UObject {
+	char pad_28[0x10]; // 0x28(0x10)
+	struct TArray<struct ULocalPlayer*> LocalPlayers; // 0x38(0x10)
+	struct UOnlineSession* OnlineSession; // 0x48(0x08)
+	struct TArray<struct UObject*> ReferencedObjects; // 0x50(0x10)
+	char pad_60[0x18]; // 0x60(0x18)
+	struct FMulticastInlineDelegate OnPawnControllerChangedDelegates; // 0x78(0x10)
+	char pad_88[0x120]; // 0x88(0x120)
+
+	void ReceiveShutdown(); // Function Engine.GameInstance.ReceiveShutdown // (Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveInit(); // Function Engine.GameInstance.ReceiveInit // (Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void HandleTravelError(enum class ETravelFailure FailureType); // Function Engine.GameInstance.HandleTravelError // (Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void HandleNetworkError(enum class ENetworkFailure FailureType, bool bIsServer); // Function Engine.GameInstance.HandleNetworkError // (Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void DebugRemovePlayer(int32_t ControllerId); // Function Engine.GameInstance.DebugRemovePlayer // (Exec|Native|Public) // @ game+0x36e9fc0
+	void DebugCreatePlayer(int32_t ControllerId); // Function Engine.GameInstance.DebugCreatePlayer // (Exec|Native|Public) // @ game+0x36e9f30
+};
+
+// Class PortalWars.PortalWarsGameInstance
+// Size: 0x638 (Inherited: 0x1a8)
+struct UPortalWarsGameInstance : UGameInstance {
+	char pad_1A8[0x8]; // 0x1a8(0x08)
+	char GameSettings[0x1f0]; // 0x1b0(0x1f0)
+	char ForgeMapRepData[0x70]; // 0x3a0(0x70)
+	char pad_410[0x218]; // 0x410(0x218)
+	struct TArray<struct UCheatManagerExtension*> GlobalCheatExtensions; // 0x628(0x10)
+
+	void PreLoadMap(struct FString MapName); // Function PortalWars.PortalWarsGameInstance.PreLoadMap // (Final|Native|Protected) // @ game+0x1688f30
+	void OnPostLoadMap(struct UWorld* InLoadedWorld); // Function PortalWars.PortalWarsGameInstance.OnPostLoadMap // (Final|Native|Protected) // @ game+0x1688cf0
+	bool IsLevelLoading(); // Function PortalWars.PortalWarsGameInstance.IsLevelLoading // (Final|Native|Public|Const) // @ game+0x1688a40
+	void HandleTravelFailure(struct UWorld* World, enum class ETravelFailure FailureType, struct FString ErrorString); // Function PortalWars.PortalWarsGameInstance.HandleTravelFailure // (Final|Native|Protected) // @ game+0x16888b0
+	void HandleNetworkFailure(struct UWorld* World, struct UNetDriver* NetDriver, enum class ENetworkFailure FailureType, struct FString ErrorString); // Function PortalWars.PortalWarsGameInstance.HandleNetworkFailure // (Final|Native|Protected) // @ game+0x1688740
+	void DisconnectFromServer(); // Function PortalWars.PortalWarsGameInstance.DisconnectFromServer // (Final|Exec|Native|Protected) // @ game+0x1688310
+	void Crash(); // Function PortalWars.PortalWarsGameInstance.Crash // (Final|Exec|Native|Protected) // @ game+0x16882d0
 };
 
 // Class Engine.Player
-struct UPlayer {
-	char pad_0000[0x30]; // 0x0 (0x30)
-	class APlayerController* PlayerController; // 0x30(0x08)
-	char pad_0001[0x38]; // 0x38 (0x38)
-	class UGameViewportClient* ViewportClient; // 0x70 (0x08)
+// Size: 0x48 (Inherited: 0x28)
+struct UPlayer : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	struct APlayerController* PlayerController; // 0x30(0x08)
+	int32_t CurrentNetSpeed; // 0x38(0x04)
+	int32_t ConfiguredInternetSpeed; // 0x3c(0x04)
+	int32_t ConfiguredLanSpeed; // 0x40(0x04)
+	char pad_44[0x4]; // 0x44(0x04)
 };
 
-struct ULocalPlayer : UObject {
+// Class Engine.LocalPlayer
+// Size: 0x258 (Inherited: 0x48)
+struct ULocalPlayer : UPlayer {
 	char pad_48[0x28]; // 0x48(0x28)
 	struct UGameViewportClient* ViewportClient; // 0x70(0x08)
 	char pad_78[0x1c]; // 0x78(0x1c)
+	char AspectRatioAxisConstraint[0x01]; // 0x94(0x01)
 	char pad_95[0x3]; // 0x95(0x03)
 	struct APlayerController* PendingLevelPlayerControllerClass; // 0x98(0x08)
 	char bSentSplitJoin : 1; // 0xa0(0x01)
@@ -1190,6 +1439,8 @@ struct UPortalWarsLocalPlayer : ULocalPlayer {
 	struct UPortalWarsNotificationManager* NotificationManagerClass; // 0x500(0x08)
 	struct UPortalWarsInviteManager* InviteManager; // 0x508(0x08)
 	struct UPortalWarsInviteManager* InviteManagerClass; // 0x510(0x08)
+	char ControllerDisconnectedScene[0x08]; // 0x518(0x08)
+	char ControllerDisconnectData[0x58]; // 0x520(0x58)
 	char pad_578[0x38]; // 0x578(0x38)
 	struct UPortalWarsSaveGame* UserSaveGameData; // 0x5b0(0x08)
 	char pad_5B8[0x30]; // 0x5b8(0x30)
@@ -1202,7 +1453,14 @@ struct UPortalWarsLocalPlayer : ULocalPlayer {
 	struct UPortalWarsSaveGame* GetUserSaveGame(); // Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame // (Final|Native|Public|Const) // @ game+0x16a7910
 };
 
-struct UPortalWarsSaveGame : UObject {
+// Class Engine.SaveGame
+// Size: 0x28 (Inherited: 0x28)
+struct USaveGame : UObject {
+};
+
+// Class PortalWars.PortalWarsSaveGame
+// Size: 0x5c0 (Inherited: 0x28)
+struct UPortalWarsSaveGame : USaveGame {
 	char pad_28[0xc]; // 0x28(0x0c)
 	float FOV; // 0x34(0x04)
 	int32_t ColorblindMode; // 0x38(0x04)
@@ -1243,6 +1501,10 @@ struct UPortalWarsSaveGame : UObject {
 	bool ControllerVibrationEnabled; // 0xc7(0x01)
 	int32_t ControllerGameplayPreset; // 0xc8(0x04)
 	char pad_CC[0x4]; // 0xcc(0x04)
+	char CustomControllerBindings[0x70]; // 0xd0(0x70)
+	int32_t ControllerForgePreset; // 0x140(0x04)
+	char pad_144[0x4]; // 0x144(0x04)
+	char CustomControllerForgeBindings[0x70]; // 0x148(0x70)
 	char pad_1B8[0x1]; // 0x1b8(0x01)
 	bool ShouldShowBlood; // 0x1b9(0x01)
 	char pad_1BA[0x2]; // 0x1ba(0x02)
@@ -1268,6 +1530,7 @@ struct UPortalWarsSaveGame : UObject {
 	bool ShowLowAmmo; // 0x217(0x01)
 	bool ShowSprintCrosshair; // 0x218(0x01)
 	char pad_219[0x7]; // 0x219(0x07)
+	char CustomCrosshairs[0x50]; // 0x220(0x50)
 	struct FLinearColor CustomCrosshairColor; // 0x270(0x10)
 	struct FLinearColor EnemyCustomCrosshairColor; // 0x280(0x10)
 	bool WantsToCrossPlay; // 0x290(0x01)
@@ -1280,10 +1543,14 @@ struct UPortalWarsSaveGame : UObject {
 	bool bHasWatchedIntroVideo; // 0x29c(0x01)
 	bool bHasSeenBattlePassDialog; // 0x29d(0x01)
 	char pad_29E[0x2]; // 0x29e(0x02)
+	struct FEquippedCustomizations EquippedCustomizations; // 0x2a0(0x10)
+	char DefaultWeaponType[0x01]; // 0x2b0(0x01)
 	char pad_2B1[0x7]; // 0x2b1(0x07)
 	struct TArray<struct FCustomizationId> ViewedCustomizations; // 0x2b8(0x10)
+	char ViewedCustomizationCategories[0x50]; // 0x2c8(0x50)
 	bool bHasSeenLocker; // 0x318(0x01)
 	char pad_319[0x7]; // 0x319(0x07)
+	char PrevNewCustomizations[0x50]; // 0x320(0x50)
 	bool bHasSyncedNewCustomizations; // 0x370(0x01)
 	char pad_371[0x7]; // 0x371(0x07)
 	struct TArray<struct FStoreItemInfo> ViewedStoreItems; // 0x378(0x10)
@@ -1291,9 +1558,16 @@ struct UPortalWarsSaveGame : UObject {
 	struct TArray<struct FStoreItemInfo> LastViewedStore; // 0x398(0x10)
 	struct TArray<struct FChallengeData> ViewedChallenges; // 0x3a8(0x10)
 	struct TArray<struct FString> MuteList; // 0x3b8(0x10)
+	char LastLoginTime[0x08]; // 0x3c8(0x08)
 	struct FString LoginAuthToken; // 0x3d0(0x10)
 	struct FString PreferredMatchmakingRegionName; // 0x3e0(0x10)
 	struct FString PreferredCustomRegionName; // 0x3f0(0x10)
+	struct TArray<struct FString> UnselectedPlaylists; // 0x400(0x10)
+	char PlaylistPreferences[0x50]; // 0x410(0x50)
+	char CustomGamesFilters[0x38]; // 0x460(0x38)
+	char CustomGamePresets[0x50]; // 0x498(0x50)
+	char ForgeMaps[0x50]; // 0x4e8(0x50)
+	char ViewedSceneCounts[0x50]; // 0x538(0x50)
 	struct FString LastGameVersion; // 0x588(0x10)
 	char pad_598[0x28]; // 0x598(0x28)
 };
@@ -1453,34 +1727,383 @@ struct FHitResult {
 	struct FName MyBoneName; // 0x80(0x08)
 };
 
-// Class Engine.SkinnedMeshComponent
-struct USkeletalMeshComponent : UObject {
-	char pad_0000[0x00]; // 0x28
-	FName GetBoneName(INT BoneIndex);
-	FVector GetBoneMatrix(INT index);
-	void K2_SetRelativeRotation(FRotator NewRotation, bool bSweep, bool bTeleport);
+// Class Engine.ActorComponent
+// Size: 0xb0 (Inherited: 0x28)
+struct UActorComponent : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	char PrimaryComponentTick[0x30]; // 0x30(0x30)
+	struct TArray<struct FName> ComponentTags; // 0x60(0x10)
+	struct TArray<struct UAssetUserData*> AssetUserData; // 0x70(0x10)
+	char pad_80[0x4]; // 0x80(0x04)
+	int32_t UCSSerializationIndex; // 0x84(0x04)
+	char pad_88_0 : 3; // 0x88(0x01)
+	char bNetAddressable : 1; // 0x88(0x01)
+	char bReplicates : 1; // 0x88(0x01)
+	char pad_88_5 : 3; // 0x88(0x01)
+	char pad_89_0 : 7; // 0x89(0x01)
+	char bAutoActivate : 1; // 0x89(0x01)
+	char bIsActive : 1; // 0x8a(0x01)
+	char bEditableWhenInherited : 1; // 0x8a(0x01)
+	char pad_8A_2 : 1; // 0x8a(0x01)
+	char bCanEverAffectNavigation : 1; // 0x8a(0x01)
+	char pad_8A_4 : 1; // 0x8a(0x01)
+	char bIsEditorOnly : 1; // 0x8a(0x01)
+	char pad_8A_6 : 2; // 0x8a(0x01)
+	char pad_8B[0x1]; // 0x8b(0x01)
+	char CreationMethod[0x01]; // 0x8c(0x01)
+	char OnComponentActivated[0x01]; // 0x8d(0x01)
+	char OnComponentDeactivated[0x01]; // 0x8e(0x01)
+	char pad_8F[0x1]; // 0x8f(0x01)
+	struct TArray<struct FSimpleMemberReference> UCSModifiedProperties; // 0x90(0x10)
+	char pad_A0[0x10]; // 0xa0(0x10)
 };
 
 // Class Engine.SceneComponent
-struct USceneComponent {
-	char pad_0000[0x11C]; // 0x0 (0x11C)
-	struct FVector RelativeLocation; // 0x11C(0x0C)
-	struct FRotator RelativeRotation; // 0x128(0x0C)
+// Size: 0x200 (Inherited: 0xb0)
+struct USceneComponent : UActorComponent {
+	char pad_B0[0x8]; // 0xb0(0x08)
+	char PhysicsVolume[0x08]; // 0xb8(0x08)
+	struct USceneComponent* AttachParent; // 0xc0(0x08)
+	struct FName AttachSocketName; // 0xc8(0x08)
+	struct TArray<struct USceneComponent*> AttachChildren; // 0xd0(0x10)
+	struct TArray<struct USceneComponent*> ClientAttachedChildren; // 0xe0(0x10)
+	char pad_F0[0x2c]; // 0xf0(0x2c)
+	struct FVector RelativeLocation; // 0x11c(0x0c)
+	struct FRotator RelativeRotation; // 0x128(0x0c)
+	struct FVector RelativeScale3D; // 0x134(0x0c)
+	struct FVector ComponentVelocity; // 0x140(0x0c)
+	char bComponentToWorldUpdated : 1; // 0x14c(0x01)
+	char pad_14C_1 : 1; // 0x14c(0x01)
+	char bAbsoluteLocation : 1; // 0x14c(0x01)
+	char bAbsoluteRotation : 1; // 0x14c(0x01)
+	char bAbsoluteScale : 1; // 0x14c(0x01)
+	char bVisible : 1; // 0x14c(0x01)
+	char bShouldBeAttached : 1; // 0x14c(0x01)
+	char bShouldSnapLocationWhenAttached : 1; // 0x14c(0x01)
+	char bShouldSnapRotationWhenAttached : 1; // 0x14d(0x01)
+	char bShouldUpdatePhysicsVolume : 1; // 0x14d(0x01)
+	char bHiddenInGame : 1; // 0x14d(0x01)
+	char bBoundsChangeTriggersStreamingDataRebuild : 1; // 0x14d(0x01)
+	char bUseAttachParentBound : 1; // 0x14d(0x01)
+	char pad_14D_5 : 3; // 0x14d(0x01)
+	char pad_14E[0x1]; // 0x14e(0x01)
+	char Mobility[0x01]; // 0x14f(0x01)
+	char DetailMode[0x01]; // 0x150(0x01)
+	char PhysicsVolumeChangedDelegate[0x01]; // 0x151(0x01)
+	char pad_152[0xae]; // 0x152(0xae)
+
+	void K2_SetRelativeRotation(struct FRotator NewRotation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport); // Function Engine.SceneComponent.K2_SetRelativeRotation // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable) // @ game+0x37d0da0
 };
 
-struct ULevelStreaming : UObject {
-	FName PackageNameToLoad;
+// Class Engine.PrimitiveComponent
+// Size: 0x450 (Inherited: 0x200)
+struct UPrimitiveComponent : USceneComponent {
+	float MinDrawDistance; // 0x200(0x04)
+	float LDMaxDrawDistance; // 0x204(0x04)
+	float CachedMaxDrawDistance; // 0x208(0x04)
+	char DepthPriorityGroup[0x01]; // 0x20c(0x01)
+	char ViewOwnerDepthPriorityGroup[0x01]; // 0x20d(0x01)
+	char IndirectLightingCacheQuality[0x01]; // 0x20e(0x01)
+	char LightmapType[0x01]; // 0x20f(0x01)
+	char bUseMaxLODAsImposter : 1; // 0x210(0x01)
+	char bBatchImpostersAsInstances : 1; // 0x210(0x01)
+	char bNeverDistanceCull : 1; // 0x210(0x01)
+	char pad_210_3 : 4; // 0x210(0x01)
+	char bAlwaysCreatePhysicsState : 1; // 0x210(0x01)
+	char bGenerateOverlapEvents : 1; // 0x211(0x01)
+	char bMultiBodyOverlap : 1; // 0x211(0x01)
+	char bTraceComplexOnMove : 1; // 0x211(0x01)
+	char bReturnMaterialOnMove : 1; // 0x211(0x01)
+	char bUseViewOwnerDepthPriorityGroup : 1; // 0x211(0x01)
+	char bAllowCullDistanceVolume : 1; // 0x211(0x01)
+	char bHasMotionBlurVelocityMeshes : 1; // 0x211(0x01)
+	char bVisibleInReflectionCaptures : 1; // 0x211(0x01)
+	char bVisibleInRealTimeSkyCaptures : 1; // 0x212(0x01)
+	char bVisibleInRayTracing : 1; // 0x212(0x01)
+	char bRenderInMainPass : 1; // 0x212(0x01)
+	char bRenderInDepthPass : 1; // 0x212(0x01)
+	char bReceivesDecals : 1; // 0x212(0x01)
+	char bOwnerNoSee : 1; // 0x212(0x01)
+	char bOnlyOwnerSee : 1; // 0x212(0x01)
+	char bTreatAsBackgroundForOcclusion : 1; // 0x212(0x01)
+	char bUseAsOccluder : 1; // 0x213(0x01)
+	char bSelectable : 1; // 0x213(0x01)
+	char bForceMipStreaming : 1; // 0x213(0x01)
+	char bHasPerInstanceHitProxies : 1; // 0x213(0x01)
+	char CastShadow : 1; // 0x213(0x01)
+	char bAffectDynamicIndirectLighting : 1; // 0x213(0x01)
+	char bAffectDistanceFieldLighting : 1; // 0x213(0x01)
+	char bCastDynamicShadow : 1; // 0x213(0x01)
+	char bCastStaticShadow : 1; // 0x214(0x01)
+	char bCastVolumetricTranslucentShadow : 1; // 0x214(0x01)
+	char bCastContactShadow : 1; // 0x214(0x01)
+	char bSelfShadowOnly : 1; // 0x214(0x01)
+	char bCastFarShadow : 1; // 0x214(0x01)
+	char bCastInsetShadow : 1; // 0x214(0x01)
+	char bCastCinematicShadow : 1; // 0x214(0x01)
+	char bCastHiddenShadow : 1; // 0x214(0x01)
+	char bCastShadowAsTwoSided : 1; // 0x215(0x01)
+	char bLightAsIfStatic : 1; // 0x215(0x01)
+	char bLightAttachmentsAsGroup : 1; // 0x215(0x01)
+	char bExcludeFromLightAttachmentGroup : 1; // 0x215(0x01)
+	char bReceiveMobileCSMShadows : 1; // 0x215(0x01)
+	char bSingleSampleShadowFromStationaryLights : 1; // 0x215(0x01)
+	char bIgnoreRadialImpulse : 1; // 0x215(0x01)
+	char bIgnoreRadialForce : 1; // 0x215(0x01)
+	char bApplyImpulseOnDamage : 1; // 0x216(0x01)
+	char bReplicatePhysicsToAutonomousProxy : 1; // 0x216(0x01)
+	char bFillCollisionUnderneathForNavmesh : 1; // 0x216(0x01)
+	char AlwaysLoadOnClient : 1; // 0x216(0x01)
+	char AlwaysLoadOnServer : 1; // 0x216(0x01)
+	char bUseEditorCompositing : 1; // 0x216(0x01)
+	char bRenderCustomDepth : 1; // 0x216(0x01)
+	char bVisibleInSceneCaptureOnly : 1; // 0x216(0x01)
+	char bHiddenInSceneCapture : 1; // 0x217(0x01)
+	char pad_217_1 : 7; // 0x217(0x01)
+	char bHasCustomNavigableGeometry[0x01]; // 0x218(0x01)
+	char pad_219[0x1]; // 0x219(0x01)
+	char CanCharacterStepUpOn[0x01]; // 0x21a(0x01)
+	char LightingChannels[0x01]; // 0x21b(0x01)
+	char CustomDepthStencilWriteMask[0x01]; // 0x21c(0x01)
+	char pad_21D[0x3]; // 0x21d(0x03)
+	int32_t CustomDepthStencilValue; // 0x220(0x04)
+	char pad_224[0x4]; // 0x224(0x04)
+	char CustomPrimitiveData[0x01]; // 0x228(0x10)
+	char CustomPrimitiveDataInternal[0x01]; // 0x238(0x10)
+	char pad_248[0x8]; // 0x248(0x08)
+	int32_t TranslucencySortPriority; // 0x250(0x04)
+	float TranslucencySortDistanceOffset; // 0x254(0x04)
+	int32_t VisibilityId; // 0x258(0x04)
+	char pad_25C[0x4]; // 0x25c(0x04)
+	struct TArray<struct URuntimeVirtualTexture*> RuntimeVirtualTextures; // 0x260(0x10)
+	int8_t VirtualTextureLodBias; // 0x270(0x01)
+	int8_t VirtualTextureCullMips; // 0x271(0x01)
+	int8_t VirtualTextureMinCoverage; // 0x272(0x01)
+	char VirtualTextureRenderPassType[0x01]; // 0x273(0x01)
+	char pad_274[0x4]; // 0x274(0x04)
+	float LpvBiasMultiplier; // 0x278(0x04)
+	char pad_27C[0x8]; // 0x27c(0x08)
+	float BoundsScale; // 0x284(0x04)
+	char pad_288[0x10]; // 0x288(0x10)
+	struct TArray<struct AActor*> MoveIgnoreActors; // 0x298(0x10)
+	struct TArray<struct UPrimitiveComponent*> MoveIgnoreComponents; // 0x2a8(0x10)
+	char pad_2B8[0x10]; // 0x2b8(0x10)
+	char BodyInstance[0x158]; // 0x2c8(0x158)
+	char OnComponentHit[0x01]; // 0x420(0x01)
+	char OnComponentBeginOverlap[0x01]; // 0x421(0x01)
+	char OnComponentEndOverlap[0x01]; // 0x422(0x01)
+	char OnComponentWake[0x01]; // 0x423(0x01)
+	char OnComponentSleep[0x01]; // 0x424(0x01)
+	char pad_425[0x1]; // 0x425(0x01)
+	char OnBeginCursorOver[0x01]; // 0x426(0x01)
+	char OnEndCursorOver[0x01]; // 0x427(0x01)
+	char OnClicked[0x01]; // 0x428(0x01)
+	char OnReleased[0x01]; // 0x429(0x01)
+	char OnInputTouchBegin[0x01]; // 0x42a(0x01)
+	char OnInputTouchEnd[0x01]; // 0x42b(0x01)
+	char OnInputTouchEnter[0x01]; // 0x42c(0x01)
+	char OnInputTouchLeave[0x01]; // 0x42d(0x01)
+	char pad_42E[0x1a]; // 0x42e(0x1a)
+	struct UPrimitiveComponent* LODParentPrimitive; // 0x448(0x08)
 };
 
-// Class Engine.World 
-struct UWorld {
-	char pad_0000[0x30]; // 0x0 (0x30)
-	class ULevel* PersistentLevel; // 0x30(0x08)
-	char pad_0001[0x148]; // 0x38 (0x148)
-	class UGameInstance* OwningGameInstance; // 0x180 (0x08)
-	TArray<ULevel*> Levels;
-	TArray<ULevelStreaming*> StreamingLevels;
-	void** VFTable;
+// Class Engine.MeshComponent
+// Size: 0x480 (Inherited: 0x450)
+struct UMeshComponent : UPrimitiveComponent {
+	struct TArray<struct UMaterialInterface*> OverrideMaterials; // 0x450(0x10)
+	char pad_460[0x10]; // 0x460(0x10)
+	char bEnableMaterialParameterCaching : 1; // 0x470(0x01)
+	char pad_470_1 : 7; // 0x470(0x01)
+	char pad_471[0xf]; // 0x471(0x0f)
+};
+
+// Class Engine.SkinnedMeshComponent
+// Size: 0x6a0 (Inherited: 0x480)
+struct USkinnedMeshComponent : UMeshComponent {
+	struct USkeletalMesh* SkeletalMesh; // 0x480(0x08)
+	char MasterPoseComponent[0x08]; // 0x488(0x08)
+	struct TArray<enum class ESkinCacheUsage> SkinCacheUsage; // 0x490(0x10)
+	struct TArray<struct FVertexOffsetUsage> VertexOffsetUsage; // 0x4a0(0x10)
+	char pad_4B0[0xf8]; // 0x4b0(0xf8)
+	struct UPhysicsAsset* PhysicsAssetOverride; // 0x5a8(0x08)
+	int32_t ForcedLodModel; // 0x5b0(0x04)
+	int32_t MinLodModel; // 0x5b4(0x04)
+	char pad_5B8[0x8]; // 0x5b8(0x08)
+	float StreamingDistanceMultiplier; // 0x5c0(0x04)
+	char pad_5C4[0xc]; // 0x5c4(0x0c)
+	struct TArray<struct FSkelMeshComponentLODInfo> LODInfo; // 0x5d0(0x10)
+	char pad_5E0[0x24]; // 0x5e0(0x24)
+	char VisibilityBasedAnimTickOption[0x01]; // 0x604(0x01)
+	char pad_605[0x1]; // 0x605(0x01)
+	char pad_606_0 : 3; // 0x606(0x01)
+	char bOverrideMinLod : 1; // 0x606(0x01)
+	char bUseBoundsFromMasterPoseComponent : 1; // 0x606(0x01)
+	char bForceWireframe : 1; // 0x606(0x01)
+	char bDisplayBones : 1; // 0x606(0x01)
+	char bDisableMorphTarget : 1; // 0x606(0x01)
+	char bHideSkin : 1; // 0x607(0x01)
+	char bPerBoneMotionBlur : 1; // 0x607(0x01)
+	char bComponentUseFixedSkelBounds : 1; // 0x607(0x01)
+	char bConsiderAllBodiesForBounds : 1; // 0x607(0x01)
+	char bSyncAttachParentLOD : 1; // 0x607(0x01)
+	char bCanHighlightSelectedSections : 1; // 0x607(0x01)
+	char bRecentlyRendered : 1; // 0x607(0x01)
+	char bCastCapsuleDirectShadow : 1; // 0x607(0x01)
+	char bCastCapsuleIndirectShadow : 1; // 0x608(0x01)
+	char bCPUSkinning : 1; // 0x608(0x01)
+	char bEnableUpdateRateOptimizations : 1; // 0x608(0x01)
+	char bDisplayDebugUpdateRateOptimizations : 1; // 0x608(0x01)
+	char bRenderStatic : 1; // 0x608(0x01)
+	char bIgnoreMasterPoseComponentLOD : 1; // 0x608(0x01)
+	char pad_608_6 : 2; // 0x608(0x01)
+	char bCachedLocalBoundsUpToDate : 1; // 0x609(0x01)
+	char pad_609_1 : 1; // 0x609(0x01)
+	char bForceMeshObjectUpdate : 1; // 0x609(0x01)
+	char pad_609_3 : 5; // 0x609(0x01)
+	char pad_60A[0x2]; // 0x60a(0x02)
+	float CapsuleIndirectShadowMinVisibility; // 0x60c(0x04)
+	char pad_610[0x10]; // 0x610(0x10)
+	char CachedWorldSpaceBounds[0x1c]; // 0x620(0x1c)
+	char pad_63C[0x4]; // 0x63c(0x04)
+	struct FMatrix CachedWorldToLocalTransform; // 0x640(0x40)
+	char pad_680[0x20]; // 0x680(0x20)
+};
+
+// Class Engine.SkeletalMeshComponent
+// Size: 0xed0 (Inherited: 0x6a0)
+struct USkeletalMeshComponent : USkinnedMeshComponent {
+	struct UObject* AnimBlueprintGeneratedClass; // 0x6a0(0x08)
+	struct UAnimInstance* AnimClass; // 0x6a8(0x08)
+	struct UAnimInstance* AnimScriptInstance; // 0x6b0(0x08)
+	struct UAnimInstance* PostProcessAnimInstance; // 0x6b8(0x08)
+	char AnimationData[0x18]; // 0x6c0(0x18)
+	char pad_6D8[0x10]; // 0x6d8(0x10)
+	struct FVector RootBoneTranslation; // 0x6e8(0x0c)
+	struct FVector LineCheckBoundsScale; // 0x6f4(0x0c)
+	char pad_700[0x30]; // 0x700(0x30)
+	struct TArray<struct UAnimInstance*> LinkedInstances; // 0x730(0x10)
+	struct TArray<struct FTransform> CachedBoneSpaceTransforms; // 0x740(0x10)
+	struct TArray<struct FTransform> CachedComponentSpaceTransforms; // 0x750(0x10)
+	char pad_760[0x150]; // 0x760(0x150)
+	float GlobalAnimRateScale; // 0x8b0(0x04)
+	char KinematicBonesUpdateType[0x01]; // 0x8b4(0x01)
+	char PhysicsTransformUpdateMode[0x01]; // 0x8b5(0x01)
+	char pad_8B6[0x1]; // 0x8b6(0x01)
+	char AnimationMode[0x01]; // 0x8b7(0x01)
+	char pad_8B8[0x1]; // 0x8b8(0x01)
+	char bDisablePostProcessBlueprint : 1; // 0x8b9(0x01)
+	char pad_8B9_1 : 1; // 0x8b9(0x01)
+	char bUpdateOverlapsOnAnimationFinalize : 1; // 0x8b9(0x01)
+	char pad_8B9_3 : 1; // 0x8b9(0x01)
+	char bHasValidBodies : 1; // 0x8b9(0x01)
+	char bBlendPhysics : 1; // 0x8b9(0x01)
+	char bEnablePhysicsOnDedicatedServer : 1; // 0x8b9(0x01)
+	char bUpdateJointsFromAnimation : 1; // 0x8b9(0x01)
+	char bDisableClothSimulation : 1; // 0x8ba(0x01)
+	char pad_8BA_1 : 7; // 0x8ba(0x01)
+	char pad_8BB[0x5]; // 0x8bb(0x05)
+	char pad_8C0_0 : 1; // 0x8c0(0x01)
+	char bDisableRigidBodyAnimNode : 1; // 0x8c0(0x01)
+	char bAllowAnimCurveEvaluation : 1; // 0x8c0(0x01)
+	char bDisableAnimCurves : 1; // 0x8c0(0x01)
+	char pad_8C0_4 : 3; // 0x8c0(0x01)
+	char bCollideWithEnvironment : 1; // 0x8c0(0x01)
+	char bCollideWithAttachedChildren : 1; // 0x8c1(0x01)
+	char bLocalSpaceSimulation : 1; // 0x8c1(0x01)
+	char bResetAfterTeleport : 1; // 0x8c1(0x01)
+	char pad_8C1_3 : 1; // 0x8c1(0x01)
+	char bDeferKinematicBoneUpdate : 1; // 0x8c1(0x01)
+	char bNoSkeletonUpdate : 1; // 0x8c1(0x01)
+	char bPauseAnims : 1; // 0x8c1(0x01)
+	char bUseRefPoseOnInitAnim : 1; // 0x8c1(0x01)
+	char bEnablePerPolyCollision : 1; // 0x8c2(0x01)
+	char bForceRefpose : 1; // 0x8c2(0x01)
+	char bOnlyAllowAutonomousTickPose : 1; // 0x8c2(0x01)
+	char bIsAutonomousTickPose : 1; // 0x8c2(0x01)
+	char bOldForceRefPose : 1; // 0x8c2(0x01)
+	char bShowPrePhysBones : 1; // 0x8c2(0x01)
+	char bRequiredBonesUpToDate : 1; // 0x8c2(0x01)
+	char bAnimTreeInitialised : 1; // 0x8c2(0x01)
+	char bIncludeComponentLocationIntoBounds : 1; // 0x8c3(0x01)
+	char bEnableLineCheckWithBounds : 1; // 0x8c3(0x01)
+	char bPropagateCurvesToSlaves : 1; // 0x8c3(0x01)
+	char bSkipKinematicUpdateWhenInterpolating : 1; // 0x8c3(0x01)
+	char bSkipBoundsUpdateWhenInterpolating : 1; // 0x8c3(0x01)
+	char pad_8C3_5 : 2; // 0x8c3(0x01)
+	char bNeedsQueuedAnimEventsDispatched : 1; // 0x8c3(0x01)
+	char pad_8C4[0x2]; // 0x8c4(0x02)
+	uint16_t CachedAnimCurveUidVersion; // 0x8c6(0x02)
+	float ClothBlendWeight; // 0x8c8(0x04)
+	bool bWaitForParallelClothTask; // 0x8cc(0x01)
+	char pad_8CD[0x3]; // 0x8cd(0x03)
+	struct TArray<struct FName> DisallowedAnimCurves; // 0x8d0(0x10)
+	struct UBodySetup* BodySetup; // 0x8e0(0x08)
+	char pad_8E8[0x8]; // 0x8e8(0x08)
+	struct FMulticastInlineDelegate OnConstraintBroken; // 0x8f0(0x10)
+	struct UClothingSimulationFactory* ClothingSimulationFactory; // 0x900(0x08)
+	char pad_908[0xd0]; // 0x908(0xd0)
+	float TeleportDistanceThreshold; // 0x9d8(0x04)
+	float TeleportRotationThreshold; // 0x9dc(0x04)
+	char pad_9E0[0x8]; // 0x9e0(0x08)
+	uint32_t LastPoseTickFrame; // 0x9e8(0x04)
+	char pad_9EC[0x54]; // 0x9ec(0x54)
+	struct UClothingSimulationInteractor* ClothingInteractor; // 0xa40(0x08)
+	char pad_A48[0xc8]; // 0xa48(0xc8)
+	struct FMulticastInlineDelegate OnAnimInitialized; // 0xb10(0x10)
+	char pad_B20[0x3b0]; // 0xb20(0x3b0)
+};
+
+// Class Engine.World
+// Size: 0x798 (Inherited: 0x28)
+struct UWorld : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	struct ULevel* PersistentLevel; // 0x30(0x08)
+	struct UNetDriver* NetDriver; // 0x38(0x08)
+	struct ULineBatchComponent* LineBatcher; // 0x40(0x08)
+	struct ULineBatchComponent* PersistentLineBatcher; // 0x48(0x08)
+	struct ULineBatchComponent* ForegroundLineBatcher; // 0x50(0x08)
+	struct AGameNetworkManager* NetworkManager; // 0x58(0x08)
+	struct UPhysicsCollisionHandler* PhysicsCollisionHandler; // 0x60(0x08)
+	struct TArray<struct UObject*> ExtraReferencedObjects; // 0x68(0x10)
+	struct TArray<struct UObject*> PerModuleDataObjects; // 0x78(0x10)
+	struct TArray<struct ULevelStreaming*> StreamingLevels; // 0x88(0x10)
+	char StreamingLevelsToConsider[0x28]; // 0x98(0x28)
+	struct FString StreamingLevelsPrefix; // 0xc0(0x10)
+	struct ULevel* CurrentLevelPendingVisibility; // 0xd0(0x08)
+	struct ULevel* CurrentLevelPendingInvisibility; // 0xd8(0x08)
+	struct UDemoNetDriver* DemoNetDriver; // 0xe0(0x08)
+	struct AParticleEventManager* MyParticleEventManager; // 0xe8(0x08)
+	struct APhysicsVolume* DefaultPhysicsVolume; // 0xf0(0x08)
+	char pad_F8[0x16]; // 0xf8(0x16)
+	char pad_10E_0 : 2; // 0x10e(0x01)
+	char bAreConstraintsDirty : 1; // 0x10e(0x01)
+	char pad_10E_3 : 5; // 0x10e(0x01)
+	char pad_10F[0x1]; // 0x10f(0x01)
+	struct UNavigationSystemBase* NavigationSystem; // 0x110(0x08)
+	struct AGameModeBase* AuthorityGameMode; // 0x118(0x08)
+	struct AGameStateBase* GameState; // 0x120(0x08)
+	struct UAISystemBase* AISystem; // 0x128(0x08)
+	struct UAvoidanceManager* AvoidanceManager; // 0x130(0x08)
+	struct TArray<struct ULevel*> Levels; // 0x138(0x10)
+	struct TArray<struct FLevelCollection> LevelCollections; // 0x148(0x10)
+	char pad_158[0x28]; // 0x158(0x28)
+	struct UGameInstance* OwningGameInstance; // 0x180(0x08)
+	struct TArray<struct UMaterialParameterCollectionInstance*> ParameterCollectionInstances; // 0x188(0x10)
+	struct UCanvas* CanvasForRenderingToTarget; // 0x198(0x08)
+	struct UCanvas* CanvasForDrawMaterialToRenderTarget; // 0x1a0(0x08)
+	char pad_1A8[0x50]; // 0x1a8(0x50)
+	struct UPhysicsFieldComponent* PhysicsField; // 0x1f8(0x08)
+	char ComponentsThatNeedPreEndOfFrameSync[0x50]; // 0x200(0x50)
+	struct TArray<struct UActorComponent*> ComponentsThatNeedEndOfFrameUpdate; // 0x250(0x10)
+	struct TArray<struct UActorComponent*> ComponentsThatNeedEndOfFrameUpdate_OnGameThread; // 0x260(0x10)
+	char pad_270[0x370]; // 0x270(0x370)
+	struct UWorldComposition* WorldComposition; // 0x5e0(0x08)
+	char pad_5E8[0x90]; // 0x5e8(0x90)
+	char PSCPool[0x58]; // 0x678(0x58)
+	char pad_6D0[0xc8]; // 0x6d0(0xc8)
+
+	struct AWorldSettings* K2_GetWorldSettings(); // Function Engine.World.K2_GetWorldSettings // (Final|Native|Public|BlueprintCallable) // @ game+0x3809c70
+	void HandleTimelineScrubbed(); // Function Engine.World.HandleTimelineScrubbed // (Final|Native|Public) // @ game+0x3809c50
 
 	static struct UWorld* GetWorld();
 	static struct UClass* StaticClass();
@@ -1860,6 +2483,12 @@ struct UKismetStringLibrary : UBlueprintFunctionLibrary {
 	struct FName Conv_StringToName(struct FString inString); // Function Engine.KismetStringLibrary.Conv_StringToName // (Final|Native|Static|Public|BlueprintCallable|BlueprintPure) // @ game+0x374bdb0
 
 	static struct UClass* StaticClass();
+};
+
+// ScriptStruct GameplayTags.GameplayTag
+// Size: 0x08 (Inherited: 0x00)
+struct FGameplayTag {
+	struct FName TagName; // 0x00(0x08)
 };
 
 extern FNamePool* NamePoolData;
