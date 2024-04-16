@@ -5,14 +5,17 @@
 #include "hook/Hook.h"
 #include "gui/ZeroGUI.h"
 #include "hook/functions/PostRender.h"
+#include "utils/ExceptionHandler.h"
 
 __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam) {
-	MSG* msg = (MSG*)lparam;
-	if (msg->message != HCBT_CREATEWND) return CallNextHookEx(0, code, wparam, lparam);
+	ExceptionHandler::Init();
+
+    MSG* msg = (MSG*)lparam;
+	if (msg->message != HCBT_CREATEWND) return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
 
 	if (!Hook::Init()) return CallNextHookEx(Hook::g_hook, code, wparam, HCBT_CREATEWND);
 
-	Hook::OriginalPostRender = reinterpret_cast<decltype(Hook::OriginalPostRender)>(Hook::SetHook(Hook::PostRenderVTable, Hook::PostRenderIndex, &PostRender));
+	Hook::PostRender::Original = reinterpret_cast<decltype(Hook::PostRender::Original)>(Hook::SetHook(Hook::PostRender::VTable, Hook::PostRender::Index, &PostRender));
 
 	Logger::Log("SUCCESS", "Injected");
 	Logger::Log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
