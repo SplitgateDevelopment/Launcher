@@ -190,6 +190,12 @@
     <ClInclude Include="external\minhook\include\hde\table64.h" />
     <ClInclude Include="external\minhook\include\MinHook.h" />
     <ClInclude Include="external\minhook\include\trampoline.h" />
+    <ClInclude Include="menu\gui\Config.h" />
+    <ClInclude Include="menu\gui\Custom.h" />
+    <ClInclude Include="menu\gui\Gui.h" />
+    <ClInclude Include="menu\gui\Styles.h" />
+    <ClInclude Include="menu\gui\Window.h" />
+    <ClInclude Include="menu\sections\Debug.h" />
     <ClInclude Include="menu\sections\Exploits.h" />
     <ClInclude Include="menu\sections\Misc.h" />
     <ClInclude Include="menu\sections\Scripts.h" />
@@ -212,8 +218,6 @@
     <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="utils\Util.h" />
     <ClInclude Include="menu\Menu.h" />
-    <ClInclude Include="gui\ZeroGUI.h" />
-    <ClInclude Include="gui\ZeroInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

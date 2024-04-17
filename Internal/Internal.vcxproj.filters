@@ -13,9 +13,6 @@
     <Filter Include="menu">
       <UniqueIdentifier>{165791b0-7abe-4d0b-9a3a-f9c00f066876}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gui">
-      <UniqueIdentifier>{83d0cb65-bdaa-4cf8-8428-b2dc7c056ea1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="hook">
       <UniqueIdentifier>{9801e037-7e0f-4372-ac26-114361471f3a}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,18 @@
     </Filter>
     <Filter Include="scripting\modules">
       <UniqueIdentifier>{3bbda6fb-899a-4a39-b721-74e64b3e7eab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="menu\gui">
+      <UniqueIdentifier>{fb868971-7f56-4e4a-8030-f66235e89b51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{4d7daf7f-431e-4684-a8bf-8c1622067c12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui">
+      <UniqueIdentifier>{f7ff5f05-9a07-406a-9465-6e356fc6c096}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\minhook">
+      <UniqueIdentifier>{7674bbc3-8dd0-453c-9bcb-331c23453a70}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -53,12 +62,6 @@
     </ClInclude>
     <ClInclude Include="menu\Menu.h">
       <Filter>menu</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\ZeroGUI.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\ZeroInput.h">
-      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="hook\functions\PostRender.h">
       <Filter>hook\functions</Filter>
@@ -105,24 +108,78 @@
     <ClInclude Include="utils\Globals.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="external\imgui\include\imconfig.h" />
-    <ClInclude Include="external\imgui\include\imgui.h" />
-    <ClInclude Include="external\imgui\include\imgui_impl_dx11.h" />
-    <ClInclude Include="external\imgui\include\imgui_impl_win32.h" />
-    <ClInclude Include="external\imgui\include\imgui_internal.h" />
-    <ClInclude Include="external\imgui\include\imgui_stdlib.h" />
-    <ClInclude Include="external\imgui\include\imstb_rectpack.h" />
-    <ClInclude Include="external\imgui\include\imstb_textedit.h" />
-    <ClInclude Include="external\imgui\include\imstb_truetype.h" />
-    <ClInclude Include="external\minhook\include\MinHook.h" />
-    <ClInclude Include="external\minhook\include\hde\hde32.h" />
-    <ClInclude Include="external\minhook\include\hde\hde64.h" />
-    <ClInclude Include="external\minhook\include\hde\pstdint.h" />
-    <ClInclude Include="external\minhook\include\hde\table32.h" />
-    <ClInclude Include="external\minhook\include\hde\table64.h" />
-    <ClInclude Include="external\minhook\include\buffer.h" />
-    <ClInclude Include="external\minhook\include\trampoline.h" />
-    <ClInclude Include="utils\ExceptionHandler.h" />
+    <ClInclude Include="menu\sections\Debug.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\ExceptionHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\gui\Config.h">
+      <Filter>menu\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\gui\Window.h">
+      <Filter>menu\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\gui\Styles.h">
+      <Filter>menu\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\gui\Gui.h">
+      <Filter>menu\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\buffer.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\hde\hde64.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\hde\hde32.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\trampoline.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\MinHook.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\hde\pstdint.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\hde\table32.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\minhook\include\hde\table64.h">
+      <Filter>external\minhook</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imconfig.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imgui.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imgui_impl_dx11.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imgui_impl_win32.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imgui_internal.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imgui_stdlib.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imstb_textedit.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imstb_truetype.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\include\imstb_rectpack.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\gui\Custom.h">
+      <Filter>menu\gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
@@ -135,18 +192,44 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="external\imgui\include\imgui.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_demo.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_draw.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_impl_dx11.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_impl_win32.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_stdlib.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_tables.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_widgets.cpp" />
-    <ClCompile Include="external\minhook\include\hde\hde32.c" />
-    <ClCompile Include="external\minhook\include\hde\hde64.c" />
-    <ClCompile Include="external\minhook\include\buffer.c" />
-    <ClCompile Include="external\minhook\include\hook.c" />
-    <ClCompile Include="external\minhook\include\trampoline.c" />
+    <ClCompile Include="external\minhook\include\buffer.c">
+      <Filter>external\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="external\minhook\include\hook.c">
+      <Filter>external\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="external\minhook\include\hde\hde32.c">
+      <Filter>external\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="external\minhook\include\hde\hde64.c">
+      <Filter>external\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="external\minhook\include\trampoline.c">
+      <Filter>external\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_demo.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_draw.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_impl_dx11.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_impl_win32.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_stdlib.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_tables.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\include\imgui_widgets.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
