@@ -1,9 +1,11 @@
 #pragma once
 
-#include <format>
 #include "Features.h"
-#include <MinHook.h>
 #include "functions/ProcessEvent.h"
+#include "../menu/gui/Gui.h"
+
+#include <format>
+#include <MinHook.h>
 
 namespace Hook {
 	HHOOK g_hook;
@@ -84,6 +86,12 @@ namespace Hook {
 		ProcessEvent::Original = ProccessEventTarget;
 
 		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void**>(&ProcessEvent::Original));
+
+		if (!GUI::Init())
+		{
+			Logger::Log("ERROR", "Could not initialize GUI");
+			return FALSE;
+		}
 
 		if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK)
 		{
