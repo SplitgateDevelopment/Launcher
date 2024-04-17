@@ -12,7 +12,7 @@ namespace ProcessEvent {
 	void HookedProcessEvent(UObject* Class, UFunction* Function, void* Params) {
 		static UObject* ReceiveShutdown = ObjObjects->FindObject("Function Engine.GameInstance.ReceiveShutdown");
 
-		if (Settings.MISC.LogProcessEvent) {
+		if (Settings.DEBUG.LogProcessEvent) {
 
 			std::string className = Class->GetName().c_str();
 			std::string functionName = Function->GetFullName();
