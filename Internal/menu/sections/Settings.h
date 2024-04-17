@@ -1,40 +1,37 @@
 #pragma once
 
-#include "../../gui/ZeroGUI.h"
 #include "../../settings/Settings.h"
 #include "../../hook/Hook.h"
 
 namespace Menu {
 	namespace Sections {
 		void SettingsTab() {
-			if (ZeroGUI::Button("Save", FVector2D{ 110, 25 })) {
+			if (ImGui::Button("Save")) {
 				SettingsHelper::Save();
 			};
 
-			ZeroGUI::SameLine();
+			ImGui::SameLine();
 
-			if (ZeroGUI::Button("Reset", FVector2D{ 110, 25 })) {
+			if (ImGui::Button("Reset")) {
 				SettingsHelper::Reset();
 			};
 
-			ZeroGUI::Text("Menu Hotkey", false, true);
-			ZeroGUI::SameLine();
-			ZeroGUI::Hotkey("Menu Hotkey", FVector2D{ 110, 25 }, &Settings.MENU.ShowHotkey);
+			ImGui::Text("Menu Hotkey", false, true);
+			//ImGui::SameLine();
+			//ImGui::Hotkey("Menu Hotkey", &Settings.MENU.ShowHotkey);
 
-			if (ZeroGUI::Button("Toggle Console", FVector2D{ 110, 25 })) {
+			if (ImGui::Button("Toggle Console")) {
 				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
 				Logger::SetConsoleVisibility(Settings.MISC.ShowConsole);
 			};
-			ZeroGUI::SameLine();
-			if (ZeroGUI::Button("Unload", FVector2D{ 110, 25 })) {
-				Hook::UnHook();
+			ImGui::SameLine();
+			if (ImGui::Button("Unload")) {
+				//Hook::UnHook();
 			}
 
-			ZeroGUI::ColorPicker("Menu Color", &Settings.MENU.MenuColor);
-			ZeroGUI::SameLine();
-			ZeroGUI::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
-
-			ZeroGUI::Checkbox("Log ProcessEvent", &Settings.MISC.LogProcessEvent);
+			//ImGui::ColorEdit3("Menu Color", &Settings.MENU.MenuColor);
+			//ImGui::SameLine();
+			ImGui::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
 		}
 	}
 }

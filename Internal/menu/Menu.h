@@ -1,50 +1,68 @@
 #pragma once
 
-#include "../gui/ZeroGUI.h"
 #include "../settings/Settings.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
 #include "sections/Scripts.h"
 #include "sections/Settings.h"
+#include "sections/Debug.h"
 #include "sections/Watermark.h"
 
+#include <imgui.h>
+
 namespace Menu {
-	void Tick()
+	static int tab = 0;
+    static ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
+
+	void Draw()
 	{
-		ZeroGUI::Input::Handle();
-		ZeroGUI::Colors::MainColor = Settings.MENU.MenuColor;
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+		if (!Settings.MENU.ShowMenu) return;
 
-		if (ZeroGUI::Window("Splitgate Internal", &Settings.MENU.MenuPosition, FVector2D{ 500.0f, 400.0f }, Settings.MENU.ShowMenu))
+        if (Settings.DEBUG.ShowDemoWindow)
+        {
+            ImGui::ShowDemoWindow(&Settings.DEBUG.ShowDemoWindow);
+        }
+
+		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu))
 		{
-			static int tab = 0;
-			if (ZeroGUI::ButtonTab("Misc", FVector2D{ 110, 25 }, tab == 0)) tab = 0;
-			if (ZeroGUI::ButtonTab("Exploits", FVector2D{ 110, 25 }, tab == 1)) tab = 1;
-			if (ZeroGUI::ButtonTab("User Scripts", FVector2D{ 110, 25 }, tab == 2)) tab = 2;
-			if (ZeroGUI::ButtonTab("Settings", FVector2D{ 110, 25 }, tab == 2)) tab = 3;
-			ZeroGUI::NextColumn(130.0f);
+			ImGui::End();
+			return;
+		};
 
-			switch (tab) {
-			case 0:
-				Sections::MiscTab();
-				break;
-			case 1:
-				Sections::ExploitsTab();
-				break;
-			case 2:
-				Sections::ScriptsTab();
-				break;
-			case 3:
-				Sections::SettingsTab();
-				break;
-			default:
-				break;
-			};
-		}
+        if (ImGui::BeginTabBar("MainTabBar", tabFlags))
+        {
+            if (ImGui::BeginTabItem("Misc"))
+            {
+                Menu::Sections::MiscTab();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Exploits"))
+            {
+                Menu::Sections::ExploitsTab();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("User Scripts"))
+            {
+                Menu::Sections::ScriptsTab();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Settings"))
+            {
+                Menu::Sections::SettingsTab();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Debug"))
+            {
+                Menu::Sections::DebugTab();
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        };
 
-		ZeroGUI::Render();
-		//ZeroGUI::Draw_Cursor(Settings.MENU.ShowHotkey);
-		Sections::Watermark();
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::End();
 	};
 };
