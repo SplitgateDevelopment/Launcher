@@ -7,9 +7,6 @@
 void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 {
 	do {
-		ZeroGUI::SetupCanvas(canvas);
-		Menu::Tick();
-
 		UWorld* World = *(UWorld**)(WRLD);
 		if (!World) break;
 
