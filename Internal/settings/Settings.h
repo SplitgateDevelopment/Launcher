@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../ue/Engine.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -13,8 +12,6 @@ typedef struct {
 		bool ShowWatermark;
 		const char* Watermark;
 		int ShowHotkey;
-		FVector2D MenuPosition;
-		FLinearColor MenuColor;
 	} MENU;
 
 	struct {
@@ -30,8 +27,12 @@ typedef struct {
 		const char* PlayerName;
 		const char* DiscordAppID;
 		bool UserScriptsEnabled;
-		bool LogProcessEvent;
 	} MISC;
+
+	struct {
+		bool LogProcessEvent;
+		bool ShowDemoWindow;
+	} DEBUG;
 } SETTINGS;
 
 extern SETTINGS Settings;

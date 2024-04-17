@@ -73,8 +73,6 @@ namespace SettingsHelper {
 		Settings.MENU.ShowWatermark = true;
 		Settings.MENU.Watermark = "github.com/SplitgateDevelopment/Launcher";
 		Settings.MENU.ShowHotkey = VK_INSERT;
-		Settings.MENU.MenuPosition = { 0.f, 0.f };
-		Settings.MENU.MenuColor = { 255.0f, 0.0f, 0.0f, 1.0f };
 
 		Settings.EXPLOITS.FOV = 80;
 		Settings.EXPLOITS.GodMode = false;
@@ -86,7 +84,9 @@ namespace SettingsHelper {
 		Settings.MISC.PlayerName = "SplitgateDevelopment";
 		Settings.MISC.DiscordAppID = "1078744504066117703";
 		Settings.MISC.UserScriptsEnabled = false;
-		Settings.MISC.LogProcessEvent = false;
+
+		Settings.DEBUG.LogProcessEvent = false;
+		Settings.DEBUG.ShowDemoWindow = false;
 
 		Save();
 	}
