@@ -11,11 +11,14 @@
 #include <imgui.h>
 
 namespace Menu {
+    static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
 	static int tab = 0;
     static ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
 
 	void Draw()
 	{
+        Menu::Sections::Watermark();
+        
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
@@ -25,8 +28,12 @@ namespace Menu {
         {
             ImGui::ShowDemoWindow(&Settings.DEBUG.ShowDemoWindow);
         }
+        if (Settings.DEBUG.ShowStyleEditor)
+        {
+            ImGui::ShowStyleEditor();
+        }
 
-		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu))
+		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu, windowFlags))
 		{
 			ImGui::End();
 			return;
@@ -62,7 +69,6 @@ namespace Menu {
             ImGui::EndTabBar();
         };
 
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::End();
 	};
 };
