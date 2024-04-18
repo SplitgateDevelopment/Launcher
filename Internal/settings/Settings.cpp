@@ -81,6 +81,7 @@ namespace SettingsHelper {
 		Settings.EXPLOITS.NoRecoil = false;
 		Settings.EXPLOITS.GodMelee = false;
 		Settings.EXPLOITS.PlayerSpeed = 1.f;
+		Settings.EXPLOITS.InfinteJetpack = false;
 
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.ShowConsole = true;

@@ -22,6 +22,7 @@ typedef struct {
 		bool NoRecoil;
 		bool GodMelee;
 		float PlayerSpeed;
+		bool InfinteJetpack;
 	} EXPLOITS;
 
 	struct {

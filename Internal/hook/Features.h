@@ -87,6 +87,13 @@ public:
 
 			Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
 
+			if (Settings.EXPLOITS.InfinteJetpack)
+			{
+				Player->thrusterRechargeDelay = 0.1f;
+				Player->thrusterCurrentTime = 0.0f;
+				Player->ThrusterLoudnessForBots = 0.0f;
+			};
+
 		} while (false);
 
 		return;
