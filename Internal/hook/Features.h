@@ -85,6 +85,8 @@ public:
 				PlayerGun->WeaponConfig.MeleeDamage = 999.f;
 			};
 
+			Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
+
 		} while (false);
 
 		return;

@@ -21,6 +21,7 @@ typedef struct {
 		int NoClip;
 		bool NoRecoil;
 		bool GodMelee;
+		float PlayerSpeed;
 	} EXPLOITS;
 
 	struct {

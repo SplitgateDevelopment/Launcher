@@ -80,6 +80,7 @@ namespace SettingsHelper {
 		Settings.EXPLOITS.NoClip = VK_OEM_PLUS;
 		Settings.EXPLOITS.NoRecoil = false;
 		Settings.EXPLOITS.GodMelee = false;
+		Settings.EXPLOITS.PlayerSpeed = 1.f;
 
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.ShowConsole = true;
