@@ -6,7 +6,7 @@
 namespace Menu {
 	namespace Sections {
 		void ScriptsTab() {
-			ImGui::Checkbox("Enabled", &Settings.MISC.UserScriptsEnabled);
+			ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled);
 
             if (ImGui::CollapsingHeader("Loaded Scripts"))
             {

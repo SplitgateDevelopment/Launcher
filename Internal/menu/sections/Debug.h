@@ -6,8 +6,9 @@
 namespace Menu {
 	namespace Sections {
 		void DebugTab() {
-			ImGui::Checkbox("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
-			ImGui::Checkbox("Show demo window", &Settings.DEBUG.ShowDemoWindow);
+			ImGui::ToggleButton("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
+			ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
+			ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 		}
 	}
 }
