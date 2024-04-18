@@ -67,6 +67,7 @@ namespace Hook {
 		};
 		
 		if (SettingsHelper::Init()) Logger::Log("SUCCESS", std::string("Loaded settings from ").append(SettingsHelper::GetSettingsFilePath()));
+		SettingsHelper::Reset(); //Temp fix
 
 		Logger::Log("INFO", std::format("Found [{:d}] Objects", ObjObjects->NumElements));
 		
