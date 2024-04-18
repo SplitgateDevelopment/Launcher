@@ -151,6 +151,17 @@ struct FString : private TArray<wchar_t>
 		}
 	};
 
+	FString(const std::string& other)
+	{
+		Max = Count = other.empty() ? 0 : other.length() + 1;
+		if (Count)
+		{
+			Data = new wchar_t[Count];
+			std::copy(other.begin(), other.end(), Data);
+			Data[Count - 1] = L'\0';
+		}
+	}
+
 	inline bool IsValid() const
 	{
 		return Data != nullptr;
@@ -2489,6 +2500,267 @@ struct UKismetStringLibrary : UBlueprintFunctionLibrary {
 // Size: 0x08 (Inherited: 0x00)
 struct FGameplayTag {
 	struct FName TagName; // 0x00(0x08)
+};
+
+// ScriptStruct PortalWarsGlobals.ErrorInfo
+// Size: 0x58 (Inherited: 0x00)
+struct FErrorInfo {
+	struct FString ErrorCode; // 0x00(0x10)
+	struct TArray<struct FErrorData> ErrorData; // 0x10(0x10)
+	struct FText ErrorText; // 0x20(0x18)
+	struct FString Code; // 0x38(0x10)
+	struct FString Message; // 0x48(0x10)
+};
+
+// Class PortalWars.PortalWarsNotificationManager
+// Size: 0x4e0 (Inherited: 0x28)
+struct UPortalWarsNotificationManager : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	/*struct UPortalWarsMessageDialogWidget* MessageDialogWidgetClass; // 0x30(0x08)
+	struct FPortalWarsUISceneInitData MessageSceneData; // 0x38(0x50)
+	struct UPortalWarsDialogWidget* RewardReceivedWidgetClass; // 0x88(0x08)
+	struct FPortalWarsUISceneInitData RewardReceivedSceneData; // 0x90(0x50)
+	struct UPortalWarsDialogWidget* StreakIncreaseWidgetClass; // 0xe0(0x08)
+	struct FPortalWarsUISceneInitData StreakIncreaseSceneData; // 0xe8(0x50)
+	struct UPortalWarsUnlockDialogWidget* UnlockDialogWidgetClass; // 0x138(0x08)
+	struct FPortalWarsUISceneInitData UnlockDialogSceneData; // 0x140(0x50)
+	struct UPortalWarsUIScene* ProgressionUpdateSceneClass; // 0x190(0x08)
+	struct FPortalWarsUISceneInitData ProgressionSceneData; // 0x198(0x50)
+	struct UPortalWarsBadgeRewardWidget* BadgeRewardWidgetClass; // 0x1e8(0x08)
+	struct FPrimaryAssetId LevelBadge; // 0x1f0(0x10)
+	struct FPortalWarsUISceneInitData UserLegacyProgressionNotificationDialogSceneData; // 0x200(0x50)
+	struct FPortalWarsUISceneInitData UserBadgeRewardDialogSceneData; // 0x250(0x50)
+	struct UPortalWarsBPPurchaseDialogWidget* BattlePassPurchaseDialogWidgetClass; // 0x2a0(0x08)
+	struct FPortalWarsUISceneInitData BattlePassPurchaseSceneData; // 0x2a8(0x50)
+	struct UPortalWarsDialogWidget* PlaylistActiveWidgetClass; // 0x2f8(0x08)
+	struct FPortalWarsUISceneInitData PlaylistActiveSceneData; // 0x300(0x50)
+	struct UPortalWarsDialogWidget* GameSessionReconnectWidgetClass; // 0x350(0x08)
+	struct FPortalWarsUISceneInitData GameSessionReconnectSceneData; // 0x358(0x50)
+	struct UPortalWarsDialogWidget* LimitedTimeOfferWidgetClass; // 0x3a8(0x08)
+	struct FPortalWarsUISceneInitData LimitedTimeOfferInitData; // 0x3b0(0x50)
+	struct FPortalWarsUISceneInstanceInitData PostMatchSceneData; // 0x400(0x58)
+	struct UPortalWarsDialogWidget* RankUpdateWidgetClass; // 0x458(0x08)
+	struct FPortalWarsUISceneInitData RankUpdateSceneInitData; // 0x460(0x50)
+	char pad_4B0[0x8]; // 0x4b0(0x08)
+	struct TArray<struct UObject*> ReferencedObjects; // 0x4b8(0x10)
+	struct FText BadgeUnlockTitle; // 0x4c8(0x18)*/
+
+	void ShowBattlePassPurchaseDialog(); // Function PortalWars.PortalWarsNotificationManager.ShowBattlePassPurchaseDialog // (Final|Native|Protected) // @ game+0x16b1ed0
+	void QueueNotice(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.QueueNotice // (Final|Native|Public|HasOutParms) // @ game+0x16b1c90
+	void QueueError(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.QueueError // (Final|Native|Public|HasOutParms) // @ game+0x16b1b00
+	void OpenNoticeDialog(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.OpenNoticeDialog // (Final|Native|Public|HasOutParms) // @ game+0x16b1970
+	void OpenErrorDialog(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.OpenErrorDialog // (Final|Native|Public|HasOutParms) // @ game+0x16b17e0
+	void OnSessionQueryError(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.OnSessionQueryError // (Final|Native|Protected|HasOutParms) // @ game+0x16b1560
+	void OnRewardsReceived(struct FString Type, struct TArray<struct FRewardData> Rewards); // Function PortalWars.PortalWarsNotificationManager.OnRewardsReceived // (Final|Native|Protected) // @ game+0x16b1360
+	void OnRankUpdate(struct FUserRankUpdate Data); // Function PortalWars.PortalWarsNotificationManager.OnRankUpdate // (Final|Native|Protected) // @ game+0x16b0f10
+	void OnProgressionUpdate(struct FUserProgressionUpdate Data); // Function PortalWars.PortalWarsNotificationManager.OnProgressionUpdate // (Final|Native|Protected) // @ game+0x16b0d20
+	void OnProgressionMatchUpdate(struct FUserProgressionUpdate Data); // Function PortalWars.PortalWarsNotificationManager.OnProgressionMatchUpdate // (Final|Native|Protected) // @ game+0x16b0b30
+	void OnPostGameStats(struct TArray<struct FUserPostGameStat> Data); // Function PortalWars.PortalWarsNotificationManager.OnPostGameStats // (Final|Native|Protected) // @ game+0x16b0940
+	void OnPlaylistActiveUpdate(struct FString PlaylistType); // Function PortalWars.PortalWarsNotificationManager.OnPlaylistActiveUpdate // (Final|Native|Protected) // @ game+0x16b08a0
+	void OnPartyError(struct FErrorInfo& ErrorInfo); // Function PortalWars.PortalWarsNotificationManager.OnPartyError // (Final|Native|Protected|HasOutParms) // @ game+0x16b0710
+	void OnLimitedTimeOfferReceived(struct FStoreCategoryInfo& LimitedTimeOffer); // Function PortalWars.PortalWarsNotificationManager.OnLimitedTimeOfferReceived // (Final|Native|Protected|HasOutParms) // @ game+0x16b0560
+	void OnLegacyProgressionNotification(struct FAccelByteModelsUserLegacyProgressionNotificationInfo& UserLegacyProgressionNotificationInfo); // Function PortalWars.PortalWarsNotificationManager.OnLegacyProgressionNotification // (Final|Native|Public|HasOutParms) // @ game+0x16b04c0
+	void OnGameSessionReconnectAvailable(struct FString GameSessionId, struct FDateTime DropDateTime); // Function PortalWars.PortalWarsNotificationManager.OnGameSessionReconnectAvailable // (Final|Native|Protected|HasDefaults) // @ game+0x16b0150
+	void OnDailyPlayStreakIncreased(struct FUserDailyStreakInfo Data); // Function PortalWars.PortalWarsNotificationManager.OnDailyPlayStreakIncreased // (Final|Native|Protected) // @ game+0x16aff20
+	void OnChallengesUpdated(struct TArray<struct FUserChallengeUpdate> Challenges); // Function PortalWars.PortalWarsNotificationManager.OnChallengesUpdated // (Final|Native|Protected) // @ game+0x16afe30
+	void OnBadgeRewards(struct TArray<struct FName>& BadgeNames); // Function PortalWars.PortalWarsNotificationManager.OnBadgeRewards // (Final|Native|Public|HasOutParms) // @ game+0x16afd80
+	struct UPortalWarsRewardReceivedViewModel* GetRewardReceivedViewModelForType(struct FString TypeString); // Function PortalWars.PortalWarsNotificationManager.GetRewardReceivedViewModelForType // (Final|Native|Protected) // @ game+0x16afbb0
+	struct UPortalWarsPostMatchViewModel* GetPostMatchViewModel(); // Function PortalWars.PortalWarsNotificationManager.GetPostMatchViewModel // (Final|Native|Protected) // @ game+0x16afb80
+
+	static struct UClass* StaticClass();
+	static struct UPortalWarsNotificationManager* GetDefaultObj();
+};
+
+// Class PortalWars.PortalWarsBasePlayerController
+// Size: 0x588 (Inherited: 0x570)
+struct APortalWarsBasePlayerController : APlayerController {
+	char pad_570[0x18]; // 0x570(0x18)
+
+	void ServerKickForInactivity(); // Function PortalWars.PortalWarsBasePlayerController.ServerKickForInactivity // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16616b0
+	void KickForInactivity(); // Function PortalWars.PortalWarsBasePlayerController.KickForInactivity // (Final|Native|Protected) // @ game+0x1661560
+};
+
+// Enum PortalWars.EChatType
+enum class EChatType : uint8_t {
+	General = 0,
+	Team = 1,
+	EChatType_MAX = 2
+};
+
+// ScriptStruct CoreUObject.UniqueNetIdWrapper
+// Size: 0x01 (Inherited: 0x00)
+struct FUniqueNetIdWrapper {
+	char pad_0[0x1]; // 0x00(0x01)
+};
+
+// ScriptStruct Engine.UniqueNetIdRepl
+// Size: 0x28 (Inherited: 0x01)
+struct FUniqueNetIdRepl : FUniqueNetIdWrapper {
+	char pad_1[0x17]; // 0x01(0x17)
+	struct TArray<char> ReplicationBytes; // 0x18(0x10)
+};
+
+// ScriptStruct PortalWars.TextChatData
+// Size: 0x60 (Inherited: 0x00)
+struct FTextChatData {
+	struct FString SenderName; // 0x00(0x10)
+	struct FUniqueNetIdRepl SenderID; // 0x10(0x28)
+	struct FString SenderText; // 0x38(0x10)
+	struct FString NiceText; // 0x48(0x10)
+	enum class EChatType ChatType; // 0x58(0x01)
+	char pad_59[0x7]; // 0x59(0x07)
+};
+
+// Class PortalWars.PortalWarsPlayerController
+// Size: 0x740 (Inherited: 0x588)
+struct APortalWarsPlayerController : APortalWarsBasePlayerController {
+	char pad_588[0x40]; // 0x588(0x40)
+	struct ALevelSequenceActor* LSActor; // 0x5c8(0x08)
+	struct ULevelSequencePlayer* LSPlayer; // 0x5d0(0x08)
+	char pad_5D8[0x50]; // 0x5d8(0x50)
+	struct APortal* leftPortal; // 0x628(0x08)
+	struct APortal* rightPortal; // 0x630(0x08)
+	struct APortalSceneCapture2D* leftPortalSceneCapture; // 0x638(0x08)
+	struct APortalSceneCapture2D* rightPortalSceneCapture; // 0x640(0x08)
+	struct APortalSceneCapture2D* portalSceneCaptureClass; // 0x648(0x08)
+	struct UTextureRenderTarget2D* leftPortalRenderTarget; // 0x650(0x08)
+	struct UTextureRenderTarget2D* rightPortalRenderTarget; // 0x658(0x08)
+	char pad_660[0x4]; // 0x660(0x04)
+	char PauseMenu[0x08]; // 0x664(0x08)
+	char pad_66C[0x4]; // 0x66c(0x04)
+	struct UPortalWarsPauseMenuWidget* PauseMenuWidgetClass; // 0x670(0x08)
+	char PauseMenuSceneData[0x50]; // 0x678(0x50)
+	float PredictionFudgeFactor; // 0x6c8(0x04)
+	float MaxPredictionPing; // 0x6cc(0x04)
+	float MaxMeleePredictionPing; // 0x6d0(0x04)
+	char pad_6D4[0x4]; // 0x6d4(0x04)
+	struct TArray<struct FActorOriginAndExtent> actorOriginAndExtentList; // 0x6d8(0x10)
+	char pad_6E8[0x30]; // 0x6e8(0x30)
+	struct UPortalWarsKillcam* Killcam; // 0x718(0x08)
+	char pad_720[0x10]; // 0x720(0x10)
+	struct UMaterial* OutlinePPMaterial; // 0x730(0x08)
+	char pad_738[0x8]; // 0x738(0x08)
+
+	void ServerSpawnPickup(struct FName pickupClassName); // Function PortalWars.PortalWarsPlayerController.ServerSpawnPickup // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16be0b0
+	void ServerSlomo(float TimeDilation); // Function PortalWars.PortalWarsPlayerController.ServerSlomo // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16bdff0
+	void ServerSetPartyChatOnly(bool bPartyChatOnly); // Function PortalWars.PortalWarsPlayerController.ServerSetPartyChatOnly // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16bdf30
+	void ServerSetFOV(float FOV); // Function PortalWars.PortalWarsPlayerController.ServerSetFOV // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16bde70
+	void ServerSetAnonymousMode(bool bAnonymousMode); // Function PortalWars.PortalWarsPlayerController.ServerSetAnonymousMode // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16bddb0
+	void ServerRequestReturnToMainMenu(struct FText ReturnReason); // Function PortalWars.PortalWarsPlayerController.ServerRequestReturnToMainMenu // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bdcf0
+	void ServerReceiveRanks(struct TArray<struct FUserRankInfo> PlayerRanks); // Function PortalWars.PortalWarsPlayerController.ServerReceiveRanks // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bdc20
+	void ServerReceiveProgression(struct FUserProgressionInfo UserProgression); // Function PortalWars.PortalWarsPlayerController.ServerReceiveProgression // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bdb90
+	void ServerReceiveDailyStreak(struct FUserDailyStreakInfo DailyStreak); // Function PortalWars.PortalWarsPlayerController.ServerReceiveDailyStreak // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bdaf0
+	void ServerReceiveCustomizations(struct FEquippedCustomizations ChosenCustomizations); // Function PortalWars.PortalWarsPlayerController.ServerReceiveCustomizations // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bda20
+	void ServerReceiveBadgeProgress(struct FUserBadgeProgressInfo BadgeProgress); // Function PortalWars.PortalWarsPlayerController.ServerReceiveBadgeProgress // (Net|NetReliableNative|Event|Public|NetServer) // @ game+0x16bd950
+	void ServerNotifyCinematicFinished(); // Function PortalWars.PortalWarsPlayerController.ServerNotifyCinematicFinished // (Net|NetReliableNative|Event|Protected|NetServer) // @ game+0x16bd930
+	void ServerKickPlayer(struct APlayerState* PlayerStateToKick); // Function PortalWars.PortalWarsPlayerController.ServerKickPlayer // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16bd870
+	void ServerEndMatch(); // Function PortalWars.PortalWarsPlayerController.ServerEndMatch // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16bd820
+	void ServerEnableGodMode(); // Function PortalWars.PortalWarsPlayerController.ServerEnableGodMode // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16bd7d0
+	void ServerEnableCheats(); // Function PortalWars.PortalWarsPlayerController.ServerEnableCheats // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x16bd780
+	void ServerBroadcastChatMessage(struct FTextChatData InData); // Function PortalWars.PortalWarsPlayerController.ServerBroadcastChatMessage // (Net|Native|Event|Public|NetServer|BlueprintCallable|NetValidate) // @ game+0x16bd410
+	void ServerAcknowledgeReadyToStartForge(); // Function PortalWars.PortalWarsPlayerController.ServerAcknowledgeReadyToStartForge // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16bd3c0
+	void SendRanksToServer(); // Function PortalWars.PortalWarsPlayerController.SendRanksToServer // (Native|Public) // @ game+0x16bd3a0
+	void SendCustomizationsToServer(); // Function PortalWars.PortalWarsPlayerController.SendCustomizationsToServer // (Native|Public) // @ game+0x16bd380
+	bool ProjectWorldLocationToScreenCustom(struct FVector WorldLocation, struct FVector2D& ScreenLocation, bool bPlayerViewportRelative); // Function PortalWars.PortalWarsPlayerController.ProjectWorldLocationToScreenCustom // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x16bd200
+	void PlayEmote(); // Function PortalWars.PortalWarsPlayerController.PlayEmote // (Native|Public) // @ game+0x16bd1e0
+	void OnPauseMenuClosed(); // Function PortalWars.PortalWarsPlayerController.OnPauseMenuClosed // (Native|Public) // @ game+0x16bcd60
+	void InitOutroCinematic(); // Function PortalWars.PortalWarsPlayerController.InitOutroCinematic // (Final|Native|Public) // @ game+0x16bcc60
+	void InitLevelSequencePlayer(); // Function PortalWars.PortalWarsPlayerController.InitLevelSequencePlayer // (Final|Native|Protected) // @ game+0x16bcc40
+	void InitIntroCinematic(); // Function PortalWars.PortalWarsPlayerController.InitIntroCinematic // (Final|Native|Public) // @ game+0x16bcc20
+	int32_t GetTeamNum(); // Function PortalWars.PortalWarsPlayerController.GetTeamNum // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x16bcb50
+	void ClientUpdateChat(struct FTextChatData InData); // Function PortalWars.PortalWarsPlayerController.ClientUpdateChat // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bc5b0
+	void ClientSetSpectatorCamera(struct FVector CameraLocation, struct FRotator CameraRotation); // Function PortalWars.PortalWarsPlayerController.ClientSetSpectatorCamera // (Net|NetReliableNative|Event|Public|HasDefaults|NetClient) // @ game+0x16bc390
+	void ClientSetRoundResult(int32_t WinningTeamNum, bool bIsTie, int32_t Placement); // Function PortalWars.PortalWarsPlayerController.ClientSetRoundResult // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bc280
+	void ClientSetMatchResult(int32_t WinningTeamNum, bool bIsTie, int32_t Placement, bool bPlayFinalKillcam); // Function PortalWars.PortalWarsPlayerController.ClientSetMatchResult // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bc120
+	void ClientNotifyTeammateTeabagConfirmed(); // Function PortalWars.PortalWarsPlayerController.ClientNotifyTeammateTeabagConfirmed // (Net|Native|Event|Public|NetClient) // @ game+0x16bbfd0
+	void ClientNotifyTeabagDenied(); // Function PortalWars.PortalWarsPlayerController.ClientNotifyTeabagDenied // (Net|Native|Event|Public|NetClient) // @ game+0x16bbfb0
+	void ClientNotifyTeabagConfirmed(); // Function PortalWars.PortalWarsPlayerController.ClientNotifyTeabagConfirmed // (Net|Native|Event|Public|NetClient) // @ game+0x16bbf90
+	void ClientNotifyEnemyDeniedTeabag(); // Function PortalWars.PortalWarsPlayerController.ClientNotifyEnemyDeniedTeabag // (Net|Native|Event|Public|NetClient) // @ game+0x16bbf70
+	void ClientNotifyDamageTaken(struct FVector_NetQuantize HitLocation, bool bThruPortal); // Function PortalWars.PortalWarsPlayerController.ClientNotifyDamageTaken // (Net|Native|Event|Public|NetClient) // @ game+0x16bbe90
+	void ClientNotifyCountdown(int32_t CountdownTime); // Function PortalWars.PortalWarsPlayerController.ClientNotifyCountdown // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bbe00
+	void ClientNotifyCausedHit(struct APawn* DamagedPawn, float DamageDealt, enum class EPWHitType HitType); // Function PortalWars.PortalWarsPlayerController.ClientNotifyCausedHit // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bbcf0
+	void ClientNotifyAlive(); // Function PortalWars.PortalWarsPlayerController.ClientNotifyAlive // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bbcd0
+	void ClientHearAkEventAtLocation(struct UAkAudioEvent* EventToPost, struct FVector_NetQuantize SoundLocation, struct FRotator SoundRotation, bool bUseSpatialAudio); // Function PortalWars.PortalWarsPlayerController.ClientHearAkEventAtLocation // (Net|Native|Event|Public|HasDefaults|NetClient) // @ game+0x16bbb60
+	void ClientHearAkEvent(struct UAkAudioEvent* EventToPost, struct UPortalWarsAkComponent* AkComponent, bool bUseSpatialAudio); // Function PortalWars.PortalWarsPlayerController.ClientHearAkEvent // (Net|Native|Event|Public|NetClient) // @ game+0x16bba50
+	void ClientGenericInitialization(); // Function PortalWars.PortalWarsPlayerController.ClientGenericInitialization // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bba30
+	void ClientGameStarted(); // Function PortalWars.PortalWarsPlayerController.ClientGameStarted // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bba10
+	void ClientCountdownStarted(); // Function PortalWars.PortalWarsPlayerController.ClientCountdownStarted // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16bb9f0
+	void CheatSpawnPickup(struct FName pickupClassName); // Function PortalWars.PortalWarsPlayerController.CheatSpawnPickup // (Final|Exec|Native|Public) // @ game+0x16bb960
+	void CheatSlowmo(float TimeDilation); // Function PortalWars.PortalWarsPlayerController.CheatSlowmo // (Final|Exec|Native|Public) // @ game+0x16bb8e0
+	void CheatShootThroughWalls(); // Function PortalWars.PortalWarsPlayerController.CheatShootThroughWalls // (Final|Exec|Native|Public) // @ game+0xf085f0
+	void CheatRespawn(); // Function PortalWars.PortalWarsPlayerController.CheatRespawn // (Final|Exec|Native|Public) // @ game+0xf085f0
+	void CheatGodMode(); // Function PortalWars.PortalWarsPlayerController.CheatGodMode // (Final|Exec|Native|Public) // @ game+0x16bb8c0
+	void CheatESP(); // Function PortalWars.PortalWarsPlayerController.CheatESP // (Final|Exec|Native|Public) // @ game+0xf085f0
+	void CheatEnableCheats(); // Function PortalWars.PortalWarsPlayerController.CheatEnableCheats // (Final|Exec|Native|Public) // @ game+0x16bb8a0
+};
+
+// Class Engine.NetConnection
+// Size: 0x1ba8 (Inherited: 0x48)
+struct UNetConnection : UPlayer {
+	struct TArray<struct UChildConnection*> Children; // 0x48(0x10)
+	struct UNetDriver* Driver; // 0x58(0x08)
+	struct UPackageMap* PackageMapClass; // 0x60(0x08)
+	struct UPackageMap* PackageMap; // 0x68(0x08)
+	struct TArray<struct UChannel*> OpenChannels; // 0x70(0x10)
+	struct TArray<struct AActor*> SentTemporaries; // 0x80(0x10)
+	struct AActor* ViewTarget; // 0x90(0x08)
+	struct AActor* OwningActor; // 0x98(0x08)
+	int32_t MaxPacket; // 0xa0(0x04)
+	char InternalAck : 1; // 0xa4(0x01)
+	char pad_A4_1 : 7; // 0xa4(0x01)
+	char pad_A5[0xbb]; // 0xa5(0xbb)
+	struct FUniqueNetIdRepl PlayerId; // 0x160(0x28)
+	char pad_188[0x48]; // 0x188(0x48)
+	double LastReceiveTime; // 0x1d0(0x08)
+	char pad_1D8[0x1338]; // 0x1d8(0x1338)
+	struct TArray<struct UChannel*> ChannelsToTick; // 0x1510(0x10)
+	char pad_1520[0x688]; // 0x1520(0x688)
+};
+
+// Class Engine.NetDriver
+// Size: 0x760 (Inherited: 0x28)
+struct UNetDriver : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	struct FString NetConnectionClassName; // 0x30(0x10)
+	struct FString ReplicationDriverClassName; // 0x40(0x10)
+	int32_t MaxDownloadSize; // 0x50(0x04)
+	char bClampListenServerTickRate : 1; // 0x54(0x01)
+	char pad_54_1 : 7; // 0x54(0x01)
+	char pad_55[0x3]; // 0x55(0x03)
+	int32_t NetServerMaxTickRate; // 0x58(0x04)
+	int32_t MaxNetTickRate; // 0x5c(0x04)
+	int32_t MaxInternetClientRate; // 0x60(0x04)
+	int32_t MaxClientRate; // 0x64(0x04)
+	float ServerTravelPause; // 0x68(0x04)
+	float SpawnPrioritySeconds; // 0x6c(0x04)
+	float RelevantTimeout; // 0x70(0x04)
+	float KeepAliveTime; // 0x74(0x04)
+	float InitialConnectTimeout; // 0x78(0x04)
+	float ConnectionTimeout; // 0x7c(0x04)
+	float TimeoutMultiplierForUnoptimizedBuilds; // 0x80(0x04)
+	bool bNoTimeouts; // 0x84(0x01)
+	bool bNeverApplyNetworkEmulationSettings; // 0x85(0x01)
+	char pad_86[0x2]; // 0x86(0x02)
+	struct UNetConnection* ServerConnection; // 0x88(0x08)
+	struct TArray<struct UNetConnection*> ClientConnections; // 0x90(0x10)
+	char pad_A0[0x60]; // 0xa0(0x60)
+	int32_t RecentlyDisconnectedTrackingTime; // 0x100(0x04)
+	char pad_104[0x3c]; // 0x104(0x3c)
+	struct UWorld* World; // 0x140(0x08)
+	struct UPackage* WorldPackage; // 0x148(0x08)
+	char pad_150[0x20]; // 0x150(0x20)
+	struct UObject* NetConnectionClass; // 0x170(0x08)
+	struct UObject* ReplicationDriverClass; // 0x178(0x08)
+	char pad_180[0x10]; // 0x180(0x10)
+	struct FName NetDriverName; // 0x190(0x08)
+	struct TArray<struct FChannelDefinition> ChannelDefinitions; // 0x198(0x10)
+	char ChannelDefinitionMap[0x50]; // 0x1a8(0x50)
+	struct TArray<struct UChannel*> ActorChannelPool; // 0x1f8(0x10)
+	char pad_208[0x8]; // 0x208(0x08)
+	float Time; // 0x210(0x04)
+	char pad_214[0x4ec]; // 0x214(0x4ec)
+	struct UReplicationDriver* ReplicationDriver; // 0x700(0x08)
+	char pad_708[0x58]; // 0x708(0x58)
 };
 
 extern FNamePool* NamePoolData;

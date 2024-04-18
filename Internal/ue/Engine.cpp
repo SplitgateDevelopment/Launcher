@@ -408,6 +408,45 @@ void APlayerController::ConsoleKey(struct FKey Key)
 	ProcessEvent(Func, &Parms);
 };
 
+struct UClass* UPortalWarsNotificationManager::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class PortalWars.PortalWarsNotificationManager");
+}
+
+struct UPortalWarsNotificationManager* UPortalWarsNotificationManager::GetDefaultObj()
+{
+	static struct UPortalWarsNotificationManager* Default = nullptr;
+
+	if (!Default)
+		Default = static_cast<UPortalWarsNotificationManager*>((UObject*)UPortalWarsNotificationManager::StaticClass());
+
+	return Default;
+}
+
+void UPortalWarsNotificationManager::OpenNoticeDialog(FErrorInfo& ErrorInfo)
+{
+	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenNoticeDialog");
+
+	struct {
+		FErrorInfo ErrorInfo;
+	} Params;
+	Params.ErrorInfo = ErrorInfo;
+
+	UObject::ProcessEvent(Function, &Params);
+}
+
+void APortalWarsPlayerController::ClientUpdateChat(struct FTextChatData InData)
+{
+	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
+
+	struct {
+		struct FTextChatData InData;
+	} Params;
+	Params.InData = InData;
+
+	UObject::ProcessEvent(Function, &Params);
+}
+
 bool EngineInit()
 {
 	auto main = GetModuleHandleA(nullptr);
