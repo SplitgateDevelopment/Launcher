@@ -55,19 +55,21 @@ public:
 
 			USkeletalMeshComponent* PlayerMesh = Player->Mesh;
 			AGun* PlayerGun = Player->CurrentWeapon;
-			USkeletalMeshComponent* WeaponMesh = PlayerGun->Mesh1P;
 
-			if (Settings.EXPLOITS.SpinBot && PlayerMesh && WeaponMesh) {
+			if (Settings.EXPLOITS.SpinBot && PlayerMesh && PlayerGun) {
 				if (spin_yaw > 360.f) spin_yaw = 0.f;
 
-				FHitResult result;
-				WeaponMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, result, false);
-				PlayerMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, result, false);
+				FHitResult resultPlayer;
+				FHitResult resultWeapon;
+
+				USkeletalMeshComponent* WeaponMesh = PlayerGun->Mesh1P;
+				PlayerMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, resultPlayer, false);
+				WeaponMesh->K2_SetRelativeRotation(FRotator(0.f, spin_yaw, 0.f), true, resultWeapon, false);
 
 				spin_yaw += 10.f;
 			};
 
-			if (Settings.EXPLOITS.NoRecoil)
+			if (Settings.EXPLOITS.NoRecoil && PlayerGun)
 			{
 				PlayerGun->recoilConfig.horizontalRecoilAmount = 0.f;
 				PlayerGun->recoilConfig.verticalRecoilAmount = 0.f;
@@ -78,7 +80,7 @@ public:
 				PlayerGun->recoilConfig.recoilTotalTime = 0.f;
 			};
 
-			if (Settings.EXPLOITS.GodMelee)
+			if (Settings.EXPLOITS.GodMelee && PlayerGun)
 			{
 				Player->MeleeRange = 999999.f;
 				Player->TimeBetweenMelee = 0.1f;
