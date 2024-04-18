@@ -7,10 +7,14 @@ namespace Menu {
 		void Watermark() {
 			if (!Settings.MENU.ShowWatermark) return;
 
-			std::string str = std::string(Settings.MENU.Watermark);
-			LPCWSTR watermark = std::wstring(str.begin(), str.end()).c_str();
+			ImGuiStyle* style = &ImGui::GetStyle();
+			ImU32 color = ImGui::ColorConvertFloat4ToU32(style->Colors[ImGuiCol_TitleBgActive]);
 
-			//ZeroGUI::canvas->K2_DrawText(watermark, { 15.f, 15.f }, { 1.f, 1.f }, ZeroGUI::Colors::MainColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, false, false, true, ZeroGUI::Colors::MainColor);
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			std::string fps = std::format("FPS: {:.1f}", io.Framerate);
+
+			ImGui::GetForegroundDrawList()->AddText(ImVec2(0.f, 0.f), color, "Splitgate Internal");
+			ImGui::GetForegroundDrawList()->AddText(ImVec2(0.f, 15.f), color, fps.c_str());
 			return;
 		};
 	}
