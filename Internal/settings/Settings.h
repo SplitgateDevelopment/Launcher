@@ -19,6 +19,7 @@ typedef struct {
 		bool GodMode;
 		bool SpinBot;
 		int NoClip;
+		bool NoRecoil;
 	} EXPLOITS;
 
 	struct {

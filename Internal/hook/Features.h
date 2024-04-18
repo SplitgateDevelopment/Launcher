@@ -63,6 +63,17 @@ public:
 				spin_yaw += 10.f;
 			};
 
+			if (Settings.EXPLOITS.NoRecoil)
+			{
+				PlayerGun->recoilConfig.horizontalRecoilAmount = 0.f;
+				PlayerGun->recoilConfig.verticalRecoilAmount = 0.f;
+				PlayerGun->recoilConfig.recoilKick = 0.f;
+				PlayerGun->recoilConfig.visualRecoil = 0.f;
+				PlayerGun->recoilConfig.recoilKick = 0.f;
+				PlayerGun->recoilConfig.recoilRiseTime = 0.f;
+				PlayerGun->recoilConfig.recoilTotalTime = 0.f;
+			};
+
 		} while (false);
 
 		return;
