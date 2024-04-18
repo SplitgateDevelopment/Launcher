@@ -44,6 +44,10 @@ public:
 			if (collision && Player->GetActorEnableCollision()) Player->SetActorEnableCollision(false);
 			else if (!collision && !Player->GetActorEnableCollision()) Player->SetActorEnableCollision(true);
 			
+			if (Settings.EXPLOITS.NoClip) {
+				Player->curTimeOutOfBounds = 0.f;
+				Player->maxTimeOutOfBounds = 999.0f;
+			}
 
 			if (Player->Health != 0) {
 				UpdatePlayerHealth(Player);
