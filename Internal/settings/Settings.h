@@ -32,6 +32,7 @@ typedef struct {
 	struct {
 		bool LogProcessEvent;
 		bool ShowDemoWindow;
+		bool ShowStyleEditor;
 	} DEBUG;
 } SETTINGS;
 

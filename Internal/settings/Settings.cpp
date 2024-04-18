@@ -87,6 +87,7 @@ namespace SettingsHelper {
 
 		Settings.DEBUG.LogProcessEvent = false;
 		Settings.DEBUG.ShowDemoWindow = false;
+		Settings.DEBUG.ShowStyleEditor = false;
 
 		Save();
 	}

@@ -16,9 +16,7 @@ namespace Menu {
 				SettingsHelper::Reset();
 			};
 
-			ImGui::Text("Menu Hotkey", false, true);
-			//ImGui::SameLine();
-			//ImGui::Hotkey("Menu Hotkey", &Settings.MENU.ShowHotkey);
+			ImGui::HotKey("Open Menu", &Settings.MENU.ShowHotkey);
 
 			if (ImGui::Button("Toggle Console")) {
 				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
@@ -31,7 +29,7 @@ namespace Menu {
 
 			//ImGui::ColorEdit3("Menu Color", &Settings.MENU.MenuColor);
 			//ImGui::SameLine();
-			ImGui::Checkbox("Watermark", &Settings.MENU.ShowWatermark);
+			ImGui::ToggleButton("Watermark", &Settings.MENU.ShowWatermark);
 		}
 	}
 }
