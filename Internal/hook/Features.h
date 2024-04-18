@@ -9,6 +9,7 @@
 class Features {
 public:
 	DiscordRPC* rpc = new DiscordRPC();
+	bool sentWelcomeMessage = false;
 
 	void handle(APlayerController* PlayerController) {
 		do {
@@ -17,7 +18,7 @@ public:
 			APortalWarsCharacter* Player = (APortalWarsCharacter*)PlayerController->Character;
 
 			std::string name = std::string(Settings.MISC.PlayerName);
-			LPCWSTR playerName = std::wstring(name.begin(), name.end()).c_str();
+			FString playerName(name);
 
 			PlayerController->SetName(playerName);
 			PlayerController->FOV(Settings.EXPLOITS.FOV);
@@ -33,6 +34,7 @@ public:
 			};
 
 			if (!isIngame(PlayerController)) {
+				sentWelcomeMessage = false;
 				SetState("In Menu");
 				break;
 			};
@@ -96,6 +98,34 @@ public:
 				Player->ThrusterLoudnessForBots = 0.0f;
 			};
 
+			if (!sentWelcomeMessage)
+			{
+				FString sender = FString("[Splitgate Internal]");
+
+				FString welcomeText = FString("Welcome");
+				FTextChatData ChatDataWelcome{};
+
+				ChatDataWelcome.SenderName = sender;
+				ChatDataWelcome.SenderText = welcomeText;
+				ChatDataWelcome.NiceText = welcomeText;
+				ChatDataWelcome.ChatType = EChatType::General;
+				ChatDataWelcome.SenderID = {};
+
+				((APortalWarsPlayerController*)PlayerController)->ClientUpdateChat(ChatDataWelcome);
+
+				FString watermarkText = FString(Settings.MENU.Watermark);
+				FTextChatData ChatDataWatermark{};
+
+				ChatDataWatermark.SenderName = sender;
+				ChatDataWatermark.SenderText = welcomeText;
+				ChatDataWatermark.NiceText = welcomeText;
+				ChatDataWatermark.ChatType = EChatType::General;
+				ChatDataWatermark.SenderID = {};
+
+				((APortalWarsPlayerController*)PlayerController)->ClientUpdateChat(ChatDataWatermark);
+
+				sentWelcomeMessage = true;
+			};
 		} while (false);
 
 		return;
