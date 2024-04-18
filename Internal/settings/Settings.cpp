@@ -79,6 +79,7 @@ namespace SettingsHelper {
 		Settings.EXPLOITS.SpinBot = false;
 		Settings.EXPLOITS.NoClip = VK_OEM_PLUS;
 		Settings.EXPLOITS.NoRecoil = false;
+		Settings.EXPLOITS.GodMelee = false;
 
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.ShowConsole = true;

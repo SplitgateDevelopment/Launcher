@@ -74,6 +74,13 @@ public:
 				PlayerGun->recoilConfig.recoilTotalTime = 0.f;
 			};
 
+			if (Settings.EXPLOITS.GodMelee)
+			{
+				Player->MeleeRange = 999999.f;
+				Player->TimeBetweenMelee = 0.1f;
+				PlayerGun->WeaponConfig.MeleeDamage = 999.f;
+			};
+
 		} while (false);
 
 		return;

@@ -20,6 +20,7 @@ typedef struct {
 		bool SpinBot;
 		int NoClip;
 		bool NoRecoil;
+		bool GodMelee;
 	} EXPLOITS;
 
 	struct {
