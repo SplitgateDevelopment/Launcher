@@ -15,12 +15,10 @@ public:
 		do {
 			ExecuteUserScripts();
 
+			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
 			APortalWarsCharacter* Player = (APortalWarsCharacter*)PlayerController->Character;
 
-			std::string name = std::string(Settings.MISC.PlayerName);
-			FString playerName(name);
-
-			PlayerController->SetName(playerName);
+			PlayerController->SetName(FString((Settings.MISC.PlayerName))); 
 			PlayerController->FOV(Settings.EXPLOITS.FOV);
 
 			if (Settings.MISC.LoadIntoMap) {
@@ -33,7 +31,7 @@ public:
 				Settings.MISC.LoadIntoMap = false;
 			};
 
-			if (!isIngame(PlayerController)) {
+			if (!PlayerController->IsInGame()) {
 				sentWelcomeMessage = false;
 				SetState("In Menu");
 				break;
@@ -55,7 +53,7 @@ public:
 				UpdatePlayerHealth(Player);
 			};
 
-			USkeletalMeshComponent* PlayerMesh = Player->Mesh;
+			USkeletalMeshComponent* PlayerMesh = Player->Mesh1P;
 			AGun* PlayerGun = Player->CurrentWeapon;
 
 			if (Settings.EXPLOITS.SpinBot && PlayerMesh && PlayerGun) {
@@ -100,29 +98,8 @@ public:
 
 			if (!sentWelcomeMessage)
 			{
-				FString sender = FString("[Splitgate Internal]");
-
-				FString welcomeText = FString("Welcome");
-				FTextChatData ChatDataWelcome{};
-
-				ChatDataWelcome.SenderName = sender;
-				ChatDataWelcome.SenderText = welcomeText;
-				ChatDataWelcome.NiceText = welcomeText;
-				ChatDataWelcome.ChatType = EChatType::General;
-				ChatDataWelcome.SenderID = {};
-
-				((APortalWarsPlayerController*)PlayerController)->ClientUpdateChat(ChatDataWelcome);
-
-				FString watermarkText = FString(Settings.MENU.Watermark);
-				FTextChatData ChatDataWatermark{};
-
-				ChatDataWatermark.SenderName = sender;
-				ChatDataWatermark.SenderText = welcomeText;
-				ChatDataWatermark.NiceText = welcomeText;
-				ChatDataWatermark.ChatType = EChatType::General;
-				ChatDataWatermark.SenderID = {};
-
-				((APortalWarsPlayerController*)PlayerController)->ClientUpdateChat(ChatDataWatermark);
+				Globals::PlayerController->SendChatMessage(FString("Welcome"));
+				Globals::PlayerController->SendChatMessage(FString(Settings.MENU.Watermark));
 
 				sentWelcomeMessage = true;
 			};
@@ -134,10 +111,6 @@ public:
 private:
 	bool collision = false;
 	float spin_yaw = 0.f;
-
-	bool isIngame(APlayerController* PlayerController) {
-		return (PlayerController->AcknowledgedPawn);
-	}
 
 	void SetState(const char* state) {
 		if (rpc->GetState() == state) return;
