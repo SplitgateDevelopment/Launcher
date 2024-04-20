@@ -21,7 +21,7 @@ namespace Menu {
         
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-		if (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+        if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart)) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 		if (!Settings.MENU.ShowMenu) return;
 
         if (Settings.DEBUG.ShowDemoWindow)
