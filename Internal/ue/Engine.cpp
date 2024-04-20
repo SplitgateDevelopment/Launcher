@@ -435,6 +435,18 @@ void UPortalWarsNotificationManager::OpenNoticeDialog(FErrorInfo& ErrorInfo)
 	UObject::ProcessEvent(Function, &Params);
 }
 
+void UPortalWarsNotificationManager::OpenErrorDialog(FErrorInfo& ErrorInfo)
+{
+	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenErrorDialog");
+
+	struct {
+		FErrorInfo ErrorInfo;
+	} Params;
+	Params.ErrorInfo = ErrorInfo;
+
+	UObject::ProcessEvent(Function, &Params);
+}
+
 void APortalWarsPlayerController::ClientUpdateChat(struct FTextChatData InData)
 {
 	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
@@ -445,6 +457,72 @@ void APortalWarsPlayerController::ClientUpdateChat(struct FTextChatData InData)
 	Params.InData = InData;
 
 	UObject::ProcessEvent(Function, &Params);
+}
+
+struct UClass* UKismetTextLibrary::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.KismetTextLibrary");
+}
+
+struct FText UKismetTextLibrary::Conv_StringToText(struct FString InString)
+{
+	auto Func = ObjObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToText");
+
+	struct {
+		struct FString InString;
+		struct FText ReturnValue;
+	} Parms;
+
+	Parms.InString = InString;
+
+	ProcessEvent(Func, &Parms);
+
+	return Parms.ReturnValue;
+};
+
+void APlayerController::ClientSetCameraMode(struct FName NewCameraMode)
+{
+	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+
+	struct {
+		struct FName NewCameraMode;
+	} Params;
+	Params.NewCameraMode = NewCameraMode;
+
+	UObject::ProcessEvent(Function, &Params);
+}
+
+void APlayerController::SendToConsole(FString Command)
+{
+	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+
+	struct {
+		FString Command;
+	} Params;
+	Params.Command = Command;
+
+	UObject::ProcessEvent(Function, &Params);
+}
+
+bool APlayerController::IsInGame()
+{
+	return (this->AcknowledgedPawn);
+}
+
+void APortalWarsPlayerController::SendChatMessage(FString Message, enum class EChatType ChatType)
+{
+	if (!this->IsInGame()) return;
+
+	FString sender = FString("[Splitgate Internal]");
+	FTextChatData ChatData{};
+
+	ChatData.SenderName = sender;
+	ChatData.SenderText = Message;
+	ChatData.NiceText = Message;
+	ChatData.ChatType = ChatType;
+	ChatData.SenderID = {};
+
+	this->ClientUpdateChat(ChatData);
 }
 
 bool EngineInit()

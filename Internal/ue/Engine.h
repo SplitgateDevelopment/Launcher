@@ -42,11 +42,57 @@ struct FName {
 	uint32_t Number;
 
 	std::string GetName();
+
+	inline bool operator==(const FName& Other) const
+	{
+		return Index == Other.Index && Number == Other.Number;
+	}
+
+	inline bool operator!=(const FName& Other) const
+	{
+		return Index != Other.Index || Number != Other.Number;
+	}
+};
+
+struct FTextData
+{
+	uint8_t Pad[0x28];
+	wchar_t* Name;
+	int32_t Length;
 };
 
 struct FText
 {
-	char pad_0[0x18];
+	FTextData* Data;
+	uint8_t Pad[0x10];
+
+	FText() : Data(nullptr), Pad{} {}
+
+	FText(const std::wstring& str) : Data(new FTextData), Pad{}
+	{
+		Data->Name = new wchar_t[str.length() + 1];
+		std::copy(str.begin(), str.end(), Data->Name);
+		Data->Name[str.length()] = L'\0';
+	}
+
+	wchar_t* Get() const
+	{
+		if (Data)
+			return Data->Name;
+
+		return nullptr;
+	}
+
+	std::string ToString()
+	{
+		if (Data)
+		{
+			std::wstring Temp(Data->Name);
+			return std::string(Temp.begin(), Temp.end());
+		}
+
+		return "";
+	}
 };
 
 
@@ -1149,15 +1195,143 @@ struct APlayerController : AController {
 	struct FVector SpawnLocation; // 0x558(0x0c)
 	char pad_564[0xc]; // 0x564(0x0c)
 
-	bool ProjectWorldLocationToScreen(FVector& WorldLocation, FVector2D& ScreenLocation);
-	void GetViewportSize(INT& X, INT& Y);
+	bool WasInputKeyJustReleased(struct FKey Key); // Function Engine.PlayerController.WasInputKeyJustReleased // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b6930
+	bool WasInputKeyJustPressed(struct FKey Key); // Function Engine.PlayerController.WasInputKeyJustPressed // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b6840
+	void ToggleSpeaking(bool bInSpeaking); // Function Engine.PlayerController.ToggleSpeaking // (Exec|Native|Public) // @ game+0x37b67b0
+	void TestServerLevelVisibilityChange(struct FName PackageName, struct FName Filename); // Function Engine.PlayerController.TestServerLevelVisibilityChange // (Final|Exec|Native|Private) // @ game+0x37b66e0
 	void SwitchLevel(struct FString URL); // Function Engine.PlayerController.SwitchLevel // (Exec|Native|Public) // @ game+0x37b6640
+	void StopHapticEffect(enum class EControllerHand Hand); // Function Engine.PlayerController.StopHapticEffect // (Final|Native|Public|BlueprintCallable) // @ game+0x37b65a0
+	void StartFire(char FireModeNum); // Function Engine.PlayerController.StartFire // (Exec|Native|Public) // @ game+0x37b5ec0
+	void SetVirtualJoystickVisibility(bool bVisible); // Function Engine.PlayerController.SetVirtualJoystickVisibility // (Native|Public|BlueprintCallable) // @ game+0x37b58d0
+	void SetViewTargetWithBlend(struct AActor* NewViewTarget, float BlendTime, enum class EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing); // Function Engine.PlayerController.SetViewTargetWithBlend // (Native|Public|BlueprintCallable) // @ game+0x37b5730
+	void SetName(struct FString S); // Function Engine.PlayerController.SetName // (Exec|Native|Public) // @ game+0x37b5690
+	void SetMouseLocation(int32_t X, int32_t Y); // Function Engine.PlayerController.SetMouseLocation // (Final|Native|Public|BlueprintCallable) // @ game+0x37b55c0
+	void SetMouseCursorWidget(enum class EMouseCursor Cursor, struct UUserWidget* CursorWidget); // Function Engine.PlayerController.SetMouseCursorWidget // (Final|Native|Public|BlueprintCallable) // @ game+0x37b54f0
+	void SetHapticsByValue(float Frequency, float Amplitude, enum class EControllerHand Hand); // Function Engine.PlayerController.SetHapticsByValue // (Final|Native|Public|BlueprintCallable) // @ game+0x37b52b0
+	void SetDisableHaptics(bool bNewDisabled); // Function Engine.PlayerController.SetDisableHaptics // (Native|Public|BlueprintCallable) // @ game+0x37b5200
+	void SetControllerLightColor(struct FColor Color); // Function Engine.PlayerController.SetControllerLightColor // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b5180
+	void SetCinematicMode(bool bInCinematicMode, bool bHidePlayer, bool bAffectsHUD, bool bAffectsMovement, bool bAffectsTurning); // Function Engine.PlayerController.SetCinematicMode // (Native|Public|BlueprintCallable) // @ game+0x37b4fa0
+	void SetAudioListenerOverride(struct USceneComponent* AttachToComponent, struct FVector Location, struct FRotator Rotation); // Function Engine.PlayerController.SetAudioListenerOverride // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b4e70
+	void SetAudioListenerAttenuationOverride(struct USceneComponent* AttachToComponent, struct FVector AttenuationLocationOVerride); // Function Engine.PlayerController.SetAudioListenerAttenuationOverride // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37b4d90
+	void ServerViewSelf(struct FViewTargetTransitionParams TransitionParams); // Function Engine.PlayerController.ServerViewSelf // (Net|Native|Event|Public|NetServer|NetValidate) // @ game+0x37b4ca0
+	void ServerViewPrevPlayer(); // Function Engine.PlayerController.ServerViewPrevPlayer // (Net|Native|Event|Public|NetServer|NetValidate) // @ game+0x37b4c50
+	void ServerViewNextPlayer(); // Function Engine.PlayerController.ServerViewNextPlayer // (Net|Native|Event|Public|NetServer|NetValidate) // @ game+0x37b4c00
+	void ServerVerifyViewTarget(); // Function Engine.PlayerController.ServerVerifyViewTarget // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4bb0
+	void ServerUpdateMultipleLevelsVisibility(struct TArray<struct FUpdateLevelVisibilityLevelInfo> LevelVisibilities); // Function Engine.PlayerController.ServerUpdateMultipleLevelsVisibility // (Final|Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4af0
+	void ServerUpdateLevelVisibility(struct FUpdateLevelVisibilityLevelInfo LevelVisibility); // Function Engine.PlayerController.ServerUpdateLevelVisibility // (Final|Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4a30
+	void ServerUpdateCamera(struct FVector_NetQuantize CamLoc, int32_t CamPitchAndYaw); // Function Engine.PlayerController.ServerUpdateCamera // (Net|Native|Event|Public|NetServer|NetValidate) // @ game+0x37b4900
+	void ServerUnmutePlayer(struct FUniqueNetIdRepl PlayerId); // Function Engine.PlayerController.ServerUnmutePlayer // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b47a0
+	void ServerToggleAILogging(); // Function Engine.PlayerController.ServerToggleAILogging // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4750
+	void ServerShortTimeout(); // Function Engine.PlayerController.ServerShortTimeout // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4700
+	void ServerSetSpectatorWaiting(bool bWaiting); // Function Engine.PlayerController.ServerSetSpectatorWaiting // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4640
+	void ServerSetSpectatorLocation(struct FVector NewLoc, struct FRotator NewRot); // Function Engine.PlayerController.ServerSetSpectatorLocation // (Net|Native|Event|Public|NetServer|HasDefaults|NetValidate) // @ game+0x37b4500
+	void ServerRestartPlayer(); // Function Engine.PlayerController.ServerRestartPlayer // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b44b0
+	void ServerPause(); // Function Engine.PlayerController.ServerPause // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4460
+	void ServerNotifyLoadedWorld(struct FName WorldPackageName); // Function Engine.PlayerController.ServerNotifyLoadedWorld // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b43a0
+	void ServerMutePlayer(struct FUniqueNetIdRepl PlayerId); // Function Engine.PlayerController.ServerMutePlayer // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4240
+	void ServerExecRPC(struct FString Msg); // Function Engine.PlayerController.ServerExecRPC // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4180
+	void ServerExec(struct FString Msg); // Function Engine.PlayerController.ServerExec // (Final|Exec|Native|Public) // @ game+0x37b40e0
+	void ServerCheckClientPossessionReliable(); // Function Engine.PlayerController.ServerCheckClientPossessionReliable // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b4090
+	void ServerCheckClientPossession(); // Function Engine.PlayerController.ServerCheckClientPossession // (Net|Native|Event|Public|NetServer|NetValidate) // @ game+0x37b4040
+	void ServerChangeName(struct FString S); // Function Engine.PlayerController.ServerChangeName // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b3f80
+	void ServerCamera(struct FName NewMode); // Function Engine.PlayerController.ServerCamera // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b3ec0
+	void ServerAcknowledgePossession(struct APawn* P); // Function Engine.PlayerController.ServerAcknowledgePossession // (Net|NetReliableNative|Event|Public|NetServer|NetValidate) // @ game+0x37b3e00
+	void SendToConsole(struct FString Command); // Function Engine.PlayerController.SendToConsole // (Exec|Native|Public) // @ game+0x37b3d60
+	void RestartLevel(); // Function Engine.PlayerController.RestartLevel // (Exec|Native|Public) // @ game+0x37b3d40
+	void ResetControllerLightColor(); // Function Engine.PlayerController.ResetControllerLightColor // (Final|Native|Public|BlueprintCallable) // @ game+0x37b3d20
+	bool ProjectWorldLocationToScreen(struct FVector WorldLocation, struct FVector2D& ScreenLocation, bool bPlayerViewportRelative); // Function Engine.PlayerController.ProjectWorldLocationToScreen // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b3b40
+	void PlayHapticEffect(struct UHapticFeedbackEffect_Base* HapticEffect, enum class EControllerHand Hand, float Scale, bool bLoop); // Function Engine.PlayerController.PlayHapticEffect // (Final|Native|Public|BlueprintCallable) // @ game+0x37b39e0
+	void PlayDynamicForceFeedback(float Intensity, float Duration, bool bAffectsLeftLarge, bool bAffectsLeftSmall, bool bAffectsRightLarge, bool bAffectsRightSmall, enum class EDynamicForceFeedbackAction Action, struct FLatentActionInfo LatentInfo); // Function Engine.PlayerController.PlayDynamicForceFeedback // (Final|Native|Private|BlueprintCallable) // @ game+0x37b3730
+	void Pause(); // Function Engine.PlayerController.Pause // (Exec|Native|Public) // @ game+0x37b3270
+	void OnServerStartedVisualLogger(bool bIsLogging); // Function Engine.PlayerController.OnServerStartedVisualLogger // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b31e0
+	void LocalTravel(struct FString URL); // Function Engine.PlayerController.LocalTravel // (Exec|Native|Public) // @ game+0x37b3140
+	void K2_ClientPlayForceFeedback(struct UForceFeedbackEffect* ForceFeedbackEffect, struct FName Tag, bool bLooping, bool bIgnoreTimeDilation, bool bPlayWhilePaused); // Function Engine.PlayerController.K2_ClientPlayForceFeedback // (Final|Native|Public|BlueprintCallable) // @ game+0x37b2f80
+	bool IsInputKeyDown(struct FKey Key); // Function Engine.PlayerController.IsInputKeyDown // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2e90
+	void GetViewportSize(int32_t& SizeX, int32_t& SizeY); // Function Engine.PlayerController.GetViewportSize // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2db0
+	struct ASpectatorPawn* GetSpectatorPawn(); // Function Engine.PlayerController.GetSpectatorPawn // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2d90
+	bool GetMousePosition(float& LocationX, float& LocationY); // Function Engine.PlayerController.GetMousePosition // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2c70
+	struct FVector GetInputVectorKeyState(struct FKey Key); // Function Engine.PlayerController.GetInputVectorKeyState // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2b60
+	void GetInputTouchState(enum class ETouchIndex FingerIndex, float& LocationX, float& LocationY, bool& bIsCurrentlyPressed); // Function Engine.PlayerController.GetInputTouchState // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b29d0
+	void GetInputMouseDelta(float& DeltaX, float& DeltaY); // Function Engine.PlayerController.GetInputMouseDelta // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b28f0
+	void GetInputMotionState(struct FVector& Tilt, struct FVector& RotationRate, struct FVector& Gravity, struct FVector& Acceleration); // Function Engine.PlayerController.GetInputMotionState // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2760
+	float GetInputKeyTimeDown(struct FKey Key); // Function Engine.PlayerController.GetInputKeyTimeDown // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2660
+	void GetInputAnalogStickState(enum class EControllerAnalogStick WhichStick, float& StickX, float& StickY); // Function Engine.PlayerController.GetInputAnalogStickState // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2530
+	float GetInputAnalogKeyState(struct FKey Key); // Function Engine.PlayerController.GetInputAnalogKeyState // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2430
+	struct AHUD* GetHUD(); // Function Engine.PlayerController.GetHUD // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1a20
+	bool GetHitResultUnderFingerForObjects(enum class ETouchIndex FingerIndex, struct TArray<enum class EObjectTypeQuery>& ObjectTypes, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderFingerForObjects // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b2260
+	bool GetHitResultUnderFingerByChannel(enum class ETouchIndex FingerIndex, enum class ETraceTypeQuery TraceChannel, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderFingerByChannel // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b20b0
+	bool GetHitResultUnderFinger(enum class ETouchIndex FingerIndex, enum class ECollisionChannel TraceChannel, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderFinger // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1f00
+	bool GetHitResultUnderCursorForObjects(struct TArray<enum class EObjectTypeQuery>& ObjectTypes, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderCursorForObjects // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1d70
+	bool GetHitResultUnderCursorByChannel(enum class ETraceTypeQuery TraceChannel, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderCursorByChannel // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1be0
+	bool GetHitResultUnderCursor(enum class ECollisionChannel TraceChannel, bool bTraceComplex, struct FHitResult& HitResult); // Function Engine.PlayerController.GetHitResultUnderCursor // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1a50
+	struct FVector GetFocalLocation(); // Function Engine.PlayerController.GetFocalLocation // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b19e0
 	void FOV(float NewFOV); // Function Engine.PlayerController.FOV // (Exec|Native|Public) // @ game+0x37b1830
 	void EnableCheats(); // Function Engine.PlayerController.EnableCheats // (Exec|Native|Public) // @ game+0x37b1810
-	void SetName(FString S); // Function Engine.PlayerController.SetName // (Exec|Native|Public) // @ game+0x37b5690
-	void SendToConsole(struct FString Command); // Function Engine.PlayerController.SendToConsole // (Exec|Native|Public) // @ game+0x37b3d60
+	bool DeprojectScreenPositionToWorld(float ScreenX, float ScreenY, struct FVector& WorldLocation, struct FVector& WorldDirection); // Function Engine.PlayerController.DeprojectScreenPositionToWorld // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1680
+	bool DeprojectMousePositionToWorld(struct FVector& WorldLocation, struct FVector& WorldDirection); // Function Engine.PlayerController.DeprojectMousePositionToWorld // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37b1580
 	void ConsoleKey(struct FKey Key); // Function Engine.PlayerController.ConsoleKey // (Exec|Native|Public) // @ game+0x37b1490
+	void ClientWasKicked(struct FText KickReason); // Function Engine.PlayerController.ClientWasKicked // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b13d0
+	void ClientVoiceHandshakeComplete(); // Function Engine.PlayerController.ClientVoiceHandshakeComplete // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b13b0
+	void ClientUpdateMultipleLevelsStreamingStatus(struct TArray<struct FUpdateLevelStreamingLevelStatus> LevelStatuses); // Function Engine.PlayerController.ClientUpdateMultipleLevelsStreamingStatus // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b1310
+	void ClientUpdateLevelStreamingStatus(struct FName PackageName, bool bNewShouldBeLoaded, bool bNewShouldBeVisible, bool bNewShouldBlockOnLoad, int32_t LODIndex); // Function Engine.PlayerController.ClientUpdateLevelStreamingStatus // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b1150
+	void ClientUnmutePlayer(struct FUniqueNetIdRepl PlayerId); // Function Engine.PlayerController.ClientUnmutePlayer // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b1030
+	void ClientTravelInternal(struct FString URL, enum class ETravelType TravelType, bool bSeamless, struct FGuid MapPackageGuid); // Function Engine.PlayerController.ClientTravelInternal // (Net|NetReliableNative|Event|Public|HasDefaults|NetClient) // @ game+0x37b0eb0
+	void ClientTravel(struct FString URL, enum class ETravelType TravelType, bool bSeamless, struct FGuid MapPackageGuid); // Function Engine.PlayerController.ClientTravel // (Final|Native|Public|HasDefaults) // @ game+0x37b0d30
+	void ClientTeamMessage(struct APlayerState* SenderPlayerState, struct FString S, struct FName Type, float MsgLifeTime); // Function Engine.PlayerController.ClientTeamMessage // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b0bc0
+	void ClientStopForceFeedback(struct UForceFeedbackEffect* ForceFeedbackEffect, struct FName Tag); // Function Engine.PlayerController.ClientStopForceFeedback // (Net|NetReliableNative|Event|Public|NetClient|BlueprintCallable) // @ game+0x37b0af0
+	void ClientStopCameraShakesFromSource(struct UCameraShakeSourceComponent* SourceComponent, bool bImmediately); // Function Engine.PlayerController.ClientStopCameraShakesFromSource // (Final|Native|Public|BlueprintCallable) // @ game+0x37b0a20
+	void ClientStopCameraShake(struct UCameraShakeBase* Shake, bool bImmediately); // Function Engine.PlayerController.ClientStopCameraShake // (Net|NetReliableNative|Event|Public|NetClient|BlueprintCallable) // @ game+0x37b0950
+	void ClientStopCameraAnim(struct UCameraAnim* AnimToStop); // Function Engine.PlayerController.ClientStopCameraAnim // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b08c0
+	void ClientStartOnlineSession(); // Function Engine.PlayerController.ClientStartOnlineSession // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b08a0
+	void ClientStartCameraShakeFromSource(struct UCameraShakeBase* Shake, struct UCameraShakeSourceComponent* SourceComponent); // Function Engine.PlayerController.ClientStartCameraShakeFromSource // (Final|Native|Public|BlueprintCallable) // @ game+0x37b07d0
+	void ClientStartCameraShake(struct UCameraShakeBase* Shake, float Scale, enum class ECameraShakePlaySpace PlaySpace, struct FRotator UserPlaySpaceRot); // Function Engine.PlayerController.ClientStartCameraShake // (Net|Native|Event|Public|HasDefaults|NetClient|BlueprintCallable) // @ game+0x37b0660
+	void ClientSpawnCameraLensEffect(struct AEmitterCameraLensEffectBase* LensEffectEmitterClass); // Function Engine.PlayerController.ClientSpawnCameraLensEffect // (Net|Native|Event|Public|NetClient|BlueprintCallable) // @ game+0x37b05d0
+	void ClientSetViewTarget(struct AActor* A, struct FViewTargetTransitionParams TransitionParams); // Function Engine.PlayerController.ClientSetViewTarget // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b04d0
+	void ClientSetSpectatorWaiting(bool bWaiting); // Function Engine.PlayerController.ClientSetSpectatorWaiting // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b0440
+	void ClientSetHUD(struct AHUD* NewHUDClass); // Function Engine.PlayerController.ClientSetHUD // (Net|NetReliableNative|Event|Public|NetClient|BlueprintCallable) // @ game+0x37b03b0
+	void ClientSetForceMipLevelsToBeResident(struct UMaterialInterface* Material, float ForceDuration, int32_t CinematicTextureGroups); // Function Engine.PlayerController.ClientSetForceMipLevelsToBeResident // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b02a0
+	void ClientSetCinematicMode(bool bInCinematicMode, bool bAffectsMovement, bool bAffectsTurning, bool bAffectsHUD); // Function Engine.PlayerController.ClientSetCinematicMode // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b0120
+	void ClientSetCameraMode(struct FName NewCamMode); // Function Engine.PlayerController.ClientSetCameraMode // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37b0090
+	void ClientSetCameraFade(bool bEnableFading, struct FColor FadeColor, struct FVector2D FadeAlpha, float FadeTime, bool bFadeAudio, bool bHoldWhenFinished); // Function Engine.PlayerController.ClientSetCameraFade // (Net|NetReliableNative|Event|Public|HasDefaults|NetClient) // @ game+0x37afe80
+	void ClientSetBlockOnAsyncLoading(); // Function Engine.PlayerController.ClientSetBlockOnAsyncLoading // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16697c0
+	void ClientReturnToMainMenuWithTextReason(struct FText ReturnReason); // Function Engine.PlayerController.ClientReturnToMainMenuWithTextReason // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afdc0
+	void ClientReturnToMainMenu(struct FString ReturnReason); // Function Engine.PlayerController.ClientReturnToMainMenu // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afd20
+	void ClientRetryClientRestart(struct APawn* NewPawn); // Function Engine.PlayerController.ClientRetryClientRestart // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afc90
+	void ClientRestart(struct APawn* NewPawn); // Function Engine.PlayerController.ClientRestart // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afc00
+	void ClientReset(); // Function Engine.PlayerController.ClientReset // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afbe0
+	void ClientRepObjRef(struct UObject* Object); // Function Engine.PlayerController.ClientRepObjRef // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37afb50
+	void ClientReceiveLocalizedMessage(struct ULocalMessage* Message, int32_t SWITCH, struct APlayerState* RelatedPlayerState_2, struct APlayerState* RelatedPlayerState_3, struct UObject* OptionalObject); // Function Engine.PlayerController.ClientReceiveLocalizedMessage // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37af9b0
+	void ClientPrestreamTextures(struct AActor* ForcedActor, float ForceDuration, bool bEnableStreaming, int32_t CinematicTextureGroups); // Function Engine.PlayerController.ClientPrestreamTextures // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37af850
+	void ClientPrepareMapChange(struct FName LevelName, bool bFirst, bool bLast); // Function Engine.PlayerController.ClientPrepareMapChange // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37af730
+	void ClientPlaySoundAtLocation(struct USoundBase* Sound, struct FVector Location, float VolumeMultiplier, float PitchMultiplier); // Function Engine.PlayerController.ClientPlaySoundAtLocation // (Net|Native|Event|Public|HasDefaults|NetClient) // @ game+0x37af5c0
+	void ClientPlaySound(struct USoundBase* Sound, float VolumeMultiplier, float PitchMultiplier); // Function Engine.PlayerController.ClientPlaySound // (Net|Native|Event|Public|NetClient) // @ game+0x37af4b0
+	void ClientPlayForceFeedback_Internal(struct UForceFeedbackEffect* ForceFeedbackEffect, struct FForceFeedbackParameters Params); // Function Engine.PlayerController.ClientPlayForceFeedback_Internal // (Final|Net|Native|Event|Private|NetClient) // @ game+0x37af3c0
+	void ClientPlayCameraAnim(struct UCameraAnim* AnimToPlay, float Scale, float Rate, float BlendInTime, float BlendOutTime, bool bLoop, bool bRandomStartTime, enum class ECameraShakePlaySpace Space, struct FRotator CustomPlaySpace); // Function Engine.PlayerController.ClientPlayCameraAnim // (Net|Native|Event|Public|HasDefaults|NetClient|BlueprintCallable) // @ game+0x37af0f0
+	void ClientMutePlayer(struct FUniqueNetIdRepl PlayerId); // Function Engine.PlayerController.ClientMutePlayer // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aefd0
+	void ClientMessage(struct FString S, struct FName Type, float MsgLifeTime); // Function Engine.PlayerController.ClientMessage // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aeea0
+	void ClientIgnoreMoveInput(bool bIgnore); // Function Engine.PlayerController.ClientIgnoreMoveInput // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aee10
+	void ClientIgnoreLookInput(bool bIgnore); // Function Engine.PlayerController.ClientIgnoreLookInput // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aed80
+	void ClientGotoState(struct FName NewState); // Function Engine.PlayerController.ClientGotoState // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aecf0
+	void ClientGameEnded(struct AActor* EndGameFocus, bool bIsWinner); // Function Engine.PlayerController.ClientGameEnded // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aec20
+	void ClientForceGarbageCollection(); // Function Engine.PlayerController.ClientForceGarbageCollection // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aec00
+	void ClientFlushLevelStreaming(); // Function Engine.PlayerController.ClientFlushLevelStreaming // (Final|Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aebe0
+	void ClientEndOnlineSession(); // Function Engine.PlayerController.ClientEndOnlineSession // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x16592d0
+	void ClientEnableNetworkVoice(bool bEnable); // Function Engine.PlayerController.ClientEnableNetworkVoice // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aeb50
+	void ClientCommitMapChange(); // Function Engine.PlayerController.ClientCommitMapChange // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aeb30
+	void ClientClearCameraLensEffects(); // Function Engine.PlayerController.ClientClearCameraLensEffects // (Net|NetReliableNative|Event|Public|NetClient|BlueprintCallable) // @ game+0x37aeb10
+	void ClientCapBandwidth(int32_t Cap); // Function Engine.PlayerController.ClientCapBandwidth // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aea80
+	void ClientCancelPendingMapChange(); // Function Engine.PlayerController.ClientCancelPendingMapChange // (Net|NetReliableNative|Event|Public|NetClient) // @ game+0x37aea60
+	void ClientAddTextureStreamingLoc(struct FVector InLoc, float Duration, bool bOverrideLocation); // Function Engine.PlayerController.ClientAddTextureStreamingLoc // (Final|Net|NetReliableNative|Event|Public|HasDefaults|NetClient) // @ game+0x37ae930
+	void ClearAudioListenerOverride(); // Function Engine.PlayerController.ClearAudioListenerOverride // (Final|Native|Public|BlueprintCallable) // @ game+0x37ae910
+	void ClearAudioListenerAttenuationOverride(); // Function Engine.PlayerController.ClearAudioListenerAttenuationOverride // (Final|Native|Public|BlueprintCallable) // @ game+0x37ae8f0
+	bool CanRestartPlayer(); // Function Engine.PlayerController.CanRestartPlayer // (Native|Public|BlueprintCallable) // @ game+0x37ae8c0
 	void Camera(struct FName NewMode); // Function Engine.PlayerController.Camera // (Exec|Native|Public) // @ game+0x37ae830
+	void AddYawInput(float Val); // Function Engine.PlayerController.AddYawInput // (Native|Public|BlueprintCallable) // @ game+0x37ae7a0
+	void AddRollInput(float Val); // Function Engine.PlayerController.AddRollInput // (Native|Public|BlueprintCallable) // @ game+0x37ae710
+	void AddPitchInput(float Val); // Function Engine.PlayerController.AddPitchInput // (Native|Public|BlueprintCallable) // @ game+0x37ae680
+	void ActivateTouchInterface(struct UTouchInterface* NewTouchInterface); // Function Engine.PlayerController.ActivateTouchInterface // (Native|Public|BlueprintCallable) // @ game+0x37ae4b0
+
+	bool IsInGame();
 };
 
 // Enum PortalWars.EAmmoType
@@ -2064,6 +2238,46 @@ struct USkeletalMeshComponent : USkinnedMeshComponent {
 	char pad_B20[0x3b0]; // 0xb20(0x3b0)
 };
 
+
+// Class Engine.StaticMeshComponent
+// Size: 0x4e0 (Inherited: 0x480)
+struct UStaticMeshComponent : UMeshComponent {
+	int32_t ForcedLodModel; // 0x478(0x04)
+	int32_t PreviousLODLevel; // 0x47c(0x04)
+	int32_t MinLOD; // 0x480(0x04)
+	int32_t SubDivisionStepSize; // 0x484(0x04)
+	struct UStaticMesh* StaticMesh; // 0x488(0x08)
+	struct FColor WireframeColorOverride; // 0x490(0x04)
+	char bEvaluateWorldPositionOffset : 1; // 0x494(0x01)
+	char bOverrideWireframeColor : 1; // 0x494(0x01)
+	char bOverrideMinLod : 1; // 0x494(0x01)
+	char bOverrideNavigationExport : 1; // 0x494(0x01)
+	char bForceNavigationObstacle : 1; // 0x494(0x01)
+	char bDisallowMeshPaintPerInstance : 1; // 0x494(0x01)
+	char bIgnoreInstanceForTextureStreaming : 1; // 0x494(0x01)
+	char bOverrideLightMapRes : 1; // 0x494(0x01)
+	char bCastDistanceFieldIndirectShadow : 1; // 0x495(0x01)
+	char bOverrideDistanceFieldSelfShadowBias : 1; // 0x495(0x01)
+	char bUseSubDivisions : 1; // 0x495(0x01)
+	char bUseDefaultCollision : 1; // 0x495(0x01)
+	char bReverseCulling : 1; // 0x495(0x01)
+	int32_t OverriddenLightMapRes; // 0x498(0x04)
+	float DistanceFieldIndirectShadowMinVisibility; // 0x49c(0x04)
+	float DistanceFieldSelfShadowBias; // 0x4a0(0x04)
+	float StreamingDistanceMultiplier; // 0x4a4(0x04)
+	struct TArray<struct FStaticMeshComponentLODInfo> LODData; // 0x4a8(0x10)
+	struct TArray<struct FStreamingTextureBuildInfo> StreamingTextureData; // 0x4b8(0x10)
+	char LightmassSettings[0x18]; // 0x4c8(0x18)
+
+	bool SetStaticMesh(struct UStaticMesh* NewMesh); // Function Engine.StaticMeshComponent.SetStaticMesh // (Native|Public|BlueprintCallable) // @ game+0x37fb970
+	void SetReverseCulling(bool ReverseCulling); // Function Engine.StaticMeshComponent.SetReverseCulling // (Final|Native|Public|BlueprintCallable) // @ game+0x37fb720
+	void SetForcedLodModel(int32_t NewForcedLodModel); // Function Engine.StaticMeshComponent.SetForcedLodModel // (Final|Native|Public|BlueprintCallable) // @ game+0x37fb2e0
+	void SetEvaluateWorldPositionOffsetInRayTracing(bool NewValue); // Function Engine.StaticMeshComponent.SetEvaluateWorldPositionOffsetInRayTracing // (Final|Native|Public|BlueprintCallable) // @ game+0x37fb250
+	void SetDistanceFieldSelfShadowBias(float NewValue); // Function Engine.StaticMeshComponent.SetDistanceFieldSelfShadowBias // (Final|Native|Public|BlueprintCallable) // @ game+0x37fafd0
+	void OnRep_StaticMesh(struct UStaticMesh* OldStaticMesh); // Function Engine.StaticMeshComponent.OnRep_StaticMesh // (Final|Native|Public) // @ game+0x37faf40
+	void GetLocalBounds(struct FVector& Min, struct FVector& Max); // Function Engine.StaticMeshComponent.GetLocalBounds // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37fada0
+};
+
 // Class Engine.World
 // Size: 0x798 (Inherited: 0x28)
 struct UWorld : UObject {
@@ -2496,6 +2710,14 @@ struct UKismetStringLibrary : UBlueprintFunctionLibrary {
 	static struct UClass* StaticClass();
 };
 
+// Class Engine.KismetTextLibrary
+// Size: 0x28 (Inherited: 0x28)
+struct UKismetTextLibrary : UBlueprintFunctionLibrary {
+	struct FText Conv_StringToText(struct FString inString); // Function Engine.KismetTextLibrary.Conv_StringToText // (Final|Native|Static|Public|BlueprintCallable|BlueprintPure) // @ game+0x376b760
+
+	static struct UClass* StaticClass();
+};
+
 // ScriptStruct GameplayTags.GameplayTag
 // Size: 0x08 (Inherited: 0x00)
 struct FGameplayTag {
@@ -2510,6 +2732,12 @@ struct FErrorInfo {
 	struct FText ErrorText; // 0x20(0x18)
 	struct FString Code; // 0x38(0x10)
 	struct FString Message; // 0x48(0x10)
+};
+
+// ScriptStruct PortalWarsGlobals.ErrorData
+// Size: 0x10 (Inherited: 0x00)
+struct FErrorData {
+	struct TArray<struct FString> Data; // 0x00(0x10)
 };
 
 // Class PortalWars.PortalWarsNotificationManager
@@ -2692,6 +2920,8 @@ struct APortalWarsPlayerController : APortalWarsBasePlayerController {
 	void CheatGodMode(); // Function PortalWars.PortalWarsPlayerController.CheatGodMode // (Final|Exec|Native|Public) // @ game+0x16bb8c0
 	void CheatESP(); // Function PortalWars.PortalWarsPlayerController.CheatESP // (Final|Exec|Native|Public) // @ game+0xf085f0
 	void CheatEnableCheats(); // Function PortalWars.PortalWarsPlayerController.CheatEnableCheats // (Final|Exec|Native|Public) // @ game+0x16bb8a0
+
+	void SendChatMessage(FString Message, enum class EChatType ChatType = EChatType::General);
 };
 
 // Class Engine.NetConnection
