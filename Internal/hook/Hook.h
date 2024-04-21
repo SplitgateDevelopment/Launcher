@@ -9,7 +9,6 @@
 
 namespace Hook {
 	HHOOK g_hook;
-	Features* features = new Features();
 
 	namespace PostRender {
 		void** VTable;
@@ -101,6 +100,9 @@ namespace Hook {
 		};
 
 		Logger::Log("SUCCESS", "Enabled MinHook hooks");
+
+		Features::Init();
+		Logger::Log("SUCCESS", std::format("Initialized {} Features", Features::Features.size()));
 
 		return TRUE;
 	}
