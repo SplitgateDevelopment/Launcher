@@ -9,6 +9,7 @@ namespace Globals {
 	UGameplayStatics* GameplayStatics = 0;
 	UKismetStringLibrary* KismetStringLibrary = 0;
 	UKismetTextLibrary* KismetTextLibrary = 0;
+	UCanvas* Canvas = 0;
 
 	void Init() {
 		Engine = UEngine::GetEngine();

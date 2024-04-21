@@ -138,7 +138,7 @@ void APlayerController::SetName(FString S)
 	ProcessEvent(UObjects::SetNameUFunc, &Parameters);
 }
 
-void Canvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FLOAT Thickness, FLinearColor Color)
+void UCanvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FLOAT Thickness, FLinearColor Color)
 {
 	struct {
 		FVector2D ScreenPositionA;
@@ -155,10 +155,10 @@ void Canvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, F
 	ProcessEvent(UObjects::K2_DrawLineUFunc, &Parameters);
 }
 
-void Canvas::K2_DrawText(FString RenderText, FVector2D ScreenPosition, FVector2D Scale, FLinearColor RenderColor, float Kerning, FLinearColor ShadowColor, FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, FLinearColor OutlineColor)
+void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, struct FVector2D ScreenPosition, struct FVector2D Scale, struct FLinearColor RenderColor, float Kerning, struct FLinearColor ShadowColor, struct FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, struct FLinearColor OutlineColor)
 {
 	struct {
-		UObject* RenderFont; //UFont* 
+		struct UFont* RenderFont;
 		FString RenderText;
 		FVector2D ScreenPosition;
 		FVector2D Scale;
@@ -172,7 +172,7 @@ void Canvas::K2_DrawText(FString RenderText, FVector2D ScreenPosition, FVector2D
 		FLinearColor OutlineColor;
 	} Parameters;
 
-	Parameters.RenderFont = UObjects::Font;
+	Parameters.RenderFont = RenderFont ? RenderFont : (UFont*)UObjects::Font;
 	Parameters.RenderText = RenderText;
 	Parameters.ScreenPosition = ScreenPosition;
 	Parameters.Scale = Scale;
@@ -525,6 +525,102 @@ void APortalWarsPlayerController::SendChatMessage(FString Message, enum class EC
 	this->ClientUpdateChat(ChatData);
 }
 
+void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origin, struct FVector& BoxExtent, bool bIncludeFromChildActors)
+{
+	auto Function = ObjObjects->FindObject("Function Engine.Actor.GetActorBounds");
+
+	struct {
+		bool bOnlyCollidingComponents;
+		struct FVector Origin;
+		struct FVector BoxExtent;
+		bool bIncludeFromChildActors;
+	} Params;
+	Params.bOnlyCollidingComponents = bOnlyCollidingComponents;
+	Params.Origin = Origin;
+	Params.BoxExtent = BoxExtent;
+	Params.bIncludeFromChildActors = bIncludeFromChildActors;
+
+	UObject::ProcessEvent(Function, &Params);
+};
+
+bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVector2D& ScreenLocation, bool bPlayerViewportRelative)
+{
+	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
+
+	struct {
+		FVector WorldLocation;
+		FVector2D ScreenLocation;
+		bool bPlayerViewportRelative;
+		bool ReturnValue;
+	} Parameters;
+
+	Parameters.WorldLocation = WorldLocation;
+	Parameters.ScreenLocation = ScreenLocation;
+	Parameters.bPlayerViewportRelative = bPlayerViewportRelative;
+
+	ProcessEvent(Function, &Parameters);
+
+	ScreenLocation = Parameters.ScreenLocation;
+
+	return Parameters.ReturnValue;
+};
+
+struct UClass* ACharacter::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.Character");
+};
+
+struct UClass* APawn::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class Engine.Pawn");
+};
+
+struct UClass* APortalWarsCharacter::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
+};
+
+struct UClass* ACullableActor::StaticClass()
+{
+	return (UClass*)ObjObjects->FindObject("Class PortalWars.CullableActor");
+};
+
+FVector USkeletalMeshComponent::GetBoneMatrix(int index) {
+
+	auto GetBoneMatrix = reinterpret_cast<FMatrix * (*)(USkeletalMeshComponent*, FMatrix*, int)>(GetBoneMatrixF);
+
+	FMatrix matrix;
+	GetBoneMatrix(this, &matrix, index);
+
+	return FVector({ matrix.M[3][0], matrix.M[3][1], matrix.M[3][2] });
+}
+
+FVector2D USkeletalMeshComponent::GetBone(int index, APlayerController* PlayerController) {
+
+	FVector WorldLocation = this->GetBoneMatrix(index);
+
+	FVector2D ScreenLocation;
+
+	if (PlayerController->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation, false)) return ScreenLocation;
+
+	return { 0,0 };
+}
+
+struct FName USkinnedMeshComponent::GetBoneName(int32_t BoneIndex)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.SkinnedMeshComponent.GetBoneName");
+	struct {
+		int32_t BoneIndex;
+		FName ReturnValue;
+	} Parameters;
+
+	Parameters.BoneIndex = BoneIndex;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
 bool EngineInit()
 {
 	auto main = GetModuleHandleA(nullptr);
@@ -540,6 +636,14 @@ bool EngineInit()
 	static byte worldSig[] = { 0x48, 0x8B, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0xDB, 0x74, 0x3B, 0x41, 0xB0, 0x01, 0x33, 0xD2, 0x48, 0x8B, 0xCB, 0xE8 };
 	WRLD = reinterpret_cast<decltype(WRLD)>(FindPointer(main, worldSig, sizeof(worldSig), 0));
 	if (!WRLD) return false;
+
+	static byte GetBoneMatrixSig[] = { 0x48, 0x8B, 0xC4, 0x55, 0x53, 0x56, 0x57, 0x41, 0x54, 0x41, 0x56, 0x41, 0x57, 0x48, 0x8D, 0x68, 0xA1, 0x48, 0x81, 0xEC, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x29, 0x78, 0xB8, 0x33, 0xF6, 0x44, 0x0F, 0x29, 0x40 };
+	MODULEINFO info;
+	if (K32GetModuleInformation(GetCurrentProcess(), main, &info, sizeof(MODULEINFO))) {
+		auto base = static_cast<byte*>(info.lpBaseOfDll);
+		GetBoneMatrixF = reinterpret_cast<decltype(GetBoneMatrixF)>(FindSignature(base, base + info.SizeOfImage - 1, GetBoneMatrixSig, sizeof(GetBoneMatrixSig)));
+		if (!GetBoneMatrixF) return false;
+	}
 
 	UObjects::Init();
 	return true;

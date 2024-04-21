@@ -4,11 +4,12 @@
 #include "../../menu/Menu.h"
 #include "../../settings/Settings.h"
 
-void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
+void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 {
 	do {
 		UWorld* World = *(UWorld**)(WRLD);
 		if (!World) break;
+		Globals::Canvas = Canvas;
 
 		UGameInstance* OwningGameInstance = World->OwningGameInstance;
 		if (!OwningGameInstance) break;
@@ -24,5 +25,5 @@ void PostRender(UGameViewportClient* UGameViewportClient, Canvas* canvas)
 		Hook::features->handle(PlayerController);
 	} while (false);
 
-	return Hook::PostRender::Original(UGameViewportClient, canvas);
+	return Hook::PostRender::Original(UGameViewportClient, Canvas);
 }

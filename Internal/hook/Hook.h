@@ -13,7 +13,7 @@ namespace Hook {
 
 	namespace PostRender {
 		void** VTable;
-		void(*Original)(UGameViewportClient* UGameViewportClient, Canvas* Canvas) = nullptr;
+		void(*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
 		int Index = 100;
 	}
 

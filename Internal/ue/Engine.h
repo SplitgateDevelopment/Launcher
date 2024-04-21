@@ -160,6 +160,16 @@ struct TArray
 	friend struct FString;
 
 public:
+	inline TArray()
+		:Count(0), Max(0), Data(nullptr)
+	{
+	};
+
+	inline TArray(int Size)
+		: Count(0), Max(Size), Data(reinterpret_cast<T*>(malloc(sizeof(T)* Size)))
+	{
+	};
+
 	inline int Num() const
 	{
 		return Count;
@@ -172,7 +182,7 @@ public:
 
 	inline bool IsValidIndex(int i) const
 	{
-		return i < Num();
+		return i >= 0 && i < Num();
 	}
 
 private:
@@ -270,13 +280,15 @@ struct FRotator {
 	float Roll;
 };
 
+// ScriptStruct PortalWars.RecoilData
+// Size: 0x18 (Inherited: 0x00)
 struct FRecoilData {
-	float recoilRiseTime;
-	float recoilTotalTime;
-	float verticalRecoilAmount;
-	float horizontalRecoilAmount;
-	float recoilKick;
-	float visualRecoil;
+	float recoilRiseTime; // 0x00(0x04)
+	float recoilTotalTime; // 0x04(0x04)
+	float verticalRecoilAmount; // 0x08(0x04)
+	float horizontalRecoilAmount; // 0x0c(0x04)
+	float recoilKick; // 0x10(0x04)
+	float visualRecoil; // 0x14(0x04)
 };
 
 struct FMulticastInlineDelegate {
@@ -513,7 +525,7 @@ struct AController : AActor {
 	char pad_220[0x8]; // 0x220(0x08)
 	struct APlayerState* PlayerState; // 0x228(0x08)
 	char pad_230[0x8]; // 0x230(0x08)
-	char OnInstigatedAnyDamage[0x10]; // 0x238(0x10)
+	struct FMulticastInlineDelegate OnInstigatedAnyDamage; // 0x238(0x10)
 	struct FName StateName; // 0x248(0x08)
 	struct APawn* Pawn; // 0x250(0x08)
 	char pad_258[0x8]; // 0x258(0x08)
@@ -525,8 +537,34 @@ struct AController : AActor {
 	char pad_294_1 : 7; // 0x294(0x01)
 	char pad_295[0x3]; // 0x295(0x03)
 
-	bool LineOfSightTo(AActor* Other);
-	void SetControlRotation(FRotator NewRotation);
+	void UnPossess(); // Function Engine.Controller.UnPossess // (Final|Native|Public|BlueprintCallable) // @ game+0x36d1160
+	void StopMovement(); // Function Engine.Controller.StopMovement // (Native|Public|BlueprintCallable) // @ game+0x1695cb0
+	void SetInitialLocationAndRotation(struct FVector& NewLocation, struct FRotator& NewRotation); // Function Engine.Controller.SetInitialLocationAndRotation // (Native|Public|HasOutParms|HasDefaults|BlueprintCallable) // @ game+0x36d1070
+	void SetIgnoreMoveInput(bool bNewMoveInput); // Function Engine.Controller.SetIgnoreMoveInput // (Native|Public|BlueprintCallable) // @ game+0x36d0fe0
+	void SetIgnoreLookInput(bool bNewLookInput); // Function Engine.Controller.SetIgnoreLookInput // (Native|Public|BlueprintCallable) // @ game+0x36d0f50
+	void SetControlRotation(struct FRotator& NewRotation); // Function Engine.Controller.SetControlRotation // (Native|Public|HasOutParms|HasDefaults|BlueprintCallable) // @ game+0x36d0ec0
+	void ResetIgnoreMoveInput(); // Function Engine.Controller.ResetIgnoreMoveInput // (Native|Public|BlueprintCallable) // @ game+0x36d0ea0
+	void ResetIgnoreLookInput(); // Function Engine.Controller.ResetIgnoreLookInput // (Native|Public|BlueprintCallable) // @ game+0x169a850
+	void ResetIgnoreInputFlags(); // Function Engine.Controller.ResetIgnoreInputFlags // (Native|Public|BlueprintCallable) // @ game+0x1661650
+	void ReceiveUnPossess(struct APawn* UnpossessedPawn); // Function Engine.Controller.ReceiveUnPossess // (Event|Protected|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceivePossess(struct APawn* PossessedPawn); // Function Engine.Controller.ReceivePossess // (Event|Protected|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveInstigatedAnyDamage(float Damage, struct UDamageType* DamageType, struct AActor* DamagedActor, struct AActor* DamageCauser); // Function Engine.Controller.ReceiveInstigatedAnyDamage // (BlueprintAuthorityOnly|Event|Protected|BlueprintEvent) // @ game+0x1a5c6b0
+	void Possess(struct APawn* InPawn); // Function Engine.Controller.Possess // (Final|BlueprintAuthorityOnly|Native|Public|BlueprintCallable) // @ game+0x36d0e10
+	void OnRep_PlayerState(); // Function Engine.Controller.OnRep_PlayerState // (Native|Public) // @ game+0x16afd20
+	void OnRep_Pawn(); // Function Engine.Controller.OnRep_Pawn // (Native|Public) // @ game+0x1674610
+	bool LineOfSightTo(struct AActor* Other, struct FVector ViewPoint, bool bAlternateChecks); // Function Engine.Controller.LineOfSightTo // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0ce0
+	struct APawn* K2_GetPawn(); // Function Engine.Controller.K2_GetPawn // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0cb0
+	bool IsPlayerController(); // Function Engine.Controller.IsPlayerController // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0c80
+	bool IsMoveInputIgnored(); // Function Engine.Controller.IsMoveInputIgnored // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0c50
+	bool IsLookInputIgnored(); // Function Engine.Controller.IsLookInputIgnored // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0c20
+	bool IsLocalPlayerController(); // Function Engine.Controller.IsLocalPlayerController // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0bd0
+	bool IsLocalController(); // Function Engine.Controller.IsLocalController // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0ba0
+	struct AActor* GetViewTarget(); // Function Engine.Controller.GetViewTarget // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0b70
+	struct FRotator GetDesiredRotation(); // Function Engine.Controller.GetDesiredRotation // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0970
+	struct FRotator GetControlRotation(); // Function Engine.Controller.GetControlRotation // (Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x36d0930
+	void ClientSetRotation(struct FRotator NewRotation, bool bResetCamera); // Function Engine.Controller.ClientSetRotation // (Net|NetReliableNative|Event|Public|HasDefaults|NetClient|NetValidate) // @ game+0x36d0800
+	void ClientSetLocation(struct FVector NewLocation, struct FRotator NewRotation); // Function Engine.Controller.ClientSetLocation // (Net|NetReliableNative|Event|Public|HasDefaults|NetClient|NetValidate) // @ game+0x36d06c0
+	struct APlayerController* CastToPlayerController(); // Function Engine.Controller.CastToPlayerController // (Final|Native|Public|BlueprintCallable) // @ game+0x36d0690
 };
 
 // Class Engine.Pawn
@@ -583,6 +621,8 @@ struct APawn : AActor {
 	void AddControllerYawInput(float Val); // Function Engine.Pawn.AddControllerYawInput // (Native|Public|BlueprintCallable) // @ game+0x37a4810
 	void AddControllerRollInput(float Val); // Function Engine.Pawn.AddControllerRollInput // (Native|Public|BlueprintCallable) // @ game+0x37a4780
 	void AddControllerPitchInput(float Val); // Function Engine.Pawn.AddControllerPitchInput // (Native|Public|BlueprintCallable) // @ game+0x37a46f0
+
+	static struct UClass* StaticClass();
 };
 
 // Class Engine.Character
@@ -682,6 +722,8 @@ struct ACharacter : APawn {
 	bool CanJump(); // Function Engine.Character.CanJump // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36c5010
 	bool CanCrouch(); // Function Engine.Character.CanCrouch // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36c4fe0
 	void CacheInitialMeshOffset(struct FVector MeshRelativeLocation, struct FRotator MeshRelativeRotation); // Function Engine.Character.CacheInitialMeshOffset // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c4ef0
+
+	static struct UClass* StaticClass();
 };
 
 // Class PortalWars.PortalWarsCharacter
@@ -943,6 +985,8 @@ struct APortalWarsCharacter : ACharacter {
 	void applyShotgunPointImpulsesToCorpseMulticast(struct TArray<struct FPWPointDamageEvent> DamageEvents); // Function PortalWars.PortalWarsCharacter.applyShotgunPointImpulsesToCorpseMulticast // (Net|Native|Event|NetMulticast|Public) // @ game+0x166a6e0
 	void applyRadialImpulseToCorpseMulticast(struct FPWRadialDamageEvent RadialDamageEvent); // Function PortalWars.PortalWarsCharacter.applyRadialImpulseToCorpseMulticast // (Net|Native|Event|NetMulticast|Public) // @ game+0x166a600
 	void applyPointImpulseToCorpseMulticast(struct FPWPointDamageEvent PointDamageEvent); // Function PortalWars.PortalWarsCharacter.applyPointImpulseToCorpseMulticast // (Net|Native|Event|NetMulticast|Public) // @ game+0x166a500
+
+	static struct UClass* StaticClass();
 };
 
 // ScriptStruct PortalWarsGlobals.PlayerStatsInfo
@@ -1122,6 +1166,63 @@ enum class EMouseCursor : uint8_t {
 	SlashedCircle = 12,
 	EyeDropper = 13,
 	EMouseCursor_MAX = 14
+};
+
+// Class Engine.HUD
+// Size: 0x310 (Inherited: 0x220)
+struct AHUD : AActor {
+	struct APlayerController* PlayerOwner; // 0x220(0x08)
+	char bLostFocusPaused : 1; // 0x228(0x01)
+	char bShowHUD : 1; // 0x228(0x01)
+	char bShowDebugInfo : 1; // 0x228(0x01)
+	char pad_228_3 : 5; // 0x228(0x01)
+	char pad_229[0x3]; // 0x229(0x03)
+	int32_t CurrentTargetIndex; // 0x22c(0x04)
+	char bShowHitBoxDebugInfo : 1; // 0x230(0x01)
+	char bShowOverlays : 1; // 0x230(0x01)
+	char bEnableDebugTextShadow : 1; // 0x230(0x01)
+	char pad_230_3 : 5; // 0x230(0x01)
+	char pad_231[0x7]; // 0x231(0x07)
+	struct TArray<struct AActor*> PostRenderedActors; // 0x238(0x10)
+	char pad_248[0x8]; // 0x248(0x08)
+	struct TArray<struct FName> DebugDisplay; // 0x250(0x10)
+	struct TArray<struct FName> ToggledDebugCategories; // 0x260(0x10)
+	struct UCanvas* Canvas; // 0x270(0x08)
+	struct UCanvas* DebugCanvas; // 0x278(0x08)
+	struct TArray<struct FDebugTextInfo> DebugTextList; // 0x280(0x10)
+	struct AActor* ShowDebugTargetDesiredClass; // 0x290(0x08)
+	struct AActor* ShowDebugTargetActor; // 0x298(0x08)
+	char pad_2A0[0x70]; // 0x2a0(0x70)
+
+	void ShowHUD(); // Function Engine.HUD.ShowHUD // (Exec|Native|Public) // @ game+0x164ce00
+	void ShowDebugToggleSubCategory(struct FName Category); // Function Engine.HUD.ShowDebugToggleSubCategory // (Final|Exec|Native|Public) // @ game+0x3703390
+	void ShowDebugForReticleTargetToggle(struct AActor* DesiredClass); // Function Engine.HUD.ShowDebugForReticleTargetToggle // (Final|Exec|Native|Public) // @ game+0x3703300
+	void ShowDebug(struct FName DebugType); // Function Engine.HUD.ShowDebug // (Exec|Native|Public) // @ game+0x3703270
+	void RemoveDebugText(struct AActor* SrcActor, bool bLeaveDurationText); // Function Engine.HUD.RemoveDebugText // (Final|Net|NetReliableNative|Event|Public|NetClient) // @ game+0x3703050
+	void RemoveAllDebugStrings(); // Function Engine.HUD.RemoveAllDebugStrings // (Final|Net|NetReliableNative|Event|Public|NetClient) // @ game+0x3703030
+	void ReceiveHitBoxRelease(struct FName BoxName); // Function Engine.HUD.ReceiveHitBoxRelease // (BlueprintCosmetic|Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveHitBoxEndCursorOver(struct FName BoxName); // Function Engine.HUD.ReceiveHitBoxEndCursorOver // (BlueprintCosmetic|Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveHitBoxClick(struct FName BoxName); // Function Engine.HUD.ReceiveHitBoxClick // (BlueprintCosmetic|Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveHitBoxBeginCursorOver(struct FName BoxName); // Function Engine.HUD.ReceiveHitBoxBeginCursorOver // (BlueprintCosmetic|Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	void ReceiveDrawHUD(int32_t SizeX, int32_t SizeY); // Function Engine.HUD.ReceiveDrawHUD // (BlueprintCosmetic|Event|Public|BlueprintEvent) // @ game+0x1a5c6b0
+	struct FVector Project(struct FVector Location); // Function Engine.HUD.Project // (Final|Native|Public|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x3702b80
+	void PreviousDebugTarget(); // Function Engine.HUD.PreviousDebugTarget // (Exec|Native|Public) // @ game+0x1654360
+	void NextDebugTarget(); // Function Engine.HUD.NextDebugTarget // (Exec|Native|Public) // @ game+0x1654340
+	void GetTextSize(struct FString Text, float& OutWidth, float& OutHeight, struct UFont* Font, float Scale); // Function Engine.HUD.GetTextSize // (Final|Native|Public|HasOutParms|BlueprintCallable|BlueprintPure|Const) // @ game+0x3702060
+	struct APlayerController* GetOwningPlayerController(); // Function Engine.HUD.GetOwningPlayerController // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x1224b90
+	struct APawn* GetOwningPawn(); // Function Engine.HUD.GetOwningPawn // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x3702030
+	void GetActorsInSelectionRectangle(struct AActor* ClassFilter, struct FVector2D& FirstPoint, struct FVector2D& SecondPoint, struct TArray<struct AActor*>& OutActors, bool bIncludeNonCollidingComponents, bool bActorMustBeFullyEnclosed); // Function Engine.HUD.GetActorsInSelectionRectangle // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure) // @ game+0x3701e10
+	void DrawTextureSimple(struct UTexture* Texture, float ScreenX, float ScreenY, float Scale, bool bScalePosition); // Function Engine.HUD.DrawTextureSimple // (Final|Native|Public|BlueprintCallable) // @ game+0x3701c60
+	void DrawTexture(struct UTexture* Texture, float ScreenX, float ScreenY, float ScreenW, float ScreenH, float TextureU, float TextureV, float TextureUWidth, float TextureVHeight, struct FLinearColor TintColor, enum class EBlendMode BlendMode, float Scale, bool bScalePosition, float Rotation, struct FVector2D RotPivot); // Function Engine.HUD.DrawTexture // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3701800
+	void DrawText(struct FString Text, struct FLinearColor TextColor, float ScreenX, float ScreenY, struct UFont* Font, float Scale, bool bScalePosition); // Function Engine.HUD.DrawText // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x37015c0
+	void DrawRect(struct FLinearColor RectColor, float ScreenX, float ScreenY, float ScreenW, float ScreenH); // Function Engine.HUD.DrawRect // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3701400
+	void DrawMaterialTriangle(struct UMaterialInterface* Material, struct FVector2D V0_Pos, struct FVector2D V1_Pos, struct FVector2D V2_Pos, struct FVector2D V0_UV, struct FVector2D V1_UV, struct FVector2D V2_UV, struct FLinearColor V0_Color, struct FLinearColor V1_Color, struct FLinearColor V2_Color); // Function Engine.HUD.DrawMaterialTriangle // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3701110
+	void DrawMaterialSimple(struct UMaterialInterface* Material, float ScreenX, float ScreenY, float ScreenW, float ScreenH, float Scale, bool bScalePosition); // Function Engine.HUD.DrawMaterialSimple // (Final|Native|Public|BlueprintCallable) // @ game+0x3700ef0
+	void DrawMaterial(struct UMaterialInterface* Material, float ScreenX, float ScreenY, float ScreenW, float ScreenH, float MaterialU, float MaterialV, float MaterialUWidth, float MaterialVHeight, float Scale, bool bScalePosition, float Rotation, struct FVector2D RotPivot); // Function Engine.HUD.DrawMaterial // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3700b20
+	void DrawLine(float StartScreenX, float StartScreenY, float EndScreenX, float EndScreenY, struct FLinearColor LineColor, float LineThickness); // Function Engine.HUD.DrawLine // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3700920
+	void Deproject(float ScreenX, float ScreenY, struct FVector& WorldPosition, struct FVector& WorldDirection); // Function Engine.HUD.Deproject // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable|BlueprintPure|Const) // @ game+0x37007a0
+	void AddHitBox(struct FVector2D Position, struct FVector2D Size, struct FName InName, bool bConsumesInput, int32_t Priority); // Function Engine.HUD.AddHitBox // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x3700480
+	void AddDebugText(struct FString DebugText, struct AActor* SrcActor, float Duration, struct FVector Offset, struct FVector DesiredOffset, struct FColor TextColor, bool bSkipOverwriteCheck, bool bAbsoluteLocation, bool bKeepAttachedToActor, struct UFont* InFont, float FontScale, bool bDrawShadow); // Function Engine.HUD.AddDebugText // (Final|Net|NetReliableNative|Event|Public|HasDefaults|NetClient) // @ game+0x37000c0
 };
 
 // Class Engine.PlayerController
@@ -1365,6 +1466,7 @@ struct FWeaponData {
 // Class PortalWars.CullableActor
 // Size: 0x220 (Inherited: 0x220)
 struct ACullableActor : AActor {
+	static struct UClass* StaticClass();
 };
 
 // Class PortalWars.BaseGun
@@ -1541,11 +1643,41 @@ struct AGun : ABaseGun {
 };
 
 // Class Engine.Level
+// Size: 0x298 (Inherited: 0x28)
 struct ULevel : UObject {
-	char pad_0000[0x98]; // 0x00 (0x98)
-	TArray<AActor*> Actors; // 0x98 (0x10)
-	char pad_0001[0x10]; // 0xA8 (0x10)
-	class UWorld* OwningWorld; // 0xB8 (0x08)
+	uint8_t pad0[0x70];
+	TArray<class AActor*> Actors;
+	TArray<class AActor*> GCActors;
+	struct UWorld* OwningWorld; // 0xb8(0x08)
+	struct UModel* Model; // 0xc0(0x08)
+	struct TArray<struct UModelComponent*> ModelComponents; // 0xc8(0x10)
+	struct ULevelActorContainer* ActorCluster; // 0xd8(0x08)
+	int32_t NumTextureStreamingUnbuiltComponents; // 0xe0(0x04)
+	int32_t NumTextureStreamingDirtyResources; // 0xe4(0x04)
+	struct ALevelScriptActor* LevelScriptActor; // 0xe8(0x08)
+	struct ANavigationObjectBase* NavListStart; // 0xf0(0x08)
+	struct ANavigationObjectBase* NavListEnd; // 0xf8(0x08)
+	struct TArray<struct UNavigationDataChunk*> NavDataChunks; // 0x100(0x10)
+	float LightmapTotalSize; // 0x110(0x04)
+	float ShadowmapTotalSize; // 0x114(0x04)
+	struct TArray<struct FVector> StaticNavigableGeometry; // 0x118(0x10)
+	struct TArray<struct FGuid> StreamingTextureGuids; // 0x128(0x10)
+	char pad_138[0x98]; // 0x138(0x98)
+	char LevelBuildDataId[0x10]; // 0x1d0(0x10)
+	struct UMapBuildDataRegistry* MapBuildData; // 0x1e0(0x08)
+	char LightBuildLevelOffset[0x0c]; // 0x1e8(0x0c)
+	char bIsLightingScenario : 1; // 0x1f4(0x01)
+	char pad_1F4_1 : 2; // 0x1f4(0x01)
+	char bTextureStreamingRotationChanged : 1; // 0x1f4(0x01)
+	char bStaticComponentsRegisteredInStreamingManager : 1; // 0x1f4(0x01)
+	char bIsVisible : 1; // 0x1f4(0x01)
+	char pad_1F4_6 : 2; // 0x1f4(0x01)
+	char pad_1F5[0x63]; // 0x1f5(0x63)
+	struct AWorldSettings* WorldSettings; // 0x258(0x08)
+	char pad_260[0x8]; // 0x260(0x08)
+	struct TArray<struct UAssetUserData*> AssetUserData; // 0x268(0x10)
+	char pad_278[0x10]; // 0x278(0x10)
+	struct TArray<struct FReplicatedStaticActorDestructionInfo> DestroyedReplicatedStaticActors; // 0x288(0x10)
 };
 
 // Class Engine.GameInstance
@@ -2102,6 +2234,80 @@ struct UMeshComponent : UPrimitiveComponent {
 	char pad_471[0xf]; // 0x471(0x0f)
 };
 
+enum BoneFNames: int {
+	Root = 0,
+	pelvis = 1,
+	spine_01 = 2,
+	spine_02 = 3,
+	spine_03 = 4,
+	clavicle_l = 5,
+	upperarm_l = 6,
+	lowerarm_l = 7,
+	hand_l = 8,
+	index_01_l = 9,
+	index_02_l = 10,
+	index_03_l = 11,
+	middle_01_l = 12,
+	middle_02_l = 13,
+	middle_03_l = 14,
+	pinky_01_l = 15,
+	pinky_02_l = 16,
+	pinky_03_l = 17,
+	ring_01_l = 18,
+	ring_02_l = 19,
+	ring_03_l = 20,
+	thumb_01_l = 21,
+	thumb_02_l = 22,
+	thumb_03_l = 23,
+	lowerarm_twist_01_l = 24,
+	upperarm_twist_01_l = 25,
+	clavicle_r = 26,
+	upperarm_r = 27,
+	lowerarm_r = 28,
+	hand_r = 29,
+	index_01_r = 30,
+	index_02_r = 31,
+	index_03_r = 32,
+	middle_01_r = 33,
+	middle_02_r = 34,
+	middle_03_r = 35,
+	pinky_01_r = 36,
+	pinky_02_r = 37,
+	pinky_03_r = 38,
+	ring_01_r = 39,
+	ring_02_r = 40,
+	ring_03_r = 41,
+	thumb_01_r = 42,
+	thumb_02_r = 43,
+	thumb_03_r = 44,
+	lowerarm_twist_01_r = 45,
+	upperarm_twist_01_r = 46,
+	neck_01 = 47,
+	head = 48,
+	thigh_l = 49,
+	calf_l = 50,
+	calf_twist_01_l = 51,
+	foot_l = 52,
+	ball_l = 53,
+	thigh_twist_01_l = 54,
+	thigh_r = 55,
+	calf_r = 56,
+	calf_twist_01_r = 57,
+	foot_r = 58,
+	ball_r = 59,
+	thigh_twist_01_r = 60,
+	ik_foot_root = 61,
+	ik_foot_l = 62,
+	ik_foot_r = 63,
+	ik_hand_root = 64,
+	ik_hand_gun = 65,
+	ik_hand_l = 66,
+	ik_hand_r = 67,
+	knee_target_l = 68,
+	knee_target_r = 69,
+	RHS_ik_hand_gun = 70,
+};
+
 // Class Engine.SkinnedMeshComponent
 // Size: 0x6a0 (Inherited: 0x480)
 struct USkinnedMeshComponent : UMeshComponent {
@@ -2152,6 +2358,8 @@ struct USkinnedMeshComponent : UMeshComponent {
 	char pad_63C[0x4]; // 0x63c(0x04)
 	struct FMatrix CachedWorldToLocalTransform; // 0x640(0x40)
 	char pad_680[0x20]; // 0x680(0x20)
+
+	struct FName GetBoneName(int32_t BoneIndex); // Function Engine.SkinnedMeshComponent.GetBoneName // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x37dfd40
 };
 
 // Class Engine.SkeletalMeshComponent
@@ -2236,6 +2444,9 @@ struct USkeletalMeshComponent : USkinnedMeshComponent {
 	char pad_A48[0xc8]; // 0xa48(0xc8)
 	struct FMulticastInlineDelegate OnAnimInitialized; // 0xb10(0x10)
 	char pad_B20[0x3b0]; // 0xb20(0x3b0)
+
+	FVector GetBoneMatrix(int index);
+	FVector2D GetBone(int index, APlayerController* PlayerController);
 };
 
 
@@ -2335,11 +2546,66 @@ struct UWorld : UObject {
 	static struct UWorld* GetDefaultObj();
 };
 
+// Class Engine.Font
+// Size: 0x1d0 (Inherited: 0x28)
+struct UFont : UObject {
+	char pad_28[0x8]; // 0x28(0x08)
+	char FontCacheType[0x01]; // 0x30(0x01)
+	char pad_31[0x7]; // 0x31(0x07)
+	struct TArray<struct FFontCharacter> Characters; // 0x38(0x10)
+	struct TArray<struct UTexture2D*> Textures; // 0x48(0x10)
+	int32_t IsRemapped; // 0x58(0x04)
+	float EmScale; // 0x5c(0x04)
+	float Ascent; // 0x60(0x04)
+	float Descent; // 0x64(0x04)
+	float Leading; // 0x68(0x04)
+	int32_t Kerning; // 0x6c(0x04)
+	char ImportOptions[0xb0]; // 0x70(0xb0)
+	int32_t NumCharacters; // 0x120(0x04)
+	char pad_124[0x4]; // 0x124(0x04)
+	struct TArray<int32_t> MaxCharHeight; // 0x128(0x10)
+	float ScalingFactor; // 0x138(0x04)
+	int32_t LegacyFontSize; // 0x13c(0x04)
+	struct FName LegacyFontName; // 0x140(0x08)
+	char CompositeFont[0x38]; // 0x148(0x38)
+	char pad_180[0x50]; // 0x180(0x50)
+};
+
 // Class Engine.Canvas
-struct Canvas : UObject {
-	char pad_0000[0x00]; // 0x28
-	void K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FLOAT Thickness, FLinearColor Color);
-	void K2_DrawText(FString RenderText, FVector2D ScreenPosition, FVector2D Scale, FLinearColor RenderColor, float Kerning, FLinearColor ShadowColor, FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, FLinearColor OutlineColor);
+// Size: 0x2d0 (Inherited: 0x28)
+struct UCanvas : UObject {
+	float OrgX; // 0x28(0x04)
+	float OrgY; // 0x2c(0x04)
+	float ClipX; // 0x30(0x04)
+	float ClipY; // 0x34(0x04)
+	struct FColor DrawColor; // 0x38(0x04)
+	char bCenterX : 1; // 0x3c(0x01)
+	char bCenterY : 1; // 0x3c(0x01)
+	char bNoSmooth : 1; // 0x3c(0x01)
+	char pad_3C_3 : 5; // 0x3c(0x01)
+	char pad_3D[0x3]; // 0x3d(0x03)
+	int32_t SizeX; // 0x40(0x04)
+	int32_t SizeY; // 0x44(0x04)
+	char pad_48[0x8]; // 0x48(0x08)
+	char ColorModulate[0x10]; // 0x50(0x10)
+	struct UTexture2D* DefaultTexture; // 0x60(0x08)
+	struct UTexture2D* GradientTexture0; // 0x68(0x08)
+	struct UReporterGraph* ReporterGraph; // 0x70(0x08)
+	char pad_78[0x258]; // 0x78(0x258)
+
+	struct FVector2D K2_TextSize(struct UFont* RenderFont, struct FString RenderText, struct FVector2D Scale); // Function Engine.Canvas.K2_TextSize // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c14b0
+	struct FVector2D K2_StrLen(struct UFont* RenderFont, struct FString RenderText); // Function Engine.Canvas.K2_StrLen // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c13c0
+	struct FVector K2_Project(struct FVector WorldLocation); // Function Engine.Canvas.K2_Project // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c1310
+	void K2_DrawTriangle(struct UTexture* RenderTexture, struct TArray<struct FCanvasUVTri> Triangles); // Function Engine.Canvas.K2_DrawTriangle // (Final|Native|Public|BlueprintCallable) // @ game+0x36c11e0
+	void K2_DrawTexture(struct UTexture* RenderTexture, struct FVector2D ScreenPosition, struct FVector2D ScreenSize, struct FVector2D CoordinatePosition, struct FVector2D CoordinateSize, struct FLinearColor RenderColor, enum class EBlendMode BlendMode, float Rotation, struct FVector2D PivotPoint); // Function Engine.Canvas.K2_DrawTexture // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c0f30
+	void K2_DrawText(struct UFont* RenderFont, struct FString RenderText, struct FVector2D ScreenPosition, struct FVector2D Scale, struct FLinearColor RenderColor, float Kerning, struct FLinearColor ShadowColor, struct FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, struct FLinearColor OutlineColor); // Function Engine.Canvas.K2_DrawText // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c0b70
+	void K2_DrawPolygon(struct UTexture* RenderTexture, struct FVector2D ScreenPosition, struct FVector2D Radius, int32_t NumberOfSides, struct FLinearColor RenderColor); // Function Engine.Canvas.K2_DrawPolygon // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c09c0
+	void K2_DrawMaterialTriangle(struct UMaterialInterface* RenderMaterial, struct TArray<struct FCanvasUVTri> Triangles); // Function Engine.Canvas.K2_DrawMaterialTriangle // (Final|Native|Public|BlueprintCallable) // @ game+0x36c0890
+	void K2_DrawMaterial(struct UMaterialInterface* RenderMaterial, struct FVector2D ScreenPosition, struct FVector2D ScreenSize, struct FVector2D CoordinatePosition, struct FVector2D CoordinateSize, float Rotation, struct FVector2D PivotPoint); // Function Engine.Canvas.K2_DrawMaterial // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c0650
+	void K2_DrawLine(struct FVector2D ScreenPositionA, struct FVector2D ScreenPositionB, float Thickness, struct FLinearColor RenderColor); // Function Engine.Canvas.K2_DrawLine // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c04f0
+	void K2_DrawBox(struct FVector2D ScreenPosition, struct FVector2D ScreenSize, float Thickness, struct FLinearColor RenderColor); // Function Engine.Canvas.K2_DrawBox // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c0390
+	void K2_DrawBorder(struct UTexture* BorderTexture, struct UTexture* BackgroundTexture, struct UTexture* LeftBorderTexture, struct UTexture* RightBorderTexture, struct UTexture* TopBorderTexture, struct UTexture* BottomBorderTexture, struct FVector2D ScreenPosition, struct FVector2D ScreenSize, struct FVector2D CoordinatePosition, struct FVector2D CoordinateSize, struct FLinearColor RenderColor, struct FVector2D BorderScale, struct FVector2D BackgroundScale, float Rotation, struct FVector2D PivotPoint, struct FVector2D CornerSize); // Function Engine.Canvas.K2_DrawBorder // (Final|Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36bff00
+	void K2_Deproject(struct FVector2D ScreenPosition, struct FVector& WorldOrigin, struct FVector& WorldDirection); // Function Engine.Canvas.K2_Deproject // (Final|Native|Public|HasOutParms|HasDefaults|BlueprintCallable) // @ game+0x36bfde0
 };
 
 // Class Engine.ScriptViewportClient
