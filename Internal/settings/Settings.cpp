@@ -92,6 +92,7 @@ namespace SettingsHelper {
 		Settings.MISC.UserScriptsEnabled = false;
 
 		Settings.DEBUG.LogProcessEvent = false;
+		Settings.DEBUG.FeaturesLogging = false;
 		Settings.DEBUG.ShowDemoWindow = false;
 		Settings.DEBUG.ShowStyleEditor = false;
 		Settings.DEBUG.DrawActors = false;
