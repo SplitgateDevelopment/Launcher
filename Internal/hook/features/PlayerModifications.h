@@ -7,6 +7,7 @@ class PlayerModifications : public Feature
 {
 private:
 	bool bSentWelcomeMessage = false;
+	std::string OriginalPlayerName = "";
 public:
 	PlayerModifications()
 	{
@@ -27,12 +28,22 @@ public:
 
 		if (!Initialized) return false;
 		if (!Globals::PlayerController) return false;
+		if (!Globals::PlayerController->PlayerState) return false;
 
 		return Enabled;
 	};
 
 	void Init()
 	{
+		auto PlayerState = Globals::PlayerController->PlayerState;
+		if (!PlayerState)
+		{
+			Initialized = false;
+			return;
+		}
+
+		OriginalPlayerName = PlayerState->PlayerNamePrivate.ToString();
+
 		Initialized = true;
 		Log("Initialized");
 	};
@@ -57,6 +68,15 @@ public:
 		DiscordRPC::UpdateState("In Game");
 
 		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+
 		Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
+
+		if (!bSentWelcomeMessage)
+		{
+			Globals::PlayerController->SendChatMessage(FString(std::format("Welcome, {}", OriginalPlayerName)));
+			Globals::PlayerController->SendChatMessage(FString(Settings.MENU.Watermark));
+
+			bSentWelcomeMessage = true;
+		};
 	};
 };
