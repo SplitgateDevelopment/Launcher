@@ -9,6 +9,7 @@ namespace Menu {
 			ImGui::ToggleButton("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
 			ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
 			ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
+			ImGui::ToggleButton("Draw Actors", &Settings.DEBUG.DrawActors);
 			
 			if (ImGui::Button("Summon Bot"))
 			{

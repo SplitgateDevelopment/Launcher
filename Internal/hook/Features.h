@@ -103,6 +103,8 @@ public:
 
 				sentWelcomeMessage = true;
 			};
+
+			DrawActors();
 		} while (false);
 
 		return;
@@ -147,4 +149,47 @@ private:
 			Scripts::Execute(i);
 		}
 	}
+
+	void DrawLevelActors(ULevel* Level)
+	{
+		static UObject* CharacterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
+
+		if (!Settings.DEBUG.DrawActors) return;
+		if (!Level) return;
+
+		auto Actors = Level->Actors;
+		for (auto a = 0; a < Actors.Num(); a++) {
+			if (!Actors.IsValidIndex(a)) continue;
+
+			auto Actor = Actors[a];
+
+			if (!Actor) continue;
+			if (!Actor->RootComponent) continue;
+			if (!Actor->IsA(CharacterClass)) continue;
+
+			auto Character = reinterpret_cast<APortalWarsCharacter*>(Actor);
+			auto Mesh = Character->Mesh;
+
+			FVector2D rootPos2D = Mesh->GetBone(BoneFNames::Root, Globals::PlayerController);
+			if (!rootPos2D.X && !rootPos2D.Y) continue;
+
+			if (!Globals::Canvas) continue;
+			Globals::Canvas->K2_DrawText(0, Actor->GetName(), rootPos2D, { 1.f, 1.f }, { 1.f, 1.f, 1.f, 1.f }, 1.f, { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }, false, false, true, { 0.0f, 0.0f, 0.0f, 1.f });
+		};
+	};
+
+	void DrawActors()
+	{
+		if (!Settings.DEBUG.DrawActors) return;
+
+		UWorld* World = UWorld::GetWorld();
+
+		for (auto l = 0; l < World->Levels.Num(); l++) {
+			if (!World->Levels.IsValidIndex(l)) continue;
+
+			ULevel* Level = World->Levels[l];
+			if (!Level) continue;
+			DrawLevelActors(Level);
+		}
+	};
 };
