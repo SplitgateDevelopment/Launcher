@@ -90,9 +90,6 @@
     <ClInclude Include="menu\sections\Misc.h">
       <Filter>menu\sections</Filter>
     </ClInclude>
-    <ClInclude Include="menu\sections\Scripts.h">
-      <Filter>menu\sections</Filter>
-    </ClInclude>
     <ClInclude Include="menu\sections\Exploits.h">
       <Filter>menu\sections</Filter>
     </ClInclude>

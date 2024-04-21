@@ -3,7 +3,6 @@
 #include "../settings/Settings.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
-#include "sections/Scripts.h"
 #include "sections/Settings.h"
 #include "sections/Debug.h"
 #include "sections/Watermark.h"
@@ -49,11 +48,6 @@ namespace Menu {
             if (ImGui::BeginTabItem("Exploits"))
             {
                 Menu::Sections::ExploitsTab();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("User Scripts"))
-            {
-                Menu::Sections::ScriptsTab();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))

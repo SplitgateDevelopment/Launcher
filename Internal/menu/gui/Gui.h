@@ -67,8 +67,8 @@ namespace GUI {
 		ImGui::NewFrame();
 
 		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 650, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 300), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.MouseDrawCursor = Settings.MENU.ShowMenu;
