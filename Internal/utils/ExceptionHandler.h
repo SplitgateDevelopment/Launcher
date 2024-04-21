@@ -4,6 +4,7 @@
 #include <DbgHelp.h>
 #include <iostream>
 #include <format>
+#include <fstream>
 
 #pragma comment(lib, "DbgHelp.lib")
 
@@ -138,7 +139,7 @@ namespace ExceptionHandler
 
         Logger::Log("ERROR", std::format("Crash stack trace located at: {}", stackFilePath.string()));
 
-        std::ofstream crashLogFile(stackFilePath);
+        std::ofstream crashLogFile(stackFilePath, std::ios::out);
         if (!crashLogFile.is_open()) {
             Logger::Log("ERROR", "Failed to open crash log file for writing");
             return static_cast<LONG>(ExitMode);
