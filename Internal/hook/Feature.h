@@ -1,5 +1,8 @@
 #pragma once
 
+#include "../settings/Settings.h"
+#include "../utils/Logger.h"
+
 class Feature
 {
 public:

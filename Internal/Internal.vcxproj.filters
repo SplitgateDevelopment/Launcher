@@ -182,6 +182,11 @@
     <ClInclude Include="hook\features\NoRecoil.h" />
     <ClInclude Include="hook\features\LoadIntoMap.h" />
     <ClInclude Include="hook\features\PlayerModifications.h" />
+    <ClInclude Include="hook\features\InfiniteJetpack.h" />
+    <ClInclude Include="hook\features\UserScripts.h" />
+    <ClInclude Include="hook\features\DrawActors.h" />
+    <ClInclude Include="hook\features\SpinBot.h" />
+    <ClInclude Include="hook\features\WeaponModifications.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">

@@ -2,6 +2,7 @@
 
 #include "../Feature.h"
 #include "../../utils/Globals.h"
+#include "../../discord/rpc.h"
 
 class PlayerModifications : public Feature
 {
