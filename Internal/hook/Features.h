@@ -56,6 +56,11 @@ public:
 			USkeletalMeshComponent* PlayerMesh = Player->Mesh1P;
 			AGun* PlayerGun = Player->CurrentWeapon;
 
+			if (Settings.EXPLOITS.InfiniteAmmo && PlayerGun)
+			{
+				PlayerGun->CurrentAmmo = 999;
+			}
+
 			if (Settings.EXPLOITS.SpinBot && PlayerMesh && PlayerGun) {
 				if (spin_yaw > 360.f) spin_yaw = 0.f;
 
