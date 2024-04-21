@@ -5,6 +5,8 @@
 
 class PlayerModifications : public Feature
 {
+private:
+	bool bSentWelcomeMessage = false;
 public:
 	PlayerModifications()
 	{
@@ -44,7 +46,15 @@ public:
 		Globals::PlayerController->SetName(FString((Settings.MISC.PlayerName)));
 		Globals::PlayerController->FOV(Settings.EXPLOITS.FOV);
 
-		if (!Globals::PlayerController->IsInGame()) return;
+		if (!Globals::PlayerController->IsInGame())
+		{
+			bSentWelcomeMessage = false;
+			DiscordRPC::UpdateState("In Menu");
+
+			return;
+		};
+
+		DiscordRPC::UpdateState("In Game");
 
 		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 		Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
