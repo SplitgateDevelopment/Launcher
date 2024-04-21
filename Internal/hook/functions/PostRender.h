@@ -8,7 +8,7 @@
 void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 {
 	do {
-		UWorld* World = *(UWorld**)(WRLD);
+		UWorld* World = UWorld::GetWorld();
 		if (!World) break;
 
 		UGameInstance* OwningGameInstance = World->OwningGameInstance;
@@ -23,6 +23,7 @@ void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 		if (!PlayerController) break;
 
 
+		Globals::World = World; 
 		Globals::Canvas = Canvas;
 		Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
 
