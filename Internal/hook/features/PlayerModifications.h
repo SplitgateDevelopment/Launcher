@@ -8,6 +8,8 @@ class PlayerModifications : public Feature
 private:
 	bool bSentWelcomeMessage = false;
 	std::string OriginalPlayerName = "";
+	bool bActorCollision = false;
+
 public:
 	PlayerModifications()
 	{
@@ -70,6 +72,14 @@ public:
 		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 
 		Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
+		Player->curTimeOutOfBounds = 0.f;
+		Player->maxTimeOutOfBounds = 999.0f;
+
+		bActorCollision = false;
+		if (GetAsyncKeyState(Settings.EXPLOITS.NoClip)) bActorCollision = !bActorCollision;
+
+		if (bActorCollision && Player->GetActorEnableCollision()) Player->SetActorEnableCollision(false);
+		else if (!bActorCollision && !Player->GetActorEnableCollision()) Player->SetActorEnableCollision(true);
 
 		if (!bSentWelcomeMessage)
 		{
