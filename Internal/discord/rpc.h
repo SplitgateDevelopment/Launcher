@@ -9,6 +9,7 @@
 
 namespace DiscordRPC {
 	DiscordRichPresence discordPresence;
+	int64_t StartTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 	void Destroy()
 	{
@@ -16,17 +17,7 @@ namespace DiscordRPC {
 		Logger::Log("RPC", "Shut down RPC");
 	};
 
-	void Init(const char* appId)
-	{
-		DiscordHandlers::Init();
-
-		Discord_Initialize(appId, &DiscordRPCHandlers, 1, "677620");
-		Logger::Log("RPC", "Initialized RPC");
-	}
-
-	void UpdatePresence() {
-		int64_t StartTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
+	void InitPresence() {
 		memset(&discordPresence, 0, sizeof(discordPresence));
 		discordPresence.state = "Injected";
 		discordPresence.details = Settings.MENU.Watermark;
@@ -43,17 +34,35 @@ namespace DiscordRPC {
 		discordPresence.matchSecret = "dddd";
 
 		Discord_UpdatePresence(&discordPresence);
-		Logger::Log("RPC", "Updated presence");
+		Logger::Log("RPC", "Init presence");
 	};
 
+	void Init(const char* appId)
+	{
+		DiscordHandlers::Init();
+
+		Discord_Initialize(appId, &DiscordRPCHandlers, 1, "677620");
+		Logger::Log("RPC", "Initialized RPC");
+
+		InitPresence();
+	}
+
+	const char* GetState() {
+		return discordPresence.state;
+	}
+
 	void UpdateState(const char* state) {
+		if (GetState() == state) return;
+
 		Logger::Log("RPC", std::format("Updating presence state [{}->{}]", discordPresence.state, state));
 
 		discordPresence.state = state;
 		Discord_UpdatePresence(&discordPresence);
 	}
 
-	const char* GetState() {
-		return discordPresence.state;
-	}
+	void UpdatePresence()
+	{
+		Discord_UpdatePresence(&discordPresence);
+		Logger::Log("RPC", "Updated presence");
+	};
 };

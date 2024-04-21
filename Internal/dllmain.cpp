@@ -21,7 +21,6 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 	Logger::Log("SUCCESS", std::format("Press {} to hide/show the menu", ImGui::VirtualKeyCodeToString(Settings.MENU.ShowHotkey)));
 
 	DiscordRPC::Init(Settings.MISC.DiscordAppID);
-	DiscordRPC::UpdatePresence();
 
 	return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
 }
