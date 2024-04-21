@@ -28,7 +28,6 @@ public:
 		if (!Globals::PlayerController) return false;
 		if (Globals::PlayerController->IsInGame()) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
 		return Enabled;
 	};
 

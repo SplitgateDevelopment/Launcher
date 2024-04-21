@@ -90,10 +90,4 @@ public:
 
 		ApplyRecoil(Gun->recoilConfig, noRecoilConfig);
 	};
-
-	void Log(std::string message)
-	{
-		if (!Settings.DEBUG.FeaturesLogging) return;
-		Logger::Log("FEATURE", std::format("[No Recoil] {}", message));
-	};
 };
