@@ -83,6 +83,7 @@ namespace SettingsHelper {
 		Settings.EXPLOITS.PlayerSpeed = 1.f;
 		Settings.EXPLOITS.InfinteJetpack = false;
 		Settings.EXPLOITS.InfiniteAmmo = false;
+		Settings.EXPLOITS.NoReload = false;
 
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.ShowConsole = true;

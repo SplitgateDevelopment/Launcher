@@ -61,6 +61,17 @@ public:
 				PlayerGun->CurrentAmmo = 999;
 			}
 
+			if (Settings.EXPLOITS.NoReload && PlayerGun)
+			{
+				if (PlayerGun->CurrentAmmoInClip == 1 && PlayerGun->CurrentAmmo > 0)
+				{
+					int32_t ammoNeeded = PlayerGun->WeaponConfig.AmmoPerClip - PlayerGun->CurrentAmmoInClip;
+
+					PlayerGun->CurrentAmmo -= ammoNeeded > 0 ? ammoNeeded : 0;
+					PlayerGun->CurrentAmmoInClip = PlayerGun->WeaponConfig.AmmoPerClip;
+				}
+			}
+
 			if (Settings.EXPLOITS.SpinBot && PlayerMesh && PlayerGun) {
 				if (spin_yaw > 360.f) spin_yaw = 0.f;
 

@@ -24,6 +24,7 @@ typedef struct {
 		float PlayerSpeed;
 		bool InfinteJetpack;
 		bool InfiniteAmmo;
+		bool NoReload;
 	} EXPLOITS;
 
 	struct {
