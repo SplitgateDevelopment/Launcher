@@ -3,13 +3,13 @@
 #include "../../ue/Engine.h"
 #include "../../menu/Menu.h"
 #include "../../settings/Settings.h"
+#include "../../utils/Globals.h"
 
 void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 {
 	do {
 		UWorld* World = *(UWorld**)(WRLD);
 		if (!World) break;
-		Globals::Canvas = Canvas;
 
 		UGameInstance* OwningGameInstance = World->OwningGameInstance;
 		if (!OwningGameInstance) break;
@@ -22,7 +22,29 @@ void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 		APlayerController* PlayerController = LocalPlayer->PlayerController;
 		if (!PlayerController) break;
 
-		Hook::features->handle(PlayerController);
+
+		Globals::Canvas = Canvas;
+		Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+
+		try {
+			for (const auto& Feature : Features::Features)
+			{
+				if (!Feature->Initialized)
+				{
+					Feature->Init();
+				};
+
+				if (!Feature->Check())
+				{
+					continue;
+				};
+
+				Feature->Enabled ? Feature->Run() : Feature->Destroy();
+			}
+		}
+		catch (char* e) {
+			Logger::Log("ERROR", "Failed to execute feature: " + std::string(e));
+		}
 	} while (false);
 
 	return Hook::PostRender::Original(UGameViewportClient, Canvas);
