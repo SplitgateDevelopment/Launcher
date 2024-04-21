@@ -180,6 +180,11 @@
     <ClInclude Include="menu\gui\Custom.h">
       <Filter>menu\gui</Filter>
     </ClInclude>
+    <ClInclude Include="hook\features\GodMode.h" />
+    <ClInclude Include="hook\Feature.h" />
+    <ClInclude Include="hook\features\NoRecoil.h" />
+    <ClInclude Include="hook\features\LoadIntoMap.h" />
+    <ClInclude Include="hook\features\PlayerModifications.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">

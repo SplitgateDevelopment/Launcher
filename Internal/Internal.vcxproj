@@ -190,6 +190,11 @@
     <ClInclude Include="external\minhook\include\hde\table64.h" />
     <ClInclude Include="external\minhook\include\MinHook.h" />
     <ClInclude Include="external\minhook\include\trampoline.h" />
+    <ClInclude Include="hook\Feature.h" />
+    <ClInclude Include="hook\features\GodMode.h" />
+    <ClInclude Include="hook\features\LoadIntoMap.h" />
+    <ClInclude Include="hook\features\NoRecoil.h" />
+    <ClInclude Include="hook\features\PlayerModifications.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
     <ClInclude Include="menu\gui\Gui.h" />
