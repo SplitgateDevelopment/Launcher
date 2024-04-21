@@ -82,6 +82,7 @@ namespace SettingsHelper {
 		Settings.EXPLOITS.GodMelee = false;
 		Settings.EXPLOITS.PlayerSpeed = 1.f;
 		Settings.EXPLOITS.InfinteJetpack = false;
+		Settings.EXPLOITS.InfiniteAmmo = false;
 
 		Settings.MISC.LoadIntoMap = false;
 		Settings.MISC.ShowConsole = true;
@@ -92,6 +93,7 @@ namespace SettingsHelper {
 		Settings.DEBUG.LogProcessEvent = false;
 		Settings.DEBUG.ShowDemoWindow = false;
 		Settings.DEBUG.ShowStyleEditor = false;
+		Settings.DEBUG.DrawActors = false;
 
 		Save();
 	}

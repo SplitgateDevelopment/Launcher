@@ -23,6 +23,7 @@ typedef struct {
 		bool GodMelee;
 		float PlayerSpeed;
 		bool InfinteJetpack;
+		bool InfiniteAmmo;
 	} EXPLOITS;
 
 	struct {
@@ -37,6 +38,7 @@ typedef struct {
 		bool LogProcessEvent;
 		bool ShowDemoWindow;
 		bool ShowStyleEditor;
+		bool DrawActors;
 	} DEBUG;
 } SETTINGS;
 
