@@ -7,13 +7,17 @@
 
 #pragma comment(lib, "discord-rpc.lib")
 
-class DiscordRPC {
-public:
-	~DiscordRPC() {
+namespace DiscordRPC {
+	DiscordRichPresence discordPresence;
+
+	void Destroy()
+	{
 		Discord_Shutdown();
+		Logger::Log("RPC", "Shut down RPC");
 	};
 
-	void Init(const char* appId) {
+	void Init(const char* appId)
+	{
 		DiscordHandlers::Init();
 
 		Discord_Initialize(appId, &DiscordRPCHandlers, 1, "677620");
@@ -43,14 +47,13 @@ public:
 	};
 
 	void UpdateState(const char* state) {
+		Logger::Log("RPC", std::format("Updating presence state [{}->{}]", discordPresence.state, state));
+
 		discordPresence.state = state;
 		Discord_UpdatePresence(&discordPresence);
-		Logger::Log("RPC", std::format("Updated to state [{}]", state));
 	}
 
 	const char* GetState() {
 		return discordPresence.state;
 	}
-private:
-	DiscordRichPresence discordPresence;
 };
