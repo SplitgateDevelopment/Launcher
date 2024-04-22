@@ -1,52 +1,57 @@
 #pragma once
 
 #include "../../ue/Engine.h"
-#include "../../menu/Menu.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Globals.h"
 
-void PostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
-{
-	do {
-		UWorld* World = UWorld::GetWorld();
-		if (!World) break;
+namespace PostRender {
+	void** VTable;
+	void(*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
+	int Index = 100;
 
-		UGameInstance* OwningGameInstance = World->OwningGameInstance;
-		if (!OwningGameInstance) break;
+	void HookedPostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
+	{
+		do {
+			UWorld* World = UWorld::GetWorld();
+			if (!World) break;
 
-		TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
+			UGameInstance* OwningGameInstance = World->OwningGameInstance;
+			if (!OwningGameInstance) break;
 
-		UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-		if (!LocalPlayer) break;
+			TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
 
-		APlayerController* PlayerController = LocalPlayer->PlayerController;
-		if (!PlayerController) break;
+			UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
+			if (!LocalPlayer) break;
+
+			APlayerController* PlayerController = LocalPlayer->PlayerController;
+			if (!PlayerController) break;
 
 
-		Globals::World = World; 
-		Globals::Canvas = Canvas;
-		Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+			Globals::World = World;
+			Globals::Canvas = Canvas;
+			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
 
-		try {
-			for (const auto& Feature : Features::Features)
-			{
-				if (!Feature->Initialized)
+			try {
+				for (const auto& Feature : Features::Features)
 				{
-					Feature->Init();
-				};
+					if (!Feature->Initialized)
+					{
+						Feature->Init();
+					};
 
-				if (!Feature->Check())
-				{
-					continue;
-				};
+					if (!Feature->Check())
+					{
+						continue;
+					};
 
-				Feature->Enabled ? Feature->Run() : Feature->Destroy();
+					Feature->Enabled ? Feature->Run() : Feature->Destroy();
+				}
 			}
-		}
-		catch (char* e) {
-			Logger::Log("ERROR", "Failed to execute feature: " + std::string(e));
-		}
-	} while (false);
+			catch (char* e) {
+				Logger::Log("ERROR", "Failed to execute feature: " + std::string(e));
+			}
+		} while (false);
 
-	return Hook::PostRender::Original(UGameViewportClient, Canvas);
+		return Original(UGameViewportClient, Canvas);
+	}
 }

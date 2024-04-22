@@ -2,6 +2,7 @@
 
 #include "Features.h"
 #include "functions/ProcessEvent.h"
+#include "functions/PostRender.h"
 #include "../menu/gui/Gui.h"
 
 #include <format>
@@ -10,12 +11,21 @@
 namespace Hook {
 	HHOOK g_hook;
 
-	namespace PostRender {
-		void** VTable;
-		void(*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
-		int Index = 100;
-	}
+	BYTE* SetHook(void** VTable, int index, void* TargetFunction) {
+		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
 
+		DWORD protecc;
+		VirtualProtect(&VTable[index], 8, PAGE_EXECUTE_READWRITE, &protecc);
+		VTable[index] = TargetFunction;
+		VirtualProtect(&VTable[index], 8, protecc, 0);
+
+		char buffer[256];
+		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", VTable[index], reinterpret_cast<uintptr_t>(&VTable[index]));
+		Logger::Log("SUCCESS", buffer);
+
+		return original;
+	}; 
+	
 	bool Init() {
 		Logger::CreateConsole();
 
@@ -87,6 +97,9 @@ namespace Hook {
 
 		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void**>(&ProcessEvent::Original));
 
+
+		PostRender::Original = reinterpret_cast<decltype(PostRender::Original)>(SetHook(PostRender::VTable, PostRender::Index, &PostRender::HookedPostRender));
+
 		if (!GUI::Init())
 		{
 			Logger::Log("ERROR", "Could not initialize GUI");
@@ -106,21 +119,6 @@ namespace Hook {
 
 		return TRUE;
 	}
-
-	BYTE* SetHook(void** VTable, int index, void* TargetFunction) {
-		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
-
-		DWORD protecc;
-		VirtualProtect(&VTable[index], 8, PAGE_EXECUTE_READWRITE, &protecc);
-		VTable[index] = TargetFunction;
-		VirtualProtect(&VTable[index], 8, protecc, 0);
-
-		char buffer[256];
-		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", VTable[index], reinterpret_cast<uintptr_t>(&VTable[index]));
-		Logger::Log("SUCCESS", buffer);
-
-		return original;
-	};
 
 	void UnHook() {
 		Logger::Log("INFO", "Unloading");
