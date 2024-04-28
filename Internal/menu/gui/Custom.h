@@ -105,7 +105,7 @@ namespace ImGui
 		}
 	}
 
-	void HotKey(const char* label, int* key, int width = 50, int pad = 2)
+	void HotKey(const char* label, int* key, float width = 50.0f, float pad = 2.0f)
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
 

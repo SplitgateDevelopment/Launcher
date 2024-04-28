@@ -9,7 +9,7 @@
 #include "../settings/Settings.h"
 
 #include <Python.h>
-#include <pybind11/embed.h>
+#include "../external/pybind11/include/pybind11/embed.h"
 
 #include "modules/Logger.h"
 #include "modules/Settings.h"

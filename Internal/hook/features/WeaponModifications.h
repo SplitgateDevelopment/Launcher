@@ -7,7 +7,7 @@ class WeaponModifications : public Feature
 private:
 	AGun* Weapon = 0;
 
-	uint16_t OriginalTotalAmmos = 0.f;
+	uint16_t OriginalTotalAmmos = 0;
 	float OriginalMeleeRange = 0.f;
 	float OriginalTimeBetweenMelee = 0.f;
 	float OriginalMeleeDamage = 0.f;

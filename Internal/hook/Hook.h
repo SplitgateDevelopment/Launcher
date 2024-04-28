@@ -20,7 +20,7 @@ namespace Hook {
 		VirtualProtect(&VTable[index], 8, protecc, 0);
 
 		char buffer[256];
-		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", VTable[index], reinterpret_cast<uintptr_t>(&VTable[index]));
+		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", reinterpret_cast<uintptr_t>(VTable[index]), reinterpret_cast<uintptr_t>(&VTable[index]));
 		Logger::Log("SUCCESS", buffer);
 
 		return original;

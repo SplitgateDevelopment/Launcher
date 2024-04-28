@@ -85,13 +85,15 @@ struct FText
 
 	std::string ToString()
 	{
-		if (Data)
-		{
-			std::wstring Temp(Data->Name);
-			return std::string(Temp.begin(), Temp.end());
-		}
+		if (!Data) return "";
 
-		return "";
+		std::wstring temp(Data->Name);
+		int bufferSize = WideCharToMultiByte(CP_UTF8, 0, temp.c_str(), -1, nullptr, 0, nullptr, nullptr);
+
+		std::string result(bufferSize, '\0');
+		WideCharToMultiByte(CP_UTF8, 0, temp.c_str(), -1, &result[0], bufferSize, nullptr, nullptr);
+
+		return result;
 	}
 };
 
@@ -199,7 +201,7 @@ struct FString : private TArray<wchar_t>
 
 	FString(const wchar_t* other)
 	{
-		Max = Count = *other ? std::wcslen(other) + 1 : 0;
+		Max = Count = *other ? static_cast<int32_t>(std::wcslen(other)) + 1 : 0;
 
 		if (Count)
 		{
@@ -209,7 +211,7 @@ struct FString : private TArray<wchar_t>
 
 	FString(const std::string& other)
 	{
-		Max = Count = other.empty() ? 0 : other.length() + 1;
+		Max = Count = other.empty() ? 0 : static_cast<int32_t>(other.length()) + 1;
 		if (Count)
 		{
 			Data = new wchar_t[Count];
@@ -1680,8 +1682,8 @@ struct AGun : ABaseGun {
 // Size: 0x298 (Inherited: 0x28)
 struct ULevel : UObject {
 	uint8_t pad0[0x70];
-	TArray<class AActor*> Actors;
-	TArray<class AActor*> GCActors;
+	TArray<struct AActor*> Actors;
+	TArray<struct AActor*> GCActors;
 	struct UWorld* OwningWorld; // 0xb8(0x08)
 	struct UModel* Model; // 0xc0(0x08)
 	struct TArray<struct UModelComponent*> ModelComponents; // 0xc8(0x10)
