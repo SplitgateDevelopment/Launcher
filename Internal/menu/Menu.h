@@ -38,31 +38,37 @@ namespace Menu {
 			return;
 		};
 
-        if (ImGui::BeginTabBar("MainTabBar", tabFlags))
+        if (!ImGui::BeginTabBar("MainTabBar", tabFlags))
         {
-            if (ImGui::BeginTabItem("Misc"))
-            {
-                Menu::Sections::MiscTab();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Exploits"))
-            {
-                Menu::Sections::ExploitsTab();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Settings"))
-            {
-                Menu::Sections::SettingsTab();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Debug"))
-            {
-                Menu::Sections::DebugTab();
-                ImGui::EndTabItem();
-            }
-            ImGui::EndTabBar();
+            ImGui::End();
+            return;
         };
 
+        if (ImGui::BeginTabItem("Misc"))
+        {
+            Menu::Sections::MiscTab();
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Exploits"))
+        {
+            Menu::Sections::ExploitsTab();
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Settings"))
+        {
+            Menu::Sections::SettingsTab();
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Debug"))
+        {
+            Menu::Sections::DebugTab();
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
 		ImGui::End();
 	};
 };
