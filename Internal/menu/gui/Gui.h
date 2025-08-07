@@ -65,18 +65,28 @@ namespace GUI {
 		return true;
 	}
 
-	void Overlay(IDXGISwapChain* pSwapChain)
+	void Overlay(IDXGISwapChain* pSwapChain = nullptr)
 	{
+		if (!pSwapChain) return;
+
 		if (!initialized)
 			InitializeImGui(pSwapChain);
 
-		/*if (Window::ResizeWidth != 0 && Window::ResizeHeight != 0)
+		if (Window::ResizeWidth != 0 && Window::ResizeHeight != 0 && Window::SwapChain)
 		{
 			Window::CleanupRenderTarget();
-			Window::SwapChain->ResizeBuffers(0, Window::ResizeWidth, Window::ResizeHeight, DXGI_FORMAT_UNKNOWN, 0);
-			Window::ResizeWidth = Window::ResizeHeight = 0;
+			HRESULT hr = Window::SwapChain->ResizeBuffers(0, Window::ResizeWidth, Window::ResizeHeight, DXGI_FORMAT_UNKNOWN, 0);
+			if (FAILED(hr))
+			{
+				Logger::Log("ERROR", "Resizing failed");
+				return;
+			}
+
+			Window::ResizeHeight = 0;
+			Window::ResizeWidth = 0;
+
 			Window::CreateRenderTarget();
-		}*/
+		}
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
