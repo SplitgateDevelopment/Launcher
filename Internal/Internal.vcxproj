@@ -88,7 +88,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\external\minhook\include;$(ProjectDir)\external\imgui\include;$(ProjectDir)\external\pybind11\include;C:\Python310\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\external\minhook\include;$(ProjectDir)\external\imgui\include;$(ProjectDir)\external\pybind11\include;C:\Python310\include;C:\Python313\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)external\minhook\lib\;$(ProjectDir)external\discord-rpc\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -169,7 +169,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Python310\libs;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Python310\libs;C:\Python313\libs</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
