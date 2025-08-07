@@ -1,0 +1,10 @@
+{
+    "name": "splitgate",
+    "version": "1.0.0",
+    "dependencies": [
+        "discord-rpc",
+        "imgui",
+        "minhook",
+        "nlohmann-json"
+    ]
+}
