@@ -282,6 +282,8 @@ struct FRotator {
 	float Roll;
 };
 
+enum class EObjectTypeQuery : int {};
+
 // ScriptStruct PortalWars.RecoilData
 // Size: 0x18 (Inherited: 0x00)
 struct FRecoilData {
@@ -2344,12 +2346,24 @@ enum BoneFNames: int {
 	RHS_ik_hand_gun = 70,
 };
 
+enum class ESkinCacheUsage : uint8_t
+{
+	// Auto will defer to child or global behavior based on context
+	Auto = 0,
+
+	// Mesh will not use the skin cache. However, if Support Ray Tracing is enabled on the mesh, the skin cache will still be used for Ray Tracing updates
+	Disabled = uint8_t(-1),
+
+	// Mesh will use the skin cache
+	Enabled = 1,
+};
+
 // Class Engine.SkinnedMeshComponent
 // Size: 0x6a0 (Inherited: 0x480)
 struct USkinnedMeshComponent : UMeshComponent {
 	struct USkeletalMesh* SkeletalMesh; // 0x480(0x08)
 	char MasterPoseComponent[0x08]; // 0x488(0x08)
-	struct TArray<enum class ESkinCacheUsage> SkinCacheUsage; // 0x490(0x10)
+	struct TArray<enum struct ESkinCacheUsage> SkinCacheUsage; // 0x490(0x10)
 	struct TArray<struct FVertexOffsetUsage> VertexOffsetUsage; // 0x4a0(0x10)
 	char pad_4B0[0xf8]; // 0x4b0(0xf8)
 	struct UPhysicsAsset* PhysicsAssetOverride; // 0x5a8(0x08)
