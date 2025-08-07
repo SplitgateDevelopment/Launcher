@@ -22,31 +22,47 @@ namespace GUI {
 	{
 		Window::WindowHandle = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
 
-		if (SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device))) {
-			IMGUI_CHECKVERSION();
-			ImGui::CreateContext();
-
-			Config::Init();
-			Styles::Init();
-
-			Window::Device->GetImmediateContext(&Window::DeviceContext);
-
-			ID3D11Texture2D* BackBuffer;
-			swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&BackBuffer);
-			Window::Device->CreateRenderTargetView(BackBuffer, NULL, &Window::RenderTargetView);
-			BackBuffer->Release();
-
-			ImGui_ImplWin32_Init(Window::WindowHandle);
-			ImGui_ImplDX11_Init(Window::Device, Window::DeviceContext);
-			ImGui_ImplDX11_CreateDeviceObjects();
-			ImGui::GetMainViewport()->PlatformHandleRaw = Window::WindowHandle;
-			Window::OldWindowProcess = (WNDPROC)SetWindowLongPtr(Window::WindowHandle, GWLP_WNDPROC, (__int3264)(LONG_PTR)Window::WndProc);
-			initialized = true;
-			return true;
+		if (!SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device))) {
+			initialized = false;
+			return false;
 		}
 
-		initialized = false;
-		return false;
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		Config::Init();
+		Styles::Init();
+
+		Window::Device->GetImmediateContext(&Window::DeviceContext);
+
+		ID3D11Texture2D* BackBuffer = nullptr;
+		HRESULT hResult = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&BackBuffer);
+
+		if (FAILED(hResult) || BackBuffer == nullptr)
+		{
+			initialized = false;
+			return false;
+		}
+
+		hResult = Window::Device->CreateRenderTargetView(BackBuffer, NULL, &Window::RenderTargetView);
+		BackBuffer->Release();
+
+		if (FAILED(hResult))
+		{
+			initialized = false;
+			return false;
+		}
+
+
+		ImGui_ImplWin32_Init(Window::WindowHandle);
+		ImGui_ImplDX11_Init(Window::Device, Window::DeviceContext);
+		ImGui_ImplDX11_CreateDeviceObjects();
+		ImGui::GetMainViewport()->PlatformHandleRaw = Window::WindowHandle;
+		Window::OldWindowProcess = (WNDPROC)SetWindowLongPtr(Window::WindowHandle, GWLP_WNDPROC, (__int3264)(LONG_PTR)Window::WndProc);
+
+		initialized = true;
+		return true;
 	}
 
 	void Overlay(IDXGISwapChain* pSwapChain)
