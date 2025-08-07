@@ -91,6 +91,12 @@
     <IncludePath>$(ProjectDir)\external\minhook\include;$(ProjectDir)\external\imgui\include;$(ProjectDir)\external\pybind11\include;C:\Python310\include;C:\Python313\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)external\minhook\lib\;$(ProjectDir)external\discord-rpc\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgInstalledDir>.\vcpkg_installed</VcpkgInstalledDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

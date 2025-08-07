@@ -1,5 +1,5 @@
 {
-    "name": "splitgate",
+    "name": "splitgate-internal",
     "version": "1.0.0",
     "dependencies": [
         "discord-rpc",
