@@ -5,6 +5,7 @@
 int main() {
 	SetConsoleTitleA("Splitgate Launcher");
 	Logger* logger = new Logger();
+	logger->info("Loading...");
 
 	HMODULE lib = LoadLibraryA("internal.dll");
 	if (!lib) {
