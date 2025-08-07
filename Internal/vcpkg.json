@@ -3,7 +3,13 @@
     "version": "1.0.0",
     "dependencies": [
         "discord-rpc",
-        "imgui",
+        {
+            "name": "imgui",
+            "features": [
+                "dx11-binding",
+                "win32-binding"
+            ]
+        },
         "minhook",
         "nlohmann-json"
     ]
