@@ -13,7 +13,6 @@
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Window {
-	WNDCLASSEX WindowClass;
 	HWND WindowHandle{};
 	static UINT ResizeWidth = 0, ResizeHeight = 0;
 
@@ -23,7 +22,40 @@ namespace Window {
 	static ID3D11RenderTargetView* RenderTargetView{};
 
 	WNDPROC			OldWindowProcess{};
-	static uint64_t* MethodsTable = NULL;
+
+	namespace {
+		WNDCLASSEX WindowClass;
+		static uint64_t* MethodsTable = NULL;
+
+		bool DeleteWindow()
+		{
+			DestroyWindow(WindowHandle);
+			UnregisterClass(WindowClass.lpszClassName, WindowClass.hInstance);
+
+			return (WindowHandle == 0);
+		};
+
+		bool InitWindow()
+		{
+			WindowClass.cbSize = sizeof(WNDCLASSEX);
+			WindowClass.style = CS_HREDRAW | CS_VREDRAW;
+			WindowClass.lpfnWndProc = DefWindowProc;
+			WindowClass.cbClsExtra = 0;
+			WindowClass.cbWndExtra = 0;
+			WindowClass.hInstance = GetModuleHandle(NULL);
+			WindowClass.hIcon = NULL;
+			WindowClass.hCursor = NULL;
+			WindowClass.hbrBackground = NULL;
+			WindowClass.lpszMenuName = NULL;
+			WindowClass.lpszClassName = L"MJ";
+			WindowClass.hIconSm = NULL;
+
+			RegisterClassEx(&WindowClass);
+			WindowHandle = CreateWindow(WindowClass.lpszClassName, L"DX11 Window", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, WindowClass.hInstance, NULL);
+
+			return (WindowHandle != NULL);
+		}
+	}
 
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
@@ -38,13 +70,20 @@ namespace Window {
 		case WM_SIZE:
 			if (wParam == SIZE_MINIMIZED)
 				return 0;
-			ResizeWidth = (UINT)LOWORD(lParam); // Queue resize
+
+			// Queue resize
+			ResizeWidth = (UINT)LOWORD(lParam);
 			ResizeHeight = (UINT)HIWORD(lParam);
+
 			return 0;
+
 		case WM_SYSCOMMAND:
-			if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+			// Disable ALT application menu
+			if ((wParam & 0xfff0) == SC_KEYMENU)
 				return 0;
+
 			break;
+
 		case WM_DESTROY:
 			::PostQuitMessage(0);
 			return 0;
@@ -55,11 +94,14 @@ namespace Window {
 
 	void CreateRenderTarget()
 	{
-		ID3D11Texture2D* pBackBuffer;
+		ID3D11Texture2D* pBackBuffer = nullptr;
 
-		SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+		if (!SUCCEEDED(SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer))))
+		{
+			return;
+		}
+
 		Device->CreateRenderTargetView(pBackBuffer, nullptr, &RenderTargetView);
-
 		pBackBuffer->Release();
 	}
 
@@ -81,35 +123,7 @@ namespace Window {
 		return TRUE;
 	}
 
-	bool DeleteWindow()
-	{
-		DestroyWindow(WindowHandle);
-		UnregisterClass(WindowClass.lpszClassName, WindowClass.hInstance);
-
-		return (WindowHandle == 0);
-	};
-
-	bool InitWindow()
-	{
-		WindowClass.cbSize = sizeof(WNDCLASSEX);
-		WindowClass.style = CS_HREDRAW | CS_VREDRAW;
-		WindowClass.lpfnWndProc = DefWindowProc;
-		WindowClass.cbClsExtra = 0;
-		WindowClass.cbWndExtra = 0;
-		WindowClass.hInstance = GetModuleHandle(NULL);
-		WindowClass.hIcon = NULL;
-		WindowClass.hCursor = NULL;
-		WindowClass.hbrBackground = NULL;
-		WindowClass.lpszMenuName = NULL;
-		WindowClass.lpszClassName = L"MJ";
-		WindowClass.hIconSm = NULL;
-		RegisterClassEx(&WindowClass);
-		WindowHandle = CreateWindow(WindowClass.lpszClassName, L"DX11 Window", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, NULL, NULL, WindowClass.hInstance, NULL);
-
-		return (WindowHandle != NULL);
-	}
-
-	bool GetD3DContext()
+	bool Init()
 	{
 		if (!InitWindow())
 			return FALSE;
@@ -160,23 +174,27 @@ namespace Window {
 		}
 
 		MethodsTable = (uint64_t*)::calloc(205, sizeof(uint64_t));
+		if (!MethodsTable)
+		{
+			DeleteWindow();
+			return FALSE;
+		}
+
 		memcpy(MethodsTable, *(uint64_t**)SwapChain, 18 * sizeof(uint64_t));
 		memcpy(MethodsTable + 18, *(uint64_t**)Device, 43 * sizeof(uint64_t));
 		memcpy(MethodsTable + 18 + 43, *(uint64_t**)DeviceContext, 144 * sizeof(uint64_t));
 
 		SwapChain->Release();
 		SwapChain = NULL;
+
 		Device->Release();
 		Device = NULL;
+
 		DeviceContext->Release();
 		DeviceContext = NULL;
 
 		DeleteWindow();
 		return TRUE;
-	}
-
-	bool Init() {
-		return GetD3DContext();
 	}
 
 	void Destroy() {

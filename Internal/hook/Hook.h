@@ -14,10 +14,11 @@ namespace Hook {
 	BYTE* SetHook(void** VTable, int index, void* TargetFunction) {
 		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
 
-		DWORD protecc;
-		VirtualProtect(&VTable[index], 8, PAGE_EXECUTE_READWRITE, &protecc);
+		DWORD protect, oldProtect;
+
+		VirtualProtect(&VTable[index], 8, PAGE_EXECUTE_READWRITE, &protect);
 		VTable[index] = TargetFunction;
-		VirtualProtect(&VTable[index], 8, protecc, 0);
+		VirtualProtect(&VTable[index], 8, protect, &oldProtect);
 
 		char buffer[256];
 		sprintf_s(buffer, sizeof(buffer), "Hooked [%llx] [%llx]", reinterpret_cast<uintptr_t>(VTable[index]), reinterpret_cast<uintptr_t>(&VTable[index]));
@@ -97,7 +98,6 @@ namespace Hook {
 
 		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void**>(&ProcessEvent::Original));
 
-
 		PostRender::Original = reinterpret_cast<decltype(PostRender::Original)>(SetHook(PostRender::VTable, PostRender::Index, &PostRender::HookedPostRender));
 
 		if (!GUI::Init())
@@ -133,8 +133,11 @@ namespace Hook {
 		}
 
 		SetHook(PostRender::VTable, PostRender::Index, PostRender::Original);
+
 		Logger::DestroyConsole();
 		ExceptionHandler::Disable();
+		GUI::Destroy();
+		
 		UnhookWindowsHookEx(g_hook);
 	}
 
