@@ -88,8 +88,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\external\minhook\include;$(ProjectDir)\external\imgui\include;$(ProjectDir)\external\pybind11\include;C:\Python310\include;C:\Python313\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)external\minhook\lib\;$(ProjectDir)external\discord-rpc\lib\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\external\pybind11\include;C:\Python310\include;C:\Python313\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -179,23 +179,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="external\imgui\include\imconfig.h" />
-    <ClInclude Include="external\imgui\include\imgui.h" />
-    <ClInclude Include="external\imgui\include\imgui_impl_dx11.h" />
-    <ClInclude Include="external\imgui\include\imgui_impl_win32.h" />
-    <ClInclude Include="external\imgui\include\imgui_internal.h" />
-    <ClInclude Include="external\imgui\include\imgui_stdlib.h" />
-    <ClInclude Include="external\imgui\include\imstb_rectpack.h" />
-    <ClInclude Include="external\imgui\include\imstb_textedit.h" />
-    <ClInclude Include="external\imgui\include\imstb_truetype.h" />
-    <ClInclude Include="external\minhook\include\buffer.h" />
-    <ClInclude Include="external\minhook\include\hde\hde32.h" />
-    <ClInclude Include="external\minhook\include\hde\hde64.h" />
-    <ClInclude Include="external\minhook\include\hde\pstdint.h" />
-    <ClInclude Include="external\minhook\include\hde\table32.h" />
-    <ClInclude Include="external\minhook\include\hde\table64.h" />
-    <ClInclude Include="external\minhook\include\MinHook.h" />
-    <ClInclude Include="external\minhook\include\trampoline.h" />
     <ClInclude Include="hook\Feature.h" />
     <ClInclude Include="hook\features\DrawActors.h" />
     <ClInclude Include="hook\features\GodMode.h" />
@@ -236,19 +219,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="external\imgui\include\imgui.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_demo.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_draw.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_impl_dx11.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_impl_win32.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_stdlib.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_tables.cpp" />
-    <ClCompile Include="external\imgui\include\imgui_widgets.cpp" />
-    <ClCompile Include="external\minhook\include\buffer.c" />
-    <ClCompile Include="external\minhook\include\hde\hde32.c" />
-    <ClCompile Include="external\minhook\include\hde\hde64.c" />
-    <ClCompile Include="external\minhook\include\hook.c" />
-    <ClCompile Include="external\minhook\include\trampoline.c" />
     <ClCompile Include="ue\Engine.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
     <ClCompile Include="utils\Util.cpp" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../external/discord-rpc/include/discord_rpc.h"
+#include <discord_rpc.h>
 #include "../utils/Logger.h"
 
 DiscordEventHandlers DiscordRPCHandlers;
