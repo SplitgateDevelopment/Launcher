@@ -5,8 +5,10 @@
 #include <d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
-#include "MinHook.h"
-#include "imgui.h"
+#include <MinHook.h>
+#include <imgui.h>
+
+#pragma comment(lib, "MinHook.x64.lib")
 
 #include "../../settings/Settings.h"
 

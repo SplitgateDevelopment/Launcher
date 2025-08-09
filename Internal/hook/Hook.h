@@ -8,6 +8,8 @@
 #include <format>
 #include <MinHook.h>
 
+#pragma comment(lib, "MinHook.x64.lib")
+
 namespace Hook {
 	HHOOK g_hook;
 
