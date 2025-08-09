@@ -22,7 +22,7 @@ namespace GUI {
 
 			colors[ImGuiCol_Text] = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
 			colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.39f, 0.38f, 0.77f);
-			colors[ImGuiCol_WindowBg] = ImVec4(0.92f, 0.91f, 0.88f, 0.70f);
+			colors[ImGuiCol_WindowBg] = ImVec4(0.92f, 0.91f, 0.88f, 0.82f);
 			colors[ImGuiCol_ChildBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.58f);
 			colors[ImGuiCol_PopupBg] = ImVec4(0.92f, 0.91f, 0.88f, 0.92f);
 			colors[ImGuiCol_Border] = ImVec4(0.84f, 0.83f, 0.80f, 0.65f);
@@ -41,7 +41,7 @@ namespace GUI {
 			colors[ImGuiCol_CheckMark] = ImVec4(1.00f, 0.00f, 0.00f, 0.80f);
 			colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.14f);
 			colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.98f, 0.98f, 1.00f);
-			colors[ImGuiCol_Button] = ImVec4(0.00f, 0.00f, 0.00f, 0.14f);
+			colors[ImGuiCol_Button] = ImVec4(0.00f, 0.00f, 0.00f, 0.12f);
 			colors[ImGuiCol_ButtonHovered] = ImVec4(1.00f, 0.22f, 0.22f, 0.86f);
 			colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
 			colors[ImGuiCol_Header] = ImVec4(1.00f, 0.00f, 0.00f, 0.76f);
@@ -53,7 +53,7 @@ namespace GUI {
 			colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.04f);
 			colors[ImGuiCol_ResizeGripHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.78f);
 			colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_Tab] = ImVec4(0.00f, 0.00f, 0.00f, 0.32f);
+			colors[ImGuiCol_Tab] = ImVec4(0.00f, 0.00f, 0.00f, 0.11f);
 			colors[ImGuiCol_TabHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.78f);
 			colors[ImGuiCol_TabActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
 			colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.10f, 0.15f, 0.97f);
