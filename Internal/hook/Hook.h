@@ -78,11 +78,10 @@ namespace Hook {
 			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
 		
-		if (SettingsHelper::Init()) {
+		if (SettingsHelper::Load()) {
 			auto settingsPath = SettingsHelper::GetSettingsFilePath();
 			Logger::Log("SUCCESS", std::string("Loaded settings from ").append(settingsPath));
 		}
-		SettingsHelper::Reset(); // TODO: remove this
 
 		Logger::Log("INFO", std::format("Found [{:d}] Objects", ObjObjects->NumElements));
 		
