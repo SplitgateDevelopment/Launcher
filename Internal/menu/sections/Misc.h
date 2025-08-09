@@ -33,6 +33,8 @@ namespace Menu {
 				for (const auto& script : Scripts::scriptList) {
 					ImGui::BulletText(script.c_str());
 				}
+
+				ImGui::TreePop();
 			}
 		}
 	}

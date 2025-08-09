@@ -68,6 +68,8 @@ namespace Menu {
 					ImGui::BulletText(Feature->Name.c_str());
 					ImGui::Tooltip(std::format("Init [{}], Enabled [{}]", Feature->Initialized, Feature->Enabled).c_str());
 				}
+
+				ImGui::TreePop();
 			}
 		}
 	}
