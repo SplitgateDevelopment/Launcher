@@ -17,7 +17,7 @@ struct MenuSettings {
     int ShowHotkey = VK_INSERT;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MenuSettings, ShowMenu, ShowWatermark, Watermark, ShowHotkey)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey)
 
 struct ExploitsSettings {
     float FOV = 80.f;
@@ -39,10 +39,12 @@ struct MiscSettings {
     bool ShowConsole = true;
     std::string PlayerName = "SplitgateDevelopment";
     std::string DiscordAppID = "1078744504066117703";
+    bool DiscordRPCEnabled = true;
+    std::string SteamAppId = "677620";
     bool UserScriptsEnabled = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MiscSettings, LoadIntoMap, ShowConsole, PlayerName, DiscordAppID, UserScriptsEnabled)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MiscSettings, PlayerName, UserScriptsEnabled, DiscordRPCEnabled)
 
 struct DebugSettings {
     bool LogProcessEvent = false;
