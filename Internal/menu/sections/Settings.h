@@ -26,10 +26,14 @@ namespace Menu {
 				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
 				Logger::SetConsoleVisibility(Settings.MISC.ShowConsole);
 			};
+
 			ImGui::SameLine();
+
+			ImGui::BeginDisabled();
 			if (ImGui::Button("Unload")) {
-				//Hook::UnHook();
+				//Hook::UnHook(); TODO add unhooking feature
 			}
+			ImGui::EndDisabled();
 		}
 	}
 }
