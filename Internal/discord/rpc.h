@@ -20,11 +20,11 @@ namespace DiscordRPC {
 	void InitPresence() {
 		memset(&discordPresence, 0, sizeof(discordPresence));
 		discordPresence.state = "Injected";
-		discordPresence.details = Settings.MENU.Watermark;
+		discordPresence.details = Settings.MENU.Watermark.c_str();
 		discordPresence.startTimestamp = StartTime;
 		discordPresence.endTimestamp = NULL;
 		discordPresence.largeImageKey = "icon";
-		discordPresence.largeImageText = Settings.MENU.Watermark;
+		discordPresence.largeImageText = Settings.MENU.Watermark.c_str();
 		discordPresence.instance = 1;
 		discordPresence.partySize = 1;
 		discordPresence.partyMax = 1;
@@ -37,11 +37,11 @@ namespace DiscordRPC {
 		Logger::Log("RPC", "Init presence");
 	};
 
-	void Init(const char* appId)
+	void Init(std::string appId)
 	{
 		DiscordHandlers::Init();
 
-		Discord_Initialize(appId, &DiscordRPCHandlers, 1, "677620");
+		Discord_Initialize(appId.c_str(), &DiscordRPCHandlers, 1, "677620");
 		Logger::Log("RPC", "Initialized RPC");
 
 		InitPresence();
