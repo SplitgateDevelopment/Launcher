@@ -26,6 +26,18 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
+    - name: Install vcpkg
+      run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.bat
+          ./vcpkg integrate install
+
+    - name: Set vcpkg environment variables
+      run: |
+        echo "VCPKG_ROOT=${{ env.GITHUB_WORKSPACE }}\vcpkg" >> $GITHUB_ENV
+        echo "PATH=${{ env.GITHUB_WORKSPACE }}\vcpkg;%PATH%" >> $GITHUB_ENV
+
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
