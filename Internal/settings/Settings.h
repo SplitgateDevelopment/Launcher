@@ -1,56 +1,83 @@
 #pragma once
 
 #include <filesystem>
+#include <ShlObj.h>
+#include <fstream>
+#include <Windows.h>
+#include <iostream>
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-//don't use std::string
+struct MenuSettings {
+    bool ShowMenu = true;
+    bool ShowWatermark = true;
+    std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
+    int ShowHotkey = VK_INSERT;
+};
 
-typedef struct {
-	struct {
-		bool ShowMenu;
-		bool ShowWatermark;
-		const char* Watermark;
-		int ShowHotkey;
-	} MENU;
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MenuSettings, ShowMenu, ShowWatermark, Watermark, ShowHotkey)
 
-	struct {
-		float FOV;
-		bool GodMode;
-		bool SpinBot;
-		int NoClip;
-		bool NoRecoil;
-		bool GodMelee;
-		float PlayerSpeed;
-		bool InfinteJetpack;
-		bool InfiniteAmmo;
-		bool NoReload;
-	} EXPLOITS;
+struct ExploitsSettings {
+    float FOV = 80.f;
+    bool GodMode = false;
+    bool SpinBot = false;
+    int NoClip = VK_OEM_PLUS;
+    bool NoRecoil = false;
+    bool GodMelee = false;
+    float PlayerSpeed = 1.f;
+    bool InfinteJetpack = false;
+    bool InfiniteAmmo = false;
+    bool NoReload = false;
+};
 
-	struct {
-		bool LoadIntoMap;
-		bool ShowConsole;
-		const char* PlayerName;
-		const char* DiscordAppID;
-		bool UserScriptsEnabled;
-	} MISC;
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload)
 
-	struct {
-		bool LogProcessEvent;
-		bool FeaturesLogging;
-		bool ShowDemoWindow;
-		bool ShowStyleEditor;
-		bool DrawActors;
-	} DEBUG;
-} SETTINGS;
+struct MiscSettings {
+    bool LoadIntoMap = false;
+    bool ShowConsole = true;
+    std::string PlayerName = "SplitgateDevelopment";
+    std::string DiscordAppID = "1078744504066117703";
+    bool UserScriptsEnabled = false;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MiscSettings, LoadIntoMap, ShowConsole, PlayerName, DiscordAppID, UserScriptsEnabled)
+
+struct DebugSettings {
+    bool LogProcessEvent = false;
+    bool FeaturesLogging = false;
+    bool ShowDemoWindow = false;
+    bool ShowStyleEditor = false;
+    bool DrawActors = false;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DrawActors)
+
+struct SETTINGS {
+    MenuSettings MENU;
+    ExploitsSettings EXPLOITS;
+    MiscSettings MISC;
+    DebugSettings DEBUG;
+
+    SETTINGS()
+        : MENU()
+        , EXPLOITS()
+        , MISC()
+        , DEBUG()
+    {
+    }
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SETTINGS, MENU, EXPLOITS, MISC, DEBUG)
 
 extern SETTINGS Settings;
 
 namespace SettingsHelper {
-	fs::path GetAppPath();
+	fs::path GetAppPath(std::string filename = "");
 	std::string GetSettingsFilePath();
-	bool Init();
-	VOID Save();
-	VOID Reset();
-	VOID Delete();
+	bool Load();
+	void Save();
+	void Reset();
+	void Delete();
 }

@@ -1,110 +1,87 @@
-#include <Windows.h>
-#include <iostream>
 #include "Settings.h"
-#include <ShlObj.h>
-#include <fstream>
 
-SETTINGS Settings;
+
+SETTINGS Settings = SETTINGS{};
 
 namespace SettingsHelper {
+	fs::path folder("SplitgateInternal");
 	fs::path filename("splitgate.settings");
-	fs::path GetAppPath() {
+
+	fs::path GetAppPath(std::string filename) {
 		wchar_t* documentsPath = nullptr;
-		std::string appPath;
 
 		HRESULT result = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documentsPath);
-		if (SUCCEEDED(result)) {
-			std::wstring documentsPathStr(documentsPath);
+		if (!SUCCEEDED(result)) return "";
 
-			CoTaskMemFree(documentsPath);
+		std::wstring documentsPathStr(documentsPath);
+		CoTaskMemFree(documentsPath);
 
-			fs::path appPath = fs::path(documentsPathStr) / "SplitgateInternal";
-			fs::create_directories(appPath);
+		fs::path appPath = fs::path(documentsPathStr) / folder;
+		fs::create_directories(appPath);
 
-			return appPath;
-		}
-
-		return appPath;
+		return appPath / filename;
 	}
 
 	std::string GetSettingsFilePath() {
-		return (GetAppPath() / filename).string();
+		return GetAppPath(filename.string()).string();
 	}
 
-	VOID Save() {
+	void Save() {
 		std::string path = GetSettingsFilePath();
 		std::ofstream file(path, std::ios::out | std::ios::binary);
 
-		if (!file.is_open()) {
+		if (!file.is_open() || !file.good()) {
 			char errorMsg[256];
 			strerror_s(errorMsg, sizeof(errorMsg), errno);
-			std::cerr << "Failed to open settings file for writing: " << errorMsg << std::endl;
+
+			std::cerr << "[SettingsHelper] Failed to open settings file for writing: " << errorMsg << std::endl;
+
+			file.close();
 			return;
 		}
 
-		file.write(reinterpret_cast<char*>(&Settings), sizeof(SETTINGS));
+		try {
+			json j = Settings;
+			file << j.dump(4);
+		}
+		catch (const std::exception& e) {
+			std::cerr << "[SettingsHelper] Failed to save settings: " << e.what() << "\n";
+		}
+
 		file.close();
 	}
 
-	bool Init() {
+	bool Load() {
 		std::string path = GetSettingsFilePath();
 		std::ifstream file(path, std::ios::in | std::ios::binary);
 
-		if (!file.is_open()) {
-			Reset();
+		if (!fs::exists(path)) return false;
+		if (!file.is_open()) return false;
+		if (!file.good()) return false;
+
+		try {
+			json j;
+			file >> j;
+
+			Settings = j.get<SETTINGS>();
+		}
+		catch (const std::exception& e) {
+			std::cerr << "[SettingsHelper] Failed to load settings: " << e.what() << "\n";
 			return false;
 		}
 
-		file.read(reinterpret_cast<char*>(&Settings), sizeof(SETTINGS));
 		file.close();
-
-		if (sizeof(Settings) != sizeof(SETTINGS)) {
-			Reset();
-			return false;
-		}
-
 		return true;
 	}
 
-	VOID Reset() {
-		Settings = { 0 };
-		
-		Settings.MENU.ShowMenu = true;
-		Settings.MENU.ShowWatermark = true;
-		Settings.MENU.Watermark = "github.com/SplitgateDevelopment/Launcher";
-		Settings.MENU.ShowHotkey = VK_INSERT;
-
-		Settings.EXPLOITS.FOV = 80;
-		Settings.EXPLOITS.GodMode = false;
-		Settings.EXPLOITS.SpinBot = false;
-		Settings.EXPLOITS.NoClip = VK_OEM_PLUS;
-		Settings.EXPLOITS.NoRecoil = false;
-		Settings.EXPLOITS.GodMelee = false;
-		Settings.EXPLOITS.PlayerSpeed = 1.f;
-		Settings.EXPLOITS.InfinteJetpack = false;
-		Settings.EXPLOITS.InfiniteAmmo = false;
-		Settings.EXPLOITS.NoReload = false;
-
-		Settings.MISC.LoadIntoMap = false;
-		Settings.MISC.ShowConsole = true;
-		Settings.MISC.PlayerName = "SplitgateDevelopment";
-		Settings.MISC.DiscordAppID = "1078744504066117703";
-		Settings.MISC.UserScriptsEnabled = false;
-
-		Settings.DEBUG.LogProcessEvent = false;
-		Settings.DEBUG.FeaturesLogging = false;
-		Settings.DEBUG.ShowDemoWindow = false;
-		Settings.DEBUG.ShowStyleEditor = false;
-		Settings.DEBUG.DrawActors = false;
-
-		Save();
+	void Reset() {
+		Settings = SETTINGS{};
 	}
 
-	VOID Delete() {
+	void Delete() {
 		std::string path = GetSettingsFilePath();
+		if (!fs::exists(path)) return;
 
-		if (fs::exists(path)) {
-			fs::remove(path);
-		};
+		fs::remove(path);
 	}
 }
