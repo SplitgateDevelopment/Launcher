@@ -3,8 +3,14 @@ name: MSBuild
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - 'Internal/**'
+      - 'Launcher/**'
   pull_request:
     branches: [ "master" ]
+    paths:
+      - 'Internal/**'
+      - 'Launcher/**'
 
 env:
   SOLUTION_FILE_PATH: .
