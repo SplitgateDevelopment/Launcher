@@ -18,6 +18,8 @@ namespace DiscordRPC {
 	};
 
 	void InitPresence() {
+		if (!Settings.MISC.DiscordRPCEnabled) return;
+
 		memset(&discordPresence, 0, sizeof(discordPresence));
 		discordPresence.state = "Injected";
 		discordPresence.details = Settings.MENU.Watermark.c_str();
@@ -37,21 +39,22 @@ namespace DiscordRPC {
 		Logger::Log("RPC", "Init presence");
 	};
 
-	void Init(std::string appId)
+	void Init()
 	{
 		DiscordHandlers::Init();
+		Discord_Initialize(Settings.MISC.DiscordAppID.c_str(), &DiscordRPCHandlers, 1, Settings.MISC.SteamAppId.c_str());
 
-		Discord_Initialize(appId.c_str(), &DiscordRPCHandlers, 1, "677620");
 		Logger::Log("RPC", "Initialized RPC");
-
 		InitPresence();
 	}
 
 	const char* GetState() {
+		if (!Settings.MISC.DiscordRPCEnabled) return "";
 		return discordPresence.state;
 	}
 
 	void UpdateState(const char* state) {
+		if (!Settings.MISC.DiscordRPCEnabled) return;
 		if (GetState() == state) return;
 
 		Logger::Log("RPC", std::format("Updating presence state [{}->{}]", discordPresence.state, state));
@@ -62,6 +65,8 @@ namespace DiscordRPC {
 
 	void UpdatePresence()
 	{
+		if (!Settings.MISC.DiscordRPCEnabled) return;
+
 		Discord_UpdatePresence(&discordPresence);
 		Logger::Log("RPC", "Updated presence");
 	};
