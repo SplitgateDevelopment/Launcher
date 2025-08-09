@@ -13,7 +13,13 @@ namespace Menu {
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reset")) {
+			if (ImGui::Button("Reload")) {
+				SettingsHelper::Load();
+			};
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Reset defaults")) {
 				SettingsHelper::Reset();
 			};
 
