@@ -13,7 +13,7 @@
   • Use the `Ins` button to show/hide the gui
 
 ## Compile
-To compile the project make you you have (Visual Studio 22)[https://visualstudio.microsoft.com/it/downloads/], (vcpkg)[https://vcpkg.io/en/getting-started] integrated with `MSBuild` and Python 3.13 installed
+To compile the project make you you have [Visual Studio 22](https://visualstudio.microsoft.com/it/downloads/), [vcpkg](https://vcpkg.io/en/getting-started) integrated with `MSBuild` and Python 3.13 installed
 
 > [!IMPORTANT]
 > Internal.vcxproj expects python path to be `C:\Python313`, either match it or update header import configuration
