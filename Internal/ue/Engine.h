@@ -1,4 +1,13 @@
 #pragma once
+
+/// @file
+/// @brief Reverse-engineered Unreal Engine SDK for Splitgate (PortalWars).
+///
+/// Large, machine-generated header declaring the engine and game classes,
+/// structs, enums and UFunction wrappers the hooks and features call into
+/// (FName pool, UObject layout, actors, controllers, canvas, etc.). Generated
+/// from the game binary rather than hand-written; treat it as an opaque
+/// dependency and do not edit by hand.
 #include <Windows.h>
 #include <cstdint>
 #include <string>

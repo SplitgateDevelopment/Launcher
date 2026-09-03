@@ -1,5 +1,14 @@
 #pragma once
 
+/// @file
+/// @brief Hooked UE UObject::ProcessEvent — the DLL's central UFunction funnel.
+///
+/// ProcessEvent is called by the engine for every UFunction invocation, so
+/// hooking it lets the DLL observe (and optionally intercept) all game events.
+/// This file installs the hook, drives the scripting event bus by mapping
+/// selected UFunctions to Events::Type entries (see @ref gameEvents), reacts to
+/// game shutdown, and provides an optional LogProcessEvent debug path that
+/// prints every non-filtered call.
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
 #include "../../utils/ExceptionHandler.h"
@@ -7,9 +16,11 @@
 
 #include <unordered_map>
 
+/// @brief Hook and support code for UObject::ProcessEvent.
 namespace ProcessEvent
 {
-	// Game events surfaced to user scripts (see scripting docs / Events.h).
+	/// @brief Table mapping user-facing script events to their UFunction names.
+	/// Game events surfaced to user scripts (see scripting docs / Events.h).
 	// Map an Events::Type to the UFunction full name exactly as printed by
 	// LogProcessEvent. Add a value to Events::Type and a row here for each event
 	// you want to expose; scripts then subscribe with:
@@ -19,10 +30,13 @@ namespace ProcessEvent
 		// { Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" },
 	};
 
-	void** VTable;
-	void (*Original)(UObject*, UFunction*, void*) = nullptr;
-	int Index = 68;
+	void** VTable;											 ///< VTable the hook is installed into.
+	void (*Original)(UObject*, UFunction*, void*) = nullptr; ///< Trampoline to the original ProcessEvent.
+	int Index = 68;											 ///< VTable index of ProcessEvent to swap.
 
+	/// @brief Substrings of UFunction names suppressed by LogProcessEvent.
+	/// Filters out high-frequency / noisy calls (UI, animation, math helpers)
+	/// so the debug log stays readable.
 	static std::vector<std::string> filteredWords{
 		"SetName",
 		"ServerChangeName",
@@ -56,6 +70,9 @@ namespace ProcessEvent
 		"Received_Notify",
 	};
 
+	/// @brief Log a single ProcessEvent call, skipping filtered/noisy functions.
+	/// @param Class The caller object whose method is being invoked.
+	/// @param Function The UFunction being called.
 	// Caller gates this on Settings.DEBUG.LogProcessEvent so the hot path pays
 	// nothing when logging is off.
 	void LogProcessEvent(UObject* Class, UFunction* Function)
@@ -72,6 +89,11 @@ namespace ProcessEvent
 		Logger::Log("INFO", std::format("Caller [{}] Function [{}]", className, functionName));
 	}
 
+	/// @brief Hooked ProcessEvent: logs, handles shutdown, dispatches script
+	/// events, then forwards to the original.
+	/// @param Class The object the UFunction is being called on.
+	/// @param Function The UFunction being invoked.
+	/// @param Params Packed parameter block for the call.
 	void HookedProcessEvent(UObject* Class, UFunction* Function, void* Params)
 	{
 		if (Settings.DEBUG.LogProcessEvent) LogProcessEvent(Class, Function);

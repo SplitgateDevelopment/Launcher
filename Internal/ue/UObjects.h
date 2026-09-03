@@ -1,4 +1,13 @@
 #pragma once
+
+/// @file
+/// @brief Cached UFunction/UObject handles resolved from the UE SDK.
+///
+/// Declares the core UObject/TArray/FName SDK types' well-known engine and game
+/// UFunctions (teleport, draw line/text, get pawn, actor location/rotation,
+/// collision, etc.) and the font used by features, then resolves them once via
+/// UObjects::Init so hot paths can reuse the pointers instead of looking each
+/// up by name every call.
 #include "Engine.h"
 
 namespace UObjects

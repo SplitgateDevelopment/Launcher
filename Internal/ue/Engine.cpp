@@ -1,3 +1,9 @@
+/// @file
+/// @brief Out-of-line implementations for the reverse-engineered UE SDK.
+///
+/// Provides the definitions for the SDK types declared in Engine.h that cannot
+/// be header-only (FName/name-pool resolution, UObject name/full-name lookup,
+/// object and function finding, etc.). Companion to the generated Engine.h.
 #include "Engine.h"
 #include "../utils/Util.h"
 #include <Psapi.h>

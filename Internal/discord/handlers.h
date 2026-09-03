@@ -1,5 +1,11 @@
 #pragma once
 
+/// @file
+/// @brief discord-rpc callback handlers (ready / errored / disconnected).
+///
+/// Fills the DiscordEventHandlers struct passed to Discord_Initialize with
+/// logging callbacks for the connection lifecycle. Keeps the upstream
+/// discord-rpc naming for the callback signatures.
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../utils/Logger.h"
 

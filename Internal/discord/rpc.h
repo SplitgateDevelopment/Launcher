@@ -1,4 +1,12 @@
 #pragma once
+
+/// @file
+/// @brief Discord Rich Presence wrapper built on the discord-rpc library.
+///
+/// Wraps the vendored discord-rpc (Internal/external/discord-rpc) to init,
+/// update and tear down the game's rich presence (state, watermark details,
+/// timestamps, party fields). Keeps the upstream discord-rpc naming for the
+/// library calls it forwards to.
 #include <chrono>
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../external/discord-rpc/include/discord_register.h"

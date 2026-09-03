@@ -1,16 +1,28 @@
 #pragma once
 
+/// @file
+/// @brief Hooked UGameViewportClient::PostRender — the DLL's per-frame tick.
+///
+/// PostRender runs once per rendered frame, making it the natural place to
+/// drive the cheat each frame. The hook resolves the current world, local
+/// player and player controller, caches them in Globals for features to use,
+/// runs Features::Execute() (which also renders the menu/overlay), then
+/// forwards to the original so the game keeps drawing normally.
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Globals.h"
 #include "../../features/Features.h"
 
+/// @brief Hook code for UGameViewportClient::PostRender.
 namespace PostRender
 {
-	void** VTable;
-	void (*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
-	int Index = 100;
+	void** VTable;																		   ///< VTable the hook is installed into.
+	void (*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr; ///< Trampoline to the original PostRender.
+	int Index = 100;																	   ///< VTable index of PostRender to swap.
 
+	/// @brief Hooked PostRender: refreshes globals, runs features, then forwards.
+	/// @param UGameViewportClient The viewport client issuing the frame.
+	/// @param Canvas The canvas features draw onto this frame.
 	void HookedPostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 	{
 		do
