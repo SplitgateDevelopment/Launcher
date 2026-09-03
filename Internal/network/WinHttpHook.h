@@ -25,6 +25,7 @@
  */
 namespace Network::WinHttp
 {
+	/// ASCII string widen/narrow (AccelByte hosts are ASCII).
 	inline std::wstring Widen(const std::string& s)
 	{
 		return std::wstring(s.begin(), s.end());
@@ -37,14 +38,16 @@ namespace Network::WinHttp
 	using Connect_t = HINTERNET(WINAPI*)(HINTERNET, LPCWSTR, INTERNET_PORT, DWORD);
 	using OpenRequest_t = HINTERNET(WINAPI*)(HINTERNET, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR, LPCWSTR*, DWORD);
 
-	inline Connect_t OriginalConnect = nullptr;
-	inline OpenRequest_t OriginalOpenRequest = nullptr;
-	inline bool installed = false;
+	inline Connect_t OriginalConnect = nullptr;			///< trampoline to the real WinHttpConnect
+	inline OpenRequest_t OriginalOpenRequest = nullptr; ///< trampoline to the real WinHttpOpenRequest
+	inline bool installed = false;						///< guard so the hooks install once
 
-	inline std::mutex mutex;
+	inline std::mutex mutex; ///< guards @ref connections
 	/// connect handle -> {original host (for logging), was it rerouted?}
 	inline std::unordered_map<HINTERNET, std::pair<std::string, bool>> connections;
 
+	/// Reroutes a connection to the configured target when its host is a redirect key, and
+	/// records the handle (with the original host) for OpenRequest to find.
 	inline HINTERNET WINAPI HookedConnect(HINTERNET session, LPCWSTR serverName, INTERNET_PORT port, DWORD reserved)
 	{
 		const std::string host = serverName ? Narrow(serverName) : "";
@@ -70,6 +73,8 @@ namespace Network::WinHttp
 		return connection;
 	}
 
+	/// Logs the request and, on a rerouted connection, clears WINHTTP_FLAG_SECURE so it goes
+	/// out as plain HTTP (the private server isn't TLS).
 	inline HINTERNET WINAPI HookedOpenRequest(HINTERNET connection, LPCWSTR verb, LPCWSTR object, LPCWSTR version, LPCWSTR referrer, LPCWSTR* acceptTypes, DWORD flags)
 	{
 		std::string host;

@@ -1,6 +1,9 @@
-// Unit tests for the pure backend-redirect logic (network/Redirect.h): host extraction,
-// target parsing, map lookup, and URL rewriting. The WinHTTP/libcurl hooks need the game and
-// are not unit tested.
+/// @file
+/// @brief Unit tests for the pure backend-redirect logic (network/Redirect.h) and the HTTP
+/// request-flow buffer (network/HttpLogger.h).
+
+// Covers host extraction, target parsing, map lookup, URL rewriting, and the log buffer's
+// enable/filter/cap behavior. The WinHTTP/libcurl hooks need the game and are not unit tested.
 #include <gtest/gtest.h>
 
 #include <string>
