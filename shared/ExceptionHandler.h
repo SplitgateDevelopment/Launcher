@@ -44,6 +44,10 @@ namespace Shared::ExceptionHandler
 		ExitMode exitMode = ExitMode::Silent; ///< Filter return code after a crash.
 		LogFn log;							  // optional progress sink
 		CrashFn onCrash;					  // optional recovery action, run after the report
+		/// What goes into Crash.dmp. Default is a small stacks-only dump; widen it (e.g.
+		/// MiniDumpWithDataSegs | MiniDumpWithIndirectlyReferencedMemory) for locals/heap at the
+		/// cost of size.
+		MINIDUMP_TYPE dumpType = MiniDumpNormal;
 	};
 
 	/// Local time formatted for a folder name, e.g. 2026-09-03-16-42-05.
@@ -118,18 +122,47 @@ namespace Shared::ExceptionHandler
 		SymCleanup(process);
 	}
 
+	/// Writes a Crash.dmp minidump into @p folder for post-mortem debugging (open in Visual Studio
+	/// or WinDbg). Best-effort: failures are logged, never thrown. @p exceptionInfo may be null (a
+	/// dump is still written, just without the faulting exception's context).
+	inline void WriteMinidump(const Config& config, const fs::path& folder, EXCEPTION_POINTERS* exceptionInfo,
+							  const std::function<void(const std::string&, const std::string&)>& log)
+	{
+		const fs::path dumpPath = folder / "Crash.dmp";
+
+		HANDLE dumpFile = CreateFileW(dumpPath.wstring().c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (dumpFile == INVALID_HANDLE_VALUE)
+		{
+			log("ERROR", "Failed to create crash dump file");
+			return;
+		}
+
+		MINIDUMP_EXCEPTION_INFORMATION info{};
+		info.ThreadId = GetCurrentThreadId();
+		info.ExceptionPointers = exceptionInfo;
+		info.ClientPointers = FALSE;
+
+		const BOOL wrote = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), dumpFile,
+											 config.dumpType, exceptionInfo ? &info : nullptr, nullptr, nullptr);
+		CloseHandle(dumpFile);
+
+		log(wrote ? "INFO" : "ERROR", wrote ? std::format("Crash dump: {}", dumpPath.string()) : "Failed to write crash dump");
+	}
+
 	/**
 	 * @brief Writes a crash report and runs the recovery hook — the testable core of the handler.
 	 *
 	 * Writes to `config.crashDir/<timestamp>/StackTrace.log`, then runs `config.onCrash`
 	 * (which runs even if the report could not be written). Pure enough to call directly
 	 * (e.g. from a test with an RtlCaptureContext context).
-	 * @param config        Destination folder, exit mode, and optional log/recovery callbacks.
-	 * @param exceptionCode The Win32 exception code, recorded in the report.
-	 * @param context       Thread context to unwind; may be null (then no stack is walked).
+	 * @param config         Destination folder, exit mode, dump type, and optional log/recovery callbacks.
+	 * @param exceptionCode  The Win32 exception code, recorded in the report.
+	 * @param context        Thread context to unwind; may be null (then no stack is walked).
+	 * @param exceptionInfo  Full exception pointers for the minidump; null (e.g. from a test) still
+	 *                       writes a dump, just without exception context.
 	 * @return The exception-filter code corresponding to `config.exitMode`.
 	 */
-	inline LONG WriteCrashLog(const Config& config, DWORD exceptionCode, CONTEXT* context)
+	inline LONG WriteCrashLog(const Config& config, DWORD exceptionCode, CONTEXT* context, EXCEPTION_POINTERS* exceptionInfo = nullptr)
 	{
 		const auto logLine = [&](const std::string& level, const std::string& message)
 		{
@@ -159,6 +192,8 @@ namespace Shared::ExceptionHandler
 			logLine("ERROR", "Failed to open crash log file for writing");
 		}
 
+		WriteMinidump(config, folder, exceptionInfo, logLine);
+
 		// Recovery runs regardless of whether the report could be written.
 		if (config.onCrash) config.onCrash();
 
@@ -170,7 +205,7 @@ namespace Shared::ExceptionHandler
 	/// SetUnhandledExceptionFilter callback: forwards the crash to WriteCrashLog using g_config.
 	inline LONG WINAPI Filter(EXCEPTION_POINTERS* info)
 	{
-		return WriteCrashLog(g_config, info->ExceptionRecord->ExceptionCode, info->ContextRecord);
+		return WriteCrashLog(g_config, info->ExceptionRecord->ExceptionCode, info->ContextRecord, info);
 	}
 
 	/// Stores `config` and installs Filter as the process's last-chance exception filter.

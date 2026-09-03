@@ -70,9 +70,14 @@ namespace
 		EXPECT_GE(logCount, 2);
 
 		bool wroteReport = false;
+		bool wroteDump = false;
 		for (const auto& entry : fs::recursive_directory_iterator(crashDir))
+		{
 			if (entry.path().filename() == L"StackTrace.log") wroteReport = true;
+			if (entry.path().filename() == L"Crash.dmp" && entry.file_size() > 0) wroteDump = true;
+		}
 		EXPECT_TRUE(wroteReport);
+		EXPECT_TRUE(wroteDump);
 	}
 
 	TEST_F(ExceptionHandlerTest, RunsWithoutCallbacksSet)
