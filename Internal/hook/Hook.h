@@ -48,39 +48,42 @@ namespace Hook
 		};
 		Globals::Init();
 
-		if (!Globals::World)
+		// Injection can land before the world / local player exist (during a map load, or at a
+		// menu before the local player is set up), which used to make Init bail immediately and
+		// surface to the launcher as a "DLL failed to initialize (timed out)". Instead, poll the
+		// whole chain until it's ready — bounded to ~10s, under the launcher's 15s handshake
+		// timeout, so a genuine failure still eventually surfaces as a timeout.
+		UPortalWarsLocalPlayer* LocalPlayer = nullptr;
+		UGameViewportClient* ViewPortClient = nullptr;
+		void** ViewPortClientVTable = nullptr;
+
+		for (int attempt = 0; attempt < 100; ++attempt)
 		{
-			Logger::Log("ERROR", "No World");
-			return FALSE;
-		};
+			Globals::Init(); // re-resolve the world (it changes across map loads)
 
-		UGameInstance* OwningGameInstance = Globals::World->OwningGameInstance;
-		if (!OwningGameInstance)
-		{
-			Logger::Log("ERROR", "No owning game instance");
-			return FALSE;
-		};
+			UGameInstance* OwningGameInstance = Globals::World ? Globals::World->OwningGameInstance : nullptr;
+			if (OwningGameInstance)
+			{
+				TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
+				if (LocalPlayers.Num() > 0 && LocalPlayers[0]) // guard against an empty array (OOB read)
+				{
+					LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
+					ViewPortClient = LocalPlayer->ViewportClient;
+					ViewPortClientVTable = ViewPortClient ? ViewPortClient->VFTable : nullptr;
+					if (ViewPortClientVTable) break;
+				}
+			}
 
-		TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
+			LocalPlayer = nullptr;
+			ViewPortClient = nullptr;
+			ViewPortClientVTable = nullptr;
+			if (attempt == 0) Logger::Log("INFO", "Waiting for the world / local player to be ready...");
+			Sleep(100);
+		}
 
-		UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-		if (!LocalPlayer)
-		{
-			Logger::Log("ERROR", "No LocalPlayer");
-			return FALSE;
-		};
-
-		UGameViewportClient* ViewPortClient = LocalPlayer->ViewportClient;
-		if (!ViewPortClient)
-		{
-			Logger::Log("ERROR", "No UGameViewportClient");
-			return FALSE;
-		};
-
-		void** ViewPortClientVTable = ViewPortClient->VFTable;
 		if (!ViewPortClientVTable)
 		{
-			Logger::Log("ERROR", "No ViewPortClientVTable");
+			Logger::Log("ERROR", "World / local player never became ready");
 			return FALSE;
 		};
 
