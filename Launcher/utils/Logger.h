@@ -80,7 +80,7 @@ private:
 
 		if (!logFile.is_open()) return;
 
-		const auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-		logFile << std::format("[{:%Y-%m-%d %H:%M:%S}] [{}] ", now, logDTO.text) << message << std::endl;
+		const auto now = std::chrono::zoned_time{ std::chrono::current_zone(), std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()) };
+		logFile << std::format("[{:%H:%M:%S}] [{}] ", now, logDTO.text) << message << std::endl;
 	};
 };
