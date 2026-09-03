@@ -12,6 +12,7 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 	if (msg->message != HCBT_CREATEWND) return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
 
 	if (!Hook::Init()) return CallNextHookEx(Hook::g_hook, code, wparam, HCBT_CREATEWND);
+	Hook::g_hook = reinterpret_cast<HHOOK>(msg->lParam);
 
 	Logger::Log("SUCCESS", "Injected");
 	Logger::Log("INFO", std::format("Base Address: [0x{:x}]", (uintptr_t)GetModuleHandleW(0)).c_str());
