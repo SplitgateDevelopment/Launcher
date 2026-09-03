@@ -80,7 +80,7 @@ sequenceDiagram
     L->>L: Ipc::Wait(event, 15000) — WaitForSingleObject
     DLL->>DLL: Hook::Init() succeeds
     DLL-->>L: Ipc::Signal(Event::Initialized) — OpenEventW + SetEvent
-    Note over L,DLL: only signals on success; on failure the DLL just returns, so the launcher times out
+    Note over L,DLL: only signals on success — on failure the DLL just returns and the launcher times out
     L->>L: Wait returns → hook.release()
 ```
 
