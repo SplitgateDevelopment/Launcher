@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Misc tab: player FOV/speed sliders, load-into-map action, and user-scripting controls.
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
@@ -8,6 +11,10 @@ namespace Menu
 {
 	namespace Sections
 	{
+		/// @brief Renders the Misc tab.
+		/// Adjusts player FOV and (only while in-game) player speed; offers a "Load into map" button that
+		/// dispatches LoadIntoMap when not already in-game; toggles user scripts (dispatching SettingsChanged)
+		/// and lists the currently loaded scripts.
 		void MiscTab()
 		{
 			bool isInGame = Globals::PlayerController->IsInGame();

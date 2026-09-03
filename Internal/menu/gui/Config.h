@@ -1,10 +1,17 @@
 #pragma once
+
+/// @file
+/// @brief One-time ImGui IO configuration (nav flags, ini/log file paths).
+
 #include "imgui.h"
 
 namespace GUI
 {
+	/// @brief ImGui runtime configuration applied once at startup.
 	namespace Config
 	{
+		/// @brief Enables keyboard/gamepad navigation and points ImGui's ini and log files
+		/// at app-relative paths (imgui.ini / imgui_log.txt).
 		void Init()
 		{
 			auto iniPath = SettingsHelper::GetAppPath("imgui.ini").string();

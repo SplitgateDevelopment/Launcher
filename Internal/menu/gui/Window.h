@@ -1,5 +1,9 @@
 #pragma once
 
+/// @file
+/// @brief Windowing and D3D11 plumbing for the overlay: a throwaway device used to harvest the DXGI/D3D
+/// vtables for hooking, render-target management, the subclassed window procedure, and MinHook helpers.
+
 #include <Windows.h>
 
 #include <d3d11.h>
@@ -14,23 +18,25 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+/// @brief Overlay windowing/D3D11 state and the hook plumbing that backs the GUI.
 namespace Window
 {
-	HWND WindowHandle{};
-	static UINT ResizeWidth = 0, ResizeHeight = 0;
+	HWND WindowHandle{};						   ///< Target game window (or the temporary dummy window during init).
+	static UINT ResizeWidth = 0, ResizeHeight = 0; ///< Pending swap-chain resize queued from WM_SIZE (0 = none).
 
 	static ID3D11Device* Device{};
 	static ID3D11DeviceContext* DeviceContext{};
 	static IDXGISwapChain* SwapChain = nullptr;
 	static ID3D11RenderTargetView* RenderTargetView{};
 
-	WNDPROC OldWindowProcess{};
+	WNDPROC OldWindowProcess{}; ///< Original game window procedure, saved when subclassing.
 
 	namespace
 	{
 		WNDCLASSEX WindowClass;
-		static uint64_t* MethodsTable = NULL;
+		static uint64_t* MethodsTable = NULL; ///< Copied DXGI/D3D vtable entries, indexed by CreateHook.
 
+		/// @brief Destroys and unregisters the temporary window. @return True once the handle is cleared.
 		bool DeleteWindow()
 		{
 			DestroyWindow(WindowHandle);
@@ -39,6 +45,7 @@ namespace Window
 			return (WindowHandle == 0);
 		};
 
+		/// @brief Registers the window class and creates the temporary window used to build a swap chain. @return True on success.
 		bool InitWindow()
 		{
 			WindowClass.cbSize = sizeof(WNDCLASSEX);
@@ -61,6 +68,8 @@ namespace Window
 		}
 	} // namespace
 
+	/// @brief Subclassed game window procedure: while the menu is open it feeds input to ImGui and swallows the
+	/// message; otherwise it queues resizes, blocks the ALT menu, and forwards to the original procedure.
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (Settings.MENU.ShowMenu)
@@ -96,6 +105,7 @@ namespace Window
 		return CallWindowProc((WNDPROC)OldWindowProcess, hWnd, msg, wParam, lParam);
 	}
 
+	/// @brief Creates the render target view from the swap chain's back buffer.
 	void CreateRenderTarget()
 	{
 		ID3D11Texture2D* pBackBuffer = nullptr;
@@ -109,6 +119,7 @@ namespace Window
 		pBackBuffer->Release();
 	}
 
+	/// @brief Releases the render target view if present.
 	void CleanupRenderTarget()
 	{
 		if (!RenderTargetView) return;
@@ -117,6 +128,13 @@ namespace Window
 		RenderTargetView = nullptr;
 	}
 
+	/**
+	 * @brief Installs a MinHook detour on the vtable entry at @p Index of the harvested methods table.
+	 * @param Index Slot in @ref MethodsTable to hook.
+	 * @param Original Out: receives the trampoline to the original function.
+	 * @param Function The detour to install.
+	 * @return True if the hook was created and enabled.
+	 */
 	bool CreateHook(uint16_t Index, void** Original, void* Function)
 	{
 		assert(Index >= 0 && Original != NULL && Function != NULL);
@@ -128,6 +146,9 @@ namespace Window
 		return TRUE;
 	}
 
+	/// @brief Builds a throwaway device + swap chain to copy the DXGI/D3D11 vtables into @ref MethodsTable,
+	/// then releases all temporaries. Populates the table so CreateHook can target the game's real objects.
+	/// @return True on success.
 	bool Init()
 	{
 		if (!InitWindow())
@@ -201,6 +222,7 @@ namespace Window
 		return TRUE;
 	}
 
+	/// @brief Releases the render target and the swap chain/device/context held by the overlay.
 	void Destroy()
 	{
 		CleanupRenderTarget();

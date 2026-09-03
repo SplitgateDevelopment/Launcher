@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief DirectX 11 overlay bootstrap: hooks the swap chain, initializes ImGui, and renders the menu each Present.
+
 #include "Window.h"
 #include "Config.h"
 #include "Styles.h"
@@ -9,16 +12,20 @@
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
 
+/// @brief DirectX 11 overlay: swap-chain hooks, ImGui setup, and per-frame rendering.
 namespace GUI
 {
-	bool initialized = false;
+	bool initialized = false; ///< True once ImGui and the D3D11 render target have been set up.
 
 	typedef HRESULT(APIENTRY* IDXGISwapChainPresent)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
-	IDXGISwapChainPresent oIDXGISwapChainPresent = NULL;
+	IDXGISwapChainPresent oIDXGISwapChainPresent = NULL; ///< Trampoline to the original IDXGISwapChain::Present.
 
 	typedef void(APIENTRY* ID3D11DrawIndexed)(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
-	ID3D11DrawIndexed oID3D11DrawIndexed = NULL;
+	ID3D11DrawIndexed oID3D11DrawIndexed = NULL; ///< Trampoline to the original ID3D11DeviceContext::DrawIndexed.
 
+	/// @brief Lazily initializes ImGui against the game's swap chain: finds the game window, grabs the D3D11
+	/// device/context and back buffer, creates the render target, wires the Win32/DX11 backends, and subclasses
+	/// the window procedure. @return True on success; sets @ref initialized accordingly.
 	bool InitializeImGui(IDXGISwapChain* swapChain)
 	{
 		Window::WindowHandle = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
@@ -65,6 +72,8 @@ namespace GUI
 		return true;
 	}
 
+	/// @brief Per-Present entry point: initializes ImGui on first call, services pending swap-chain resizes,
+	/// begins a new frame, syncs input capture to menu visibility, and draws the menu.
 	void Overlay(IDXGISwapChain* pSwapChain = nullptr)
 	{
 		if (!pSwapChain) return;
@@ -112,17 +121,20 @@ namespace GUI
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
+	/// @brief Hooked IDXGISwapChain::Present: renders the overlay, then forwards to the original Present.
 	HRESULT APIENTRY HookPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 	{
 		Overlay(pSwapChain);
 		return oIDXGISwapChainPresent(pSwapChain, SyncInterval, Flags);
 	}
 
+	/// @brief Hooked ID3D11DeviceContext::DrawIndexed; currently a no-op stub.
 	void APIENTRY MJDrawIndexed(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 	{
 		return;
 	}
 
+	/// @brief Sets up the dummy device and installs the Present and DrawIndexed vtable hooks. @return True on success.
 	bool Init()
 	{
 		if (!Window::Init()) return FALSE;
@@ -133,6 +145,7 @@ namespace GUI
 		return TRUE;
 	};
 
+	/// @brief Tears down the ImGui backends and context and releases the window/D3D resources.
 	void Destroy()
 	{
 		ImGui_ImplDX11_Shutdown();

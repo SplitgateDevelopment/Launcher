@@ -1,5 +1,9 @@
 #pragma once
 
+/// @file
+/// @brief Custom ImGui widgets and helpers (tooltips, key-name conversion, hotkey capture, toggle switches)
+/// added into the ImGui namespace and reused across the menu sections.
+
 #include <string>
 #include <Windows.h>
 
@@ -8,6 +12,7 @@
 
 namespace ImGui
 {
+	/// @brief Shows a tooltip with @p text when the previous item is hovered; no-op for empty text.
 	void Tooltip(const char* text)
 	{
 		if (strlen(text) && ImGui::IsItemHovered())
@@ -18,6 +23,12 @@ namespace ImGui
 		}
 	}
 
+	/**
+	 * @brief Converts a Win32 virtual-key code into a human-readable key name.
+	 * @param virtualKey The VK_* code to translate.
+	 * @return Names mouse buttons explicitly (MOUSE0/MOUSE1/MBUTTON/XBUTTON1/XBUTTON2) and otherwise
+	 *         resolves the key name via the keyboard layout, flagging extended keys where required.
+	 */
 	std::string VirtualKeyCodeToString(UCHAR virtualKey)
 	{
 		UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
@@ -72,6 +83,12 @@ namespace ImGui
 		return szName;
 	}
 
+	/**
+	 * @brief Button that rebinds a hotkey: click to enter capture mode, then the next pressed key is stored.
+	 * @param key In/out virtual-key code; updated to the newly captured key.
+	 * @param size_arg Optional button size.
+	 * @note Mouse buttons are ignored during capture so a click cannot bind itself.
+	 */
 	void HotKeyEx(int* key, const ImVec2& size_arg = ImVec2(0, 0))
 	{
 		static const std::vector<int> ignoredKeys =
@@ -116,6 +133,7 @@ namespace ImGui
 		}
 	}
 
+	/// @brief Labeled hotkey row: draws @p label on the left and a right-aligned HotKeyEx capture button.
 	void HotKey(const char* label, int* key, float width = 50.0f, float pad = 2.0f)
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
@@ -135,6 +153,12 @@ namespace ImGui
 		ImGui::PopStyleVar();
 	}
 
+	/**
+	 * @brief Animated on/off toggle switch drawn as a sliding pill with a trailing label.
+	 * @param label Widget label (also used for the ImGui id).
+	 * @param v In/out boolean state; flipped when the switch is clicked.
+	 * @return True on the frame the switch was toggled.
+	 */
 	bool ToggleButtonEx(const char* label, bool* v)
 	{
 		using namespace ImGui;
@@ -199,6 +223,8 @@ namespace ImGui
 		return pressed;
 	}
 
+	/// @brief Row wrapper around ToggleButtonEx: left-aligned @p label with the switch pushed to the right edge.
+	/// @return True on the frame the switch was toggled.
 	bool ToggleButton(const char* label, bool* v)
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();

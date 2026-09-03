@@ -1,11 +1,16 @@
 #pragma once
 
+/// @file
+/// @brief Watermark overlay: draws the product name and live FPS in the top-left corner.
+
 #include "../../settings/Settings.h"
 
 namespace Menu
 {
 	namespace Sections
 	{
+		/// @brief Draws the "Splitgate Internal" watermark and current FPS onto the foreground draw list.
+		/// No-op when Settings.MENU.ShowWatermark is disabled; rendered every frame independently of menu visibility.
 		void Watermark()
 		{
 			if (!Settings.MENU.ShowWatermark) return;

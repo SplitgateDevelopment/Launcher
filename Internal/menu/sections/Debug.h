@@ -1,13 +1,22 @@
 #pragma once
 
+/// @file
+/// @brief Debug tab: logging/GUI/crash toggles plus developer actions (summon bot, dump GObjects, list features).
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 
 namespace Menu
 {
+	/// @brief One render function per menu tab; each draws ImGui controls bound to the global Settings
+	/// and dispatches Events::Type::SettingsChanged when a control changes.
 	namespace Sections
 	{
+		/// @brief Renders the Debug tab.
+		/// Toggles logging (ProcessEvent, features), the ImGui demo/style-editor windows, and delete-settings-on-crash,
+		/// dispatching SettingsChanged when any toggle changes. Also provides buttons to summon a bot, dump all
+		/// GObjects to Dumps/GObjects.txt, and a tree listing loaded features with their init/enabled state.
 		void DebugTab()
 		{
 			bool changed = false;

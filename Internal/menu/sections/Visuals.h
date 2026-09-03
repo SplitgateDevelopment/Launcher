@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Visuals tab: player ESP element toggles, radar, and per-element colors.
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 
@@ -7,6 +10,10 @@ namespace Menu
 {
 	namespace Sections
 	{
+		/// @brief Renders the Visuals tab.
+		/// Master ESP toggle plus per-element switches (name, box, 3D box, bones, snaplines, health, distance),
+		/// a radar toggle, and color pickers for name/box/bones/snaplines. Dispatches SettingsChanged when any
+		/// toggle changes (the color pickers write directly into Settings).
 		void VisualsTab()
 		{
 			bool changed = false;

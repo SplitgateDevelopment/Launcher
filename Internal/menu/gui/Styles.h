@@ -1,10 +1,17 @@
 #pragma once
+
+/// @file
+/// @brief The menu's ImGui theme: spacing/rounding metrics and the full color palette.
+
 #include "imgui.h"
 
 namespace GUI
 {
+	/// @brief Visual theme for the menu.
 	namespace Styles
 	{
+		/// @brief Applies the menu's style metrics (padding, rounding, spacing) and the cream/red color palette
+		/// to the active ImGui style. Called once during overlay initialization.
 		void Init()
 		{
 			ImGuiStyle* style = &ImGui::GetStyle();

@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Settings tab: config persistence (save/reload/reset), menu hotkey and watermark, and program controls.
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
@@ -8,6 +11,10 @@ namespace Menu
 {
 	namespace Sections
 	{
+		/// @brief Renders the Settings tab.
+		/// Save/Reload/Reset persist, reload, or restore the config (Reload and Reset dispatch SettingsChanged so
+		/// features re-read their state); binds the open-menu hotkey and watermark toggle; and offers program
+		/// controls to toggle the console and an (currently disabled) Unload button.
 		void SettingsTab()
 		{
 			ImGui::SeparatorText("Config");

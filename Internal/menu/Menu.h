@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Top-level in-game GUI: owns the main ImGui window and dispatches to each tab section.
+
 #include "../settings/Settings.h"
 #include "../scripting/Events.h"
 #include "sections/Misc.h"
@@ -11,12 +14,17 @@
 
 #include <imgui.h>
 
+/// @brief Top-level menu: owns the main window and routes each frame to the tab sections.
 namespace Menu
 {
 	static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
 	static int tab = 0;
 	static ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
 
+	/// @brief Renders one full frame of the GUI.
+	/// Always draws the watermark; toggles menu visibility on the configured hotkey / gamepad Start
+	/// (dispatching MenuOpened/MenuClosed), and when the menu is visible draws the main window with its
+	/// tab bar (Misc, Exploits, Visuals, Settings, Debug) plus the optional ImGui demo/style-editor windows.
 	void Draw()
 	{
 		Menu::Sections::Watermark();
