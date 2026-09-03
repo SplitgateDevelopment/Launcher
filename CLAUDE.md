@@ -5,19 +5,36 @@ The DLL is injected/loaded alongside the game and renders an in-game menu that d
 of gameplay features; the launcher is the companion executable used to start it.
 
 > [!IMPORTANT]
-> **Do not read these files** — `Internal/hook/Hook.h`, `Internal/dllmain.cpp`,
-> `Launcher/Launcher.cpp`. If you need something from one of them, ask and it will be
-> provided to you.
+> **Do not read these files** — `Internal/dllmain.cpp`, `Launcher/Launcher.cpp`. If you
+> need something from one of them, ask and it will be provided to you.
+>
+> **`Internal/hook/Hook.h` is partially readable**: you may read lines **1–17** (includes,
+> `namespace Hook` opening, `g_hook`, and the `SetHook` signature) and lines **34 to the end**
+> (`Init` / `UnHook` / `isKeyPressed`). **Never read lines 18–33** — the body of
+> `BYTE *SetHook(void **VTable, int index, void *TargetFunction)`.
 
 ## Repository layout
 
-The Visual Studio solution (`.sln` at the repo root) contains two projects:
+The Visual Studio solution (`.sln` at the repo root) contains three projects:
 
 - **Launcher** — produces `Launcher.exe`, the companion app the user runs. *(details below)*
 - **Internal** — produces `Internal.dll`, the in-game module. *(details below)*
+- **Tests** — a GoogleTest console `.exe` (vcpkg `gtest`) covering the self-contained modules
+  (settings, feature framework, event bus). See [docs/testing.md](docs/testing.md).
 
-Other top-level items: `Tools/` (build scripts, incl. `build.bat` used by CI),
-`.github/workflows/msbuild.yml` (CI), `README.md`.
+Other top-level items: `Tools/` (build scripts, incl. `build.bat` used by CI, and
+`format.ps1` for clang-format), `.github/workflows/msbuild.yml` (CI),
+`.clang-format` / `.clang-tidy` (style/lint config), `docs/` (see below), `README.md`.
+
+## Documentation
+
+Longer-form docs live in [`docs/`](docs/) and are linked from the README:
+
+- [docs/settings.md](docs/settings.md) — configuration structs, persistence, file location.
+- [docs/features.md](docs/features.md) — the feature framework and how to add a feature.
+- [docs/scripting.md](docs/scripting.md) — embedding Python and writing user scripts.
+- [docs/testing.md](docs/testing.md) — the gtest project and how to run it.
+- [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
 
 ## Usage (from README)
 
@@ -62,14 +79,43 @@ self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;ND
 DynamicLibrary, root namespace `Splitgate`, exports gated behind `SPLITGATE_EXPORTS`.
 Source folders (from the project file; contents documented as they are read):
 
-- `hook/` — hooking engine (`Hook.h`) and the feature framework (`Feature.h`, `Features.h`).
-  - `hook/functions/` — hooked game functions (`ProcessEvent.h`, `PostRender.h`).
-  - `hook/features/` — individual features: DrawActors, GodMode, InfiniteJetpack,
-    LoadIntoMap, NoRecoil, PlayerModifications, SpinBot, UserScripts, WeaponModifications.
+- `hook/` — the hooking engine. `Hook.h` defines `namespace Hook` and drives the module's
+  whole lifecycle:
+  - `SetHook(VTable, index, TargetFunction)` — swaps a single vtable entry and returns the
+    original pointer (used for the manual `PostRender` hook).
+  - `Init()` — the one-time bootstrap run on injection: opens the console, initializes the
+    engine/`Globals`, walks `World → OwningGameInstance → LocalPlayers[0]
+    (UPortalWarsLocalPlayer) → ViewportClient → VFTable` to capture the `PostRender` and
+    `ProcessEvent` vtables, seeds settings from the game (`FOV` from the save game, then
+    `SettingsHelper::Load()`), spawns a `UConsole`, starts Python (`Scripts::Init()`),
+    installs the hooks (MinHook for `ProcessEvent`, vtable swap for `PostRender`),
+    initializes the ImGui GUI (`GUI::Init()`), and registers features (`Features::Init()`).
+  - `UnHook()` — teardown: disables/uninitializes MinHook, restores the `PostRender` vtable
+    entry, destroys the console/GUI, disables the exception handler, removes the Win32 hook.
+  - `isKeyPressed(key)` — edge-detected key poll (just-pressed **and** held) for the `Ins`
+    menu toggle and hotkeys.
+  - `hook/functions/` — the two hooked game functions: `ProcessEvent.h` (funnels UE events,
+    driving the event bus) and `PostRender.h` (per-frame, drives `Features::Execute()` and
+    the menu).
+- `features/` — the feature framework and the individual features (moved here out of
+  `hook/`).
+  - `Feature.h` — the base `Feature` type (Init/Check/Run/Destroy, Enabled/OneTime state,
+    and the `Events::Type` the feature runs on).
+  - `FeatureRunner.h` — the `Features` registry and per-feature tick (`RunFeature`) plus the
+    render-loop `Execute()`.
+  - `Features.h` — includes the concrete features, and `Init()` registers them and wires
+    them to the event bus (including the `SettingsChanged` refresh handler and the
+    `LoadIntoMap` handler).
+  - Concrete features: `GodMode`, `InfiniteJetpack`, `NoRecoil`, `SpinBot`,
+    `PlayerModifications`, `WeaponModifications`, `UserScripts`, `ThirdPerson`, `FreeCam`,
+    `Radar`, `Esp`. (The former `DrawActors` and `LoadIntoMap` features were removed —
+    ESP replaces the former; LoadIntoMap is now a menu-dispatched event.)
 - `menu/` — the GUI (`Menu.h`), with `gui/` (Config, Custom, Gui, Styles, Window) and
-  `sections/` (Debug, Exploits, Misc, Settings, Watermark).
-- `scripting/` — Python scripting via pybind11 (`Scripts.h`), exposing `modules/`
-  (Logger, Settings) to user scripts.
+  `sections/` (Debug, Exploits, Misc, Settings, Visuals, Watermark — `Visuals` configures the
+  ESP elements: 2D/3D boxes, bones, name, snaplines, health, distance, and their colors).
+- `scripting/` — Python scripting via pybind11 (`Scripts.h`) and the C++ event bus
+  (`Events.h`: `Events::Type` enum, `Events::Payload`, Register/Dispatch). Exposes `modules/`
+  (Logger, Settings, Events) to user scripts.
 - `ue/` — Unreal Engine SDK (`Engine.h/.cpp`, `UObjects.h`).
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
