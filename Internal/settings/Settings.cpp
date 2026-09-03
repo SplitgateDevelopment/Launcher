@@ -1,10 +1,12 @@
 /**
  * @file
- * @brief Defines the global @ref Settings instance and implements SettingsHelper: app-path
- * resolution and the load/save/reset/delete of the settings JSON file.
+ * @brief Defines the global @ref Settings instance and the SettingsHelper facade. Persistence
+ * is delegated to Shared::SettingsFile (shared with the launcher); the Documents app-path
+ * resolution stays here since it's DLL-specific.
  */
 
 #include "Settings.h"
+#include "../../shared/Settings.h"
 
 /// The one global settings instance (declared extern in Settings.h).
 SETTINGS Settings = SETTINGS{};
@@ -16,18 +18,7 @@ namespace SettingsHelper
 
 	fs::path GetAppPath(std::string filename)
 	{
-		wchar_t* documentsPath = nullptr;
-
-		HRESULT result = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documentsPath);
-		if (!SUCCEEDED(result)) return "";
-
-		std::wstring documentsPathStr(documentsPath);
-		CoTaskMemFree(documentsPath);
-
-		fs::path appPath = fs::path(documentsPathStr) / folder;
-		fs::create_directories(appPath);
-
-		return appPath / filename;
+		return Shared::AppDataPath(folder.string(), filename);
 	}
 
 	std::string GetSettingsFilePath()
@@ -35,71 +26,27 @@ namespace SettingsHelper
 		return GetAppPath(filename.string()).string();
 	}
 
-	void Save()
+	/// The settings file, bound to the global @ref Settings.
+	static Shared::SettingsFile<SETTINGS>& file()
 	{
-		std::string path = GetSettingsFilePath();
-		std::ofstream file(path, std::ios::out | std::ios::binary);
-
-		if (!file.is_open() || !file.good())
-		{
-			char errorMsg[256];
-			strerror_s(errorMsg, sizeof(errorMsg), errno);
-
-			std::cerr << "[SettingsHelper] Failed to open settings file for writing: " << errorMsg << std::endl;
-
-			file.close();
-			return;
-		}
-
-		try
-		{
-			json j = Settings;
-			file << j.dump(4);
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "[SettingsHelper] Failed to save settings: " << e.what() << "\n";
-		}
-
-		file.close();
+		static Shared::SettingsFile<SETTINGS> instance(Settings, GetSettingsFilePath());
+		return instance;
 	}
 
 	bool Load()
 	{
-		std::string path = GetSettingsFilePath();
-		std::ifstream file(path, std::ios::in | std::ios::binary);
-
-		if (!fs::exists(path)) return false;
-		if (!file.is_open()) return false;
-		if (!file.good()) return false;
-
-		try
-		{
-			json j;
-			file >> j;
-
-			Settings = j.get<SETTINGS>();
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "[SettingsHelper] Failed to load settings: " << e.what() << "\n";
-			return false;
-		}
-
-		file.close();
-		return true;
+		return file().Load();
 	}
-
+	void Save()
+	{
+		file().Save();
+	}
 	void Reset()
 	{
-		Settings = SETTINGS{};
+		file().Reset();
 	}
-
 	void Delete()
 	{
-		std::string path = GetSettingsFilePath();
-		if (!fs::exists(path)) return;
-
-		fs::remove(path);
+		file().Remove();
 	}
 } // namespace SettingsHelper
