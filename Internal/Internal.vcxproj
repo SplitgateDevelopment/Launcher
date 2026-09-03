@@ -76,6 +76,7 @@
     <ClInclude Include="features\SpinBot.h" />
     <ClInclude Include="features\UserScripts.h" />
     <ClInclude Include="features\WeaponModifications.h" />
+    <ClInclude Include="features\ThirdPerson.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
     <ClInclude Include="menu\gui\Gui.h" />

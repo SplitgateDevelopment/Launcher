@@ -12,6 +12,7 @@
 #include "UserScripts.h"
 #include "InfiniteJetpack.h"
 #include "WeaponModifications.h"
+#include "ThirdPerson.h"
 
 namespace Features
 {
@@ -25,6 +26,7 @@ namespace Features
 		Features.push_back(std::make_unique<UserScripts>());
 		Features.push_back(std::make_unique<InfiniteJetpack>());
 		Features.push_back(std::make_unique<WeaponModifications>());
+		Features.push_back(std::make_unique<ThirdPerson>());
 
 		// Subscribe event-driven features (Event != "render") to the event bus;
 		// render features run from Features::Execute each frame instead.

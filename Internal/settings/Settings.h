@@ -30,9 +30,10 @@ struct ExploitsSettings {
     bool InfinteJetpack = false;
     bool InfiniteAmmo = false;
     bool NoReload = false;
+    bool ThirdPerson = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson)
 
 struct MiscSettings {
     bool ShowConsole = true;

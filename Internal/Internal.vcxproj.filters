@@ -159,6 +159,9 @@
     <ClInclude Include="features\WeaponModifications.h">
       <Filter>features</Filter>
     </ClInclude>
+    <ClInclude Include="features\ThirdPerson.h">
+      <Filter>features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
