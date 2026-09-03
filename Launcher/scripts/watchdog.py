@@ -9,11 +9,19 @@ Always appended alongside the main addon, whatever mode it is.
 import ctypes
 import os
 import threading
+import time
 
 
 def _watch(pid):
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+    # Open the game process; retry briefly so a transient miss right at startup doesn't make us
+    # tear mitmdump down prematurely.
+    handle = None
+    for _ in range(30):
+        handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+        if handle:
+            break
+        time.sleep(1)
     if handle:
         kernel32.WaitForSingleObject(handle, 0xFFFFFFFF)  # block until the game exits
         kernel32.CloseHandle(handle)

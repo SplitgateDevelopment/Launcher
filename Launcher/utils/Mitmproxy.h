@@ -39,6 +39,19 @@
  */
 namespace Launcher::Mitmproxy
 {
+	/// Finds the running game's process id via its window (class "UnrealWindow", title
+	/// "PortalWars  " — matching Internal/menu/gui/Gui.h). 0 if the window isn't found. Lets the
+	/// watchdog track the game even when the caller didn't pass a PID.
+	inline DWORD ResolveGamePid()
+	{
+		const HWND window = FindWindowW(L"UnrealWindow", L"PortalWars  ");
+		if (!window) return 0;
+
+		DWORD pid = 0;
+		GetWindowThreadProcessId(window, &pid);
+		return pid;
+	}
+
 	/// The folder holding the bundled addon scripts: `scripts/` next to Launcher.exe. Empty path
 	/// if the module path can't be resolved.
 	inline std::filesystem::path ScriptsDir()
@@ -116,6 +129,10 @@ namespace Launcher::Mitmproxy
 		}
 
 		std::string command = "mitmdump -s \"" + script + "\"";
+
+		// If the caller didn't pass a PID, find the game ourselves so the watchdog still ties
+		// mitmdump to the game's lifetime (the launcher exits right after, so nothing else would).
+		if (!gamePid) gamePid = ResolveGamePid();
 
 		// Watchdog: exit mitmdump when the game process ends (PID passed via the environment). Its
 		// absence is non-fatal — mitmdump just won't auto-close with the game.

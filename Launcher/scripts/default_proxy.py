@@ -16,14 +16,21 @@ import os
 from mitmproxy import http
 
 
+# Used when the launcher didn't pass a map (e.g. an older build, or the env var got lost), so
+# the proxy still redirects instead of silently passing everything through to the real backend.
+DEFAULT_REDIRECTS = {"splitgate.accelbyte.io": "127.0.0.1:5005"}
+
+
 def _load_redirects():
     try:
-        return json.loads(os.environ.get("SPLITGATE_REDIRECTS", "{}"))
+        parsed = json.loads(os.environ.get("SPLITGATE_REDIRECTS", "{}"))
+        return parsed or DEFAULT_REDIRECTS
     except (ValueError, TypeError):
-        return {}
+        return DEFAULT_REDIRECTS
 
 
 REDIRECTS = _load_redirects()
+print(f"[splitgate] redirecting: {REDIRECTS}")
 
 
 def _split_target(value):
