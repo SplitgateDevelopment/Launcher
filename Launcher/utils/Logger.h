@@ -1,86 +1,12 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <format>
-#include <chrono>
-#include <string>
-#include <Windows.h>
-#include <strsafe.h>
+#include "../../shared/Logger.h"
 
-struct logDTO {
-	std::string text;
-};
-
-class Logger {
+// The launcher runs in its own console window, so it just binds Shared::Logger to that
+// existing console and mirrors output to launcher.log (kept separate from the DLL's
+// internal.log). All the actual logging lives in shared/Logger.h.
+class Logger : public Shared::Logger
+{
 public:
-	Logger(const std::string& logPath = "launcher.log") {
-		logFile.open(logPath, std::ios::out | std::ios::trunc);
-	}
-
-	void error(std::string message) {
-		return _log({
-			"ERROR",
-		}, message);
-	};
-
-	void success(std::string message) {
-		return _log({
-			"SUCCESS",
-			}, message);
-	};
-
-	void info(std::string message) {
-		return _log({
-			"INFO",
-			}, message);
-	};
-
-	//https://learn.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
-	void errorBox(LPCTSTR lpszFunction) {
-		LPVOID lpMsgBuf;
-		LPVOID lpDisplayBuf;
-		DWORD dw = GetLastError();
-
-		FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM |
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			dw,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&lpMsgBuf,
-			0, NULL);
-
-		// Display the error message and exit the process
-
-		lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-			(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
-		StringCchPrintf((LPTSTR)lpDisplayBuf,
-			LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-			TEXT("%s failed with error %d: %s"),
-			lpszFunction, dw, lpMsgBuf);
-		MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-		LocalFree(lpMsgBuf);
-		LocalFree(lpDisplayBuf);
-	}
-
-	int stop(int code) {
-		info("Press any key to exit...");
-		std::cin.get();
-		return code;
-	};
-
-private:
-	std::ofstream logFile;
-
-	void _log(logDTO logDTO, std::string message) {
-		std::cout << format("[{}] ", logDTO.text) << message << std::endl;
-
-		if (!logFile.is_open()) return;
-
-		const auto now = std::chrono::zoned_time{ std::chrono::current_zone(), std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()) };
-		logFile << std::format("[{:%H:%M:%S}] [{}] ", now, logDTO.text) << message << std::endl;
-	};
+	Logger() { attachConsole("launcher.log"); }
 };
