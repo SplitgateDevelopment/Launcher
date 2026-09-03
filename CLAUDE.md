@@ -42,6 +42,24 @@ Put `Launcher.exe` and `Internal.dll` in the same folder, start the game, open
 `Launcher.exe`, then press **Ins** to show/hide the GUI. Prebuilt binaries are published
 via nightly.link; otherwise build from source.
 
+## Injection & startup flow
+
+The launcher gets `Internal.dll` running inside the game via a Windows hook, then the DLL
+takes over:
+
+1. **Launcher** loads `Internal.dll`, resolves `SplitgateCallBack`, finds the `PortalWars`
+   window and its UI thread, installs a `WH_GETMESSAGE` hook on that thread pointing at the
+   callback, posts a message to trigger it, and exits.
+2. Windows maps `Internal.dll` into the **game process** and calls `SplitgateCallBack`
+   (`dllmain.cpp`) there. On the `HCBT_CREATEWND` message it initializes the exception
+   handler, then calls **`Hook::Init()`** (see `hook/Hook.h`), which installs the
+   `ProcessEvent` / `PostRender` hooks, the GUI, Python, and the features.
+3. From then on the DLL drives everything: `PostRender` renders the menu + features each
+   frame, `ProcessEvent` feeds the event bus, and Discord RPC runs in the background.
+
+So the launcher is only an injector (process/window discovery + hook install); all in-game
+behavior lives in the DLL.
+
 ## Build
 
 - Toolchain: **Visual Studio 2022** (`v145`), C++ latest standard, x64 **Release** only.
@@ -67,7 +85,12 @@ via nightly.link; otherwise build from source.
 (`v145`, C++ latest, Unicode). No vcpkg/external dependencies and no extra linked libs — it's
 self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE`.
 
-- `Launcher.cpp` — entry point / launcher logic.
+- `Launcher.cpp` — entry point / launcher logic. It is an **injector/bootstrapper**:
+  `LoadLibraryA("Internal.dll")`, resolves the exported `SplitgateCallBack` via
+  `GetProcAddress`, finds the game window (`PortalWars`), gets its UI thread + process id,
+  installs a `WH_GETMESSAGE` hook (`SetWindowsHookExW`) pointing at that callback inside
+  `Internal.dll`, posts a thread message to trigger it, waits briefly, then exits. Its whole
+  job is process/window discovery + installing the Windows hook.
 - `utils/Logger.h` — a `Logger` class: `error`/`success`/`info` print `[LEVEL] msg` to stdout
   (`std::format`); `errorBox(fn)` pops a Win32 `MessageBox` with the `GetLastError()` text;
   `stop(code)` does the "press any key to exit" console wait. Uses WinAPI directly.
@@ -120,7 +143,11 @@ Source folders (from the project file; contents documented as they are read):
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
 - `utils/` — helpers (`Globals.h`, `Logger.h`, `ExceptionHandler.h`, `Util.h/.cpp`).
-- `dllmain.cpp` — DLL entry point.
+- `dllmain.cpp` — DLL entry point. Exports the `SplitgateCallBack(code, wparam, lparam)`
+  hook procedure the launcher installs: it initializes the `ExceptionHandler`, waits for the
+  `HCBT_CREATEWND` message, then runs `Hook::Init()` (the bootstrap described above), logs the
+  injection + module base address + menu hotkey, initializes Discord RPC, and chains to
+  `CallNextHookEx`.
 
 ## Conventions
 
