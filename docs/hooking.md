@@ -23,6 +23,7 @@ mechanism that makes Windows load our DLL into the target for us: a **thread-loc
 ```
 Launcher (its own process)                       Game process (PortalWars)
 ──────────────────────────                       ─────────────────────────
+Ipc::Create(Event::Initialized)   (before triggering, so the DLL can open it)
 LoadLibraryA("Internal.dll")
 GetProcAddress(lib, "<mangled SplitgateCallBack>")
 FindWindow / GetWindowThreadProcessId  ─┐
@@ -31,12 +32,13 @@ SetWindowsHookExW(WH_GETMESSAGE,        │  Windows maps Internal.dll into the 
       └─ returns HHOOK                   │
 PostThreadMessageW(threadId,            │
       <trigger msg>, 0, (LPARAM)HHOOK)  ─┘
-exit  (does NOT unhook)                           SplitgateCallBack(code, wparam, lparam)
-                                                    ├─ capture HHOOK from msg->lParam
-                                                    │     into Hook::g_hook
-                                                    ├─ guard with Hook::g_initialized
-                                                    ├─ ExceptionHandler::Init()
-                                                    ├─ Hook::Init()   (see §2)
+Ipc::Wait(initEvent) ◄───────────┐                SplitgateCallBack(code, wparam, lparam)
+success → hook.release()         │                 ├─ capture HHOOK from msg->lParam
+exit  (does NOT unhook)          │                 │     into Hook::g_hook
+                                 │                 ├─ guard with Hook::g_initialized
+                                 │                 ├─ ExceptionHandler::Init()
+                                 │                 ├─ Hook::Init()   (see §2)
+                                 └── Ipc::Signal ◄──┤     (on success)
                                                     ├─ DiscordRPC::Init()
                                                     └─ CallNextHookEx(...)
 ```
@@ -62,6 +64,48 @@ Key points:
   eventual `UnhookWindowsHookEx`.
 - **Re-entry guard.** The proc runs for *every* retrieved message, so `Hook::g_initialized`
   ensures `Hook::Init()` runs exactly once.
+
+### Initialization handshake
+
+Posting the trigger message only means the message was queued — not that the DLL initialized.
+So instead of the launcher guessing with a fixed sleep, the two sides shake hands over a
+**named Win32 event** (see [shared/Ipc.h](../shared/Ipc.h)):
+
+```
+Launcher                                  DLL (SplitgateCallBack)
+────────                                  ───────────────────────
+Ipc::Create(Event::Initialized)   ┐  create the manual-reset event BEFORE triggering,
+   (CreateEventW, "Local\\…")      │  so the DLL can open it
+install hook + post trigger        │
+Ipc::Wait(event, 15000)  ──────────┘
+   (WaitForSingleObject)                  Hook::Init() succeeds
+        ▲                                 Ipc::Signal(Event::Initialized)  (OpenEventW+SetEvent)
+        └───────────── signaled ──────────┘
+success → hook.release()                  (only signals on success; on failure it just
+                                           returns, so the launcher times out)
+```
+
+- The event lives in the `Local\` namespace (both processes share one user session) and is
+  **manual-reset**, so there's no lost-wakeup race if the DLL signals before the launcher
+  reaches `Wait`.
+- The DLL calls `Ipc::Signal` **only after `Hook::Init()` succeeds**; the callback early-returns
+  on failure without signaling, so a failed init surfaces to the launcher as a timeout rather
+  than a false "injected" success.
+- The `Ipc::Event` enum is the single source of truth for the event name across both
+  processes — neither side hard-codes the string, and adding another handshake (e.g.
+  `Event::ScriptsLoaded`) is a one-line change. This is separate from the in-game event bus
+  in [scripting.md](scripting.md), which dispatches *inside* the game.
+
+### Ownership via RAII
+
+The launcher's Win32 resources are wrapped in move-only RAII types (`UniqueLibrary`,
+`UniqueHook`, `UniqueHandle` in `Launcher/utils/handles/`) so every failure path cleans up
+without a manual ladder. The hook is the interesting one: on any failure the `UniqueHook`
+destructor calls `UnhookWindowsHookEx` (init never completed, so removing the hook is
+correct), but after a **successful** handshake the launcher calls `hook.release()` to give up
+ownership *without* unhooking — the DLL now owns it via `Hook::g_hook`. (Freeing the
+launcher's own `UniqueLibrary` on exit only unloads the launcher's mapping of the DLL, not the
+copy injected into the game.)
 
 ### The exported callback signature
 
