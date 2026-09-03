@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 #include <strsafe.h>
+#include <conio.h>
 #include <iostream>
 #include <fstream>
 #include <format>
@@ -133,11 +134,13 @@ namespace Shared
 			LocalFree(lpDisplayBuf);
 		}
 
-		/// Blocks for a keypress ("press any key to exit") and returns `code` unchanged.
+		/// Blocks for a single keypress ("press any key to exit") and returns `code` unchanged.
+		/// Uses _getch so any key returns immediately — std::cin.get() is line-buffered and would
+		/// wait for Enter, which makes the window feel stuck until then.
 		int stop(int code)
 		{
 			info("Press any key to exit...");
-			std::cin.get();
+			_getch();
 			return code;
 		}
 
