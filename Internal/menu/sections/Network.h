@@ -135,8 +135,10 @@ namespace Menu
 				}
 				else
 				{
-					ImGui::TextDisabled("Generates an addon from the redirects above (with TLS passthrough).");
+					ImGui::TextDisabled("Runs the bundled scripts/default_proxy.py (redirects above + TLS passthrough).");
 				}
+
+				launcherChanged |= ImGui::ToggleButton("Show mitmproxy window", &mitm.ShowConsole);
 
 				if (launcherChanged) LauncherConfigFile().Save();
 			}

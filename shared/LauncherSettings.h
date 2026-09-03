@@ -54,9 +54,10 @@ namespace Shared
 		MitmScriptMode ScriptMode = MitmScriptMode::Default;
 		std::string ScriptPath;	  ///< Path mode: filesystem path to a .py addon
 		std::string InlineScript; ///< Inline mode: the python source, run as the addon
+		bool ShowConsole = false; ///< show mitmdump's console window (default: run it hidden)
 	};
 
-	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MitmproxySettings, ScriptMode, ScriptPath, InlineScript)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MitmproxySettings, ScriptMode, ScriptPath, InlineScript, ShowConsole)
 
 	/// Launcher-owned settings (launcher.settings), separate from the DLL's SETTINGS.
 	struct LauncherSettings
