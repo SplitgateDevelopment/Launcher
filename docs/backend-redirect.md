@@ -2,7 +2,8 @@
 
 Can we do what [Sinum](https://github.com/projectnovafn/Sinum) does — point the game at a
 self-hosted backend instead of the official one — with the target **configurable via the
-settings JSON**? This is an architecture/feasibility note, not an implementation.
+settings JSON**? Yes; a first cut is implemented (see [Implementation](#implementation-first-cut)
+below). This note covers the architecture and the open questions.
 
 > [!IMPORTANT]
 > **Scope.** This is only meaningful for a **private server you operate**, against **your own
@@ -105,3 +106,44 @@ local server, plus the lobby WS), whose one hard part is **TLS termination** (ma
 Recommended next step if pursued: a short RE pass on your own client (traffic capture + dump
 review) to find the URL/connect hook point and confirm how TLS is handled, then wire the
 settings-driven rewrite.
+
+## Implementation (first cut)
+
+Implemented in `Internal/features/BackendRedirect.h`, toggled from **Misc → Redirect to private
+server** and configured under the `NETWORK` section of the settings JSON
+(`RedirectEnabled`, `OfficialHost`, `PrivateHost`, `PrivatePort` — defaults
+`splitgate.accelbyte.io` → `127.0.0.1:5005`).
+
+The first cut targets **WinHTTP**, chosen because its exports resolve via `GetProcAddress`
+(no game-specific offsets) and because the game honoring the Fiddler/mitmproxy **system proxy**
+implies a proxy-aware stack:
+
+- `WinHttpConnect` — when the server host equals `OfficialHost`, reconnect to
+  `PrivateHost:PrivatePort` instead, and remember that connection handle.
+- `WinHttpOpenRequest` — on a remembered (rerouted) handle, clear `WINHTTP_FLAG_SECURE` so the
+  request is plain **HTTP** (the emulator serves HTTP, matching the Fiddler rule's
+  `http://localhost:5005`). Paths/headers/bodies are untouched.
+
+The hooks install once from `Features::Init` (MinHook is already up) and **self-gate on
+`RedirectEnabled`**, so the menu toggle enables/disables live. `Backend::RewriteUrl` is also
+provided as a reusable URL rewriter for the fallback case below.
+
+### How to verify / when to pivot
+
+Enable the toggle in-game with the console open. On success you'll see
+`[Backend] Redirecting splitgate.accelbyte.io -> …`. **If nothing logs**, the game isn't using
+WinHTTP — it's almost certainly **libcurl** (`FCurlHttpRequest`, the common UE4-on-Windows
+default). Then the pivot is: hook libcurl's `curl_easy_setopt` (found via a signature scan —
+`Internal/utils/Util.h` `FindSignature`, guided by the [dump](game-dump.md)) and run each
+`CURLOPT_URL` through `Backend::RewriteUrl`, which already downgrades
+`https://OfficialHost` → `http://PrivateHost:PrivatePort`.
+
+### Known limitations
+
+- **Timing.** The external proxy is active before launch; our in-process hook installs only
+  after injection, so backend calls the game makes *before* injection aren't redirected. Fine
+  for calls after injection; a full replacement of the proxy needs earlier injection.
+- **Stack assumption.** As above — WinHTTP first, libcurl the likely pivot; unverified until
+  tested against the real client.
+- Not yet built/tested against the game here (DLL requires the VS toolchain); the settings
+  round-trip is covered by the test suite.
