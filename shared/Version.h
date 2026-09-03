@@ -15,5 +15,6 @@
 #define SPLITGATE_COMPANY "SplitgateDevelopment"
 #define SPLITGATE_PRODUCT "Splitgate"
 #define SPLITGATE_COPYRIGHT "github.com/SplitgateDevelopment"
+#define SPLITGATE_URL "https://github.com/SplitgateDevelopment/Launcher"
 
 #endif // SPLITGATE_VERSION_H

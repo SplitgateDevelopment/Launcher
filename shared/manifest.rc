@@ -35,6 +35,7 @@ BEGIN
         BLOCK "040904b0" // US English, Unicode
         BEGIN
             VALUE "CompanyName", SPLITGATE_COMPANY
+            VALUE "Comments", SPLITGATE_URL // shown in Explorer's Details tab
             VALUE "FileDescription", SPLITGATE_FILE_DESCRIPTION
             VALUE "FileVersion", SPLITGATE_VERSION_STRING
             VALUE "InternalName", SPLITGATE_INTERNAL_NAME
