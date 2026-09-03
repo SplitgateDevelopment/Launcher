@@ -19,12 +19,12 @@ namespace
 	  protected:
 		void SetUp() override
 		{
-			Settings.NETWORK.RedirectEnabled = true;
+			Settings.NETWORK.Proxy = ProxyMode::Internal;
 			Settings.NETWORK.Redirects = {{"splitgate.accelbyte.io", "127.0.0.1:5005"}};
 		}
 		void TearDown() override
 		{
-			Settings.NETWORK.RedirectEnabled = false;
+			Settings.NETWORK.Proxy = ProxyMode::Manual;
 			Settings.NETWORK.Redirects.clear();
 		}
 	};
@@ -55,13 +55,13 @@ namespace
 
 	TEST_F(RedirectTest, RewriteUrlNoopWhenDisabled)
 	{
-		Settings.NETWORK.RedirectEnabled = false;
+		Settings.NETWORK.Proxy = ProxyMode::Manual;
 		EXPECT_EQ(R::RewriteUrl("https://splitgate.accelbyte.io/x"), "https://splitgate.accelbyte.io/x");
 	}
 
 	TEST_F(RedirectTest, IsRedirectHostIgnoresEnabledFlag)
 	{
-		Settings.NETWORK.RedirectEnabled = false; // logging filter works even with redirect off
+		Settings.NETWORK.Proxy = ProxyMode::Manual; // logging filter works even with redirect off
 		EXPECT_TRUE(R::IsRedirectHost("https://splitgate.accelbyte.io/x"));
 		EXPECT_FALSE(R::IsRedirectHost("https://example.com/x"));
 	}

@@ -111,11 +111,26 @@ struct VisualsSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, NameColor, BoxColor, BonesColor, SnaplineColor)
 
+/// How the game's backend traffic is redirected to the private server.
+enum class ProxyMode
+{
+	Manual,	   ///< do nothing (use an external proxy yourself, or none)
+	Internal,  ///< the injected DLL redirects in-process (network/ hooks)
+	Mitmproxy, ///< the launcher spawns mitmproxy to the target before the game starts
+};
+
+// Persist the enum as a readable string.
+NLOHMANN_JSON_SERIALIZE_ENUM(ProxyMode, {
+											{ProxyMode::Manual, "manual"},
+											{ProxyMode::Internal, "internal"},
+											{ProxyMode::Mitmproxy, "mitmproxy"},
+										})
+
 /// Networking — backend redirection and HTTP logging (see the `network/` module and
-/// docs/backend-redirect.md). Configurable from the Network tab.
+/// docs/backend-redirect.md). Configurable from the Network tab; read by the launcher too.
 struct NetworkSettings
 {
-	bool RedirectEnabled = false; ///< master toggle for backend redirection
+	ProxyMode Proxy = ProxyMode::Manual; ///< which redirection mechanism to use
 	/// original host -> "host[:port]" to route it to. https is downgraded to http on redirect.
 	std::map<std::string, std::string> Redirects = {
 		{"splitgate.accelbyte.io", "127.0.0.1:5005"},
@@ -126,7 +141,7 @@ struct NetworkSettings
 	bool HttpLogRedirectedOnly = false; ///< only log calls whose host is a redirect key
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, RedirectEnabled, Redirects, HttpLogging, HttpLogToFile, HttpLogRedirectedOnly)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, Proxy, Redirects, HttpLogging, HttpLogToFile, HttpLogRedirectedOnly)
 
 /// Root settings object — the sections that persist together as one JSON document.
 struct SETTINGS

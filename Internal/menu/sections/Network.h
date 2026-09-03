@@ -22,7 +22,15 @@ namespace Menu
 			bool changed = false;
 
 			ImGui::SeparatorText("Backend redirect");
-			changed |= ImGui::ToggleButton("Enable redirect", &Settings.NETWORK.RedirectEnabled);
+			ImGui::TextUnformatted("Proxy mode");
+			ImGui::Tooltip("Internal: the DLL redirects in-process. Mitmproxy: the launcher spawns\nmitmproxy at startup (takes effect next launch). Manual: do nothing.");
+			int mode = static_cast<int>(Settings.NETWORK.Proxy);
+			changed |= ImGui::RadioButton("Manual", &mode, static_cast<int>(ProxyMode::Manual));
+			ImGui::SameLine();
+			changed |= ImGui::RadioButton("Internal", &mode, static_cast<int>(ProxyMode::Internal));
+			ImGui::SameLine();
+			changed |= ImGui::RadioButton("Mitmproxy", &mode, static_cast<int>(ProxyMode::Mitmproxy));
+			Settings.NETWORK.Proxy = static_cast<ProxyMode>(mode);
 
 			// Existing redirects, each with a remove button.
 			std::string toRemove;

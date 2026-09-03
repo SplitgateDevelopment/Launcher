@@ -39,7 +39,7 @@ namespace Network::Redirect
 	/// is off or @p host isn't a key in the map.
 	inline std::optional<std::string> Target(const std::string& host)
 	{
-		if (!Settings.NETWORK.RedirectEnabled) return std::nullopt;
+		if (Settings.NETWORK.Proxy != ProxyMode::Internal) return std::nullopt;
 
 		const auto it = Settings.NETWORK.Redirects.find(host);
 		if (it == Settings.NETWORK.Redirects.end()) return std::nullopt;
@@ -47,7 +47,7 @@ namespace Network::Redirect
 	}
 
 	/// @return true if @p url's host is a redirect key (used by the HTTP-log filter). Ignores
-	/// RedirectEnabled, so a logging-only setup can still filter by the map.
+	/// the proxy mode, so a logging-only setup can still filter by the map.
 	inline bool IsRedirectHost(const std::string& url)
 	{
 		return Settings.NETWORK.Redirects.count(HostOf(url)) > 0;
