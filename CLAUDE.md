@@ -38,6 +38,8 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
 - [docs/hooking.md](docs/hooking.md) — injection (the `WH_GETMESSAGE` technique, the mangled
   `SplitgateCallBack` export) and how the game's functions are hooked (`PostRender`,
   `ProcessEvent`).
+- [docs/debugging.md](docs/debugging.md) — reading logs (`launcher.log` / `internal.log`), the
+  in-game console, crash stack traces, and the Debug-tab switches.
 - [docs/scripting.md](docs/scripting.md) — embedding Python and writing user scripts.
 - [docs/testing.md](docs/testing.md) — the gtest project and how to run it.
 - [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
