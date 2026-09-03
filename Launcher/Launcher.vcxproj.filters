@@ -49,6 +49,15 @@
     <ClInclude Include="..\shared\ExceptionHandler.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\Settings.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\ProxyConfig.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\Mitmproxy.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc">

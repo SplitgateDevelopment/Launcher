@@ -13,6 +13,10 @@
     <RootNamespace>Launcher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgInstalledDir>.\vcpkg_installed</VcpkgInstalledDir>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -65,6 +69,9 @@
     <ClInclude Include="..\shared\Ipc.h" />
     <ClInclude Include="..\shared\Logger.h" />
     <ClInclude Include="..\shared\ExceptionHandler.h" />
+    <ClInclude Include="..\shared\Settings.h" />
+    <ClInclude Include="utils\ProxyConfig.h" />
+    <ClInclude Include="utils\Mitmproxy.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
