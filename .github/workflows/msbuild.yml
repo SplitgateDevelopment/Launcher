@@ -28,9 +28,9 @@ jobs:
       with:
         submodules: recursive
     - uses: actions/setup-python@v5
-      id: cp310
+      id: cpy
       with:
-        python-version: '3.10'
+        python-version: '3.14'
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
@@ -53,6 +53,10 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
+      env:
+        # setup-python installs into the tool cache, not C:\Python3XY, so point
+        # python.props straight at that root via the override env var.
+        SPLITGATE_PYTHON_DIR: ${{ env.pythonLocation }}
       run: Tools/build.bat
 
     - name: Upload Release Artifact
