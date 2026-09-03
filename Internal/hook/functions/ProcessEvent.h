@@ -25,9 +25,20 @@ namespace ProcessEvent
 	// LogProcessEvent. Add a value to Events::Type and a row here for each event
 	// you want to expose; scripts then subscribe with:
 	//   SplitgateInternal.Events.on(SplitgateInternal.Events.PlayerDeath, handler)
+	// Candidate UFunction names sourced from the Dumpspace dump (see docs/game-dump.md).
+	// A wrong/renamed name simply fails FindObject and no-ops, so confirm the exact string
+	// with a LogProcessEvent session in-game (it prints Function->GetFullName()) and correct
+	// any that don't fire. payload.source is the calling UObject (the character / controller).
 	static const std::pair<Events::Type, const char*> gameEvents[] = {
 		{Events::Type::Shutdown, "Function Engine.GameInstance.ReceiveShutdown"},
-		// { Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" },
+		{Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath"},
+		{Events::Type::HealthChanged, "Function PortalWars.PortalWarsCharacter.OnRep_Health"},
+		{Events::Type::DamageTaken, "Function PortalWars.PortalWarsPlayerController.ClientNotifyDamageTaken"},
+		{Events::Type::RoundEnded, "Function PortalWars.PortalWarsPlayerController.ClientSetRoundResult"},
+		{Events::Type::MatchEnded, "Function PortalWars.PortalWarsPlayerController.ClientSetMatchResult"},
+		// Richer kill event (killer/victim/headshot in params) — needs per-event params
+		// decoding rather than the generic {Class} payload, so left for a follow-up:
+		// { Events::Type::PlayerKilled, "Function PortalWars.PortalWarsPlayerState.BroadcastDeath_Multicast" },
 	};
 
 	void** VTable;											 ///< VTable the hook is installed into.
