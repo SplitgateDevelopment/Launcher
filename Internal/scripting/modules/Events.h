@@ -43,6 +43,11 @@ namespace Scripts
 				.value("SettingsChanged", ::Events::Type::SettingsChanged)
 				.value("MenuOpened", ::Events::Type::MenuOpened)
 				.value("MenuClosed", ::Events::Type::MenuClosed)
+				.value("PlayerDeath", ::Events::Type::PlayerDeath)
+				.value("HealthChanged", ::Events::Type::HealthChanged)
+				.value("DamageTaken", ::Events::Type::DamageTaken)
+				.value("RoundEnded", ::Events::Type::RoundEnded)
+				.value("MatchEnded", ::Events::Type::MatchEnded)
 				.export_values();
 
 			events.def("on", [](::Events::Type event, py::function callback)

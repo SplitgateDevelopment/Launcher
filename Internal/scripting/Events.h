@@ -29,7 +29,14 @@ namespace Events
 		SettingsChanged, ///< a setting was changed in the menu
 		MenuOpened,		 ///< the GUI was shown
 		MenuClosed,		 ///< the GUI was hidden
-						 // PlayerDeath, PlayerSpawn, ... (wire in ProcessEvent)
+
+		// Game events dispatched from ProcessEvent (payload.source = the calling UObject).
+		// UFunction names are wired in ProcessEvent's gameEvents table.
+		PlayerDeath,   ///< a character died (PortalWarsCharacter.OnDeath)
+		HealthChanged, ///< a character's health replicated (PortalWarsCharacter.OnRep_Health)
+		DamageTaken,   ///< the local player took damage (PortalWarsPlayerController.ClientNotifyDamageTaken)
+		RoundEnded,	   ///< a round ended (PortalWarsPlayerController.ClientSetRoundResult)
+		MatchEnded,	   ///< the match ended (PortalWarsPlayerController.ClientSetMatchResult)
 	};
 
 	/// Optional data an event can carry. Most events dispatch with a default (empty) payload;
