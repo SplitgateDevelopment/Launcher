@@ -89,6 +89,15 @@ TEST_F(FeaturesTest, DoesNotDestroyWhenNeverApplied) {
     EXPECT_EQ(0, f->destroyCount);
 }
 
+TEST_F(FeaturesTest, SkipsValidityCheckForIdleDisabledFeatures) {
+    FakeFeature* f = add();
+    f->Enabled = false;              // disabled, nothing applied
+    Features::Execute();
+    Features::Execute();
+    EXPECT_EQ(0, f->checkCount);     // Check() (the validity walk) is skipped
+    EXPECT_EQ(1, f->initCount);      // but it is still initialized once
+}
+
 TEST_F(FeaturesTest, DestroysOnceOnDisableTransition) {
     FakeFeature* f = add();
 

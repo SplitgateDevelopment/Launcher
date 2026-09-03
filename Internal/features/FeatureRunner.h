@@ -34,6 +34,13 @@ namespace Features
 
 				feature->UpdateEnabled();
 
+				// Idle disabled features have nothing to run and nothing applied
+				// to revert, so skip their per-frame validity work entirely.
+				if (!feature->Enabled && !feature->applied)
+				{
+					continue;
+				};
+
 				if (!feature->Check())
 				{
 					continue;
