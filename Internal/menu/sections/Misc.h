@@ -27,7 +27,8 @@ namespace Menu {
 
 
 			ImGui::SeparatorText("User Scripts");
-			ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled);
+			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))
+				Events::Dispatch(Events::Type::SettingsChanged);
 
 			if (ImGui::TreeNode("Loaded Scripts"))
 			{

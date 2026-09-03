@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../settings/Settings.h"
+#include "../scripting/Events.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
 #include "sections/Settings.h"
@@ -20,7 +21,11 @@ namespace Menu {
         
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-        if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart)) Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+        if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
+        {
+            Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+            Events::Dispatch(Settings.MENU.ShowMenu ? Events::Type::MenuOpened : Events::Type::MenuClosed);
+        }
 		if (!Settings.MENU.ShowMenu) return;
 
         if (Settings.DEBUG.ShowDemoWindow)

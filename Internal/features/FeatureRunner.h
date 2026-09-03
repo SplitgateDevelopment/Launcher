@@ -28,7 +28,8 @@ namespace Features
 				feature.Init();
 			};
 
-			feature.UpdateEnabled();
+			// Enabled is refreshed reactively on Events::Type::SettingsChanged
+			// (see Features::Init), not polled here every frame.
 
 			// Idle disabled features have nothing to run and nothing applied to
 			// revert, so skip their per-frame validity work entirely.

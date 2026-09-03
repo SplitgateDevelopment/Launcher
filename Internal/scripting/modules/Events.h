@@ -26,6 +26,9 @@ namespace Scripts {
 				.value("Render", ::Events::Type::Render)
 				.value("Shutdown", ::Events::Type::Shutdown)
 				.value("LoadIntoMap", ::Events::Type::LoadIntoMap)
+				.value("SettingsChanged", ::Events::Type::SettingsChanged)
+				.value("MenuOpened", ::Events::Type::MenuOpened)
+				.value("MenuClosed", ::Events::Type::MenuClosed)
 				.export_values();
 
 			events.def("on", [](::Events::Type event, py::function callback) {

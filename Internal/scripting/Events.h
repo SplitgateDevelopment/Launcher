@@ -18,9 +18,12 @@ namespace Events
 	// ProcessEvent's table mapping it to a UFunction name.
 	enum class Type
 	{
-		Render,       // every rendered frame
-		Shutdown,     // game instance is shutting down
-		LoadIntoMap,  // "Load into map" button pressed
+		Render,          // every rendered frame
+		Shutdown,        // game instance is shutting down
+		LoadIntoMap,     // "Load into map" button pressed
+		SettingsChanged, // a setting was changed in the menu
+		MenuOpened,      // the GUI was shown
+		MenuClosed,      // the GUI was hidden
 		// PlayerDeath, PlayerSpawn, ... (wire in ProcessEvent)
 	};
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../settings/Settings.h"
+#include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 
 namespace Menu {
@@ -15,12 +16,14 @@ namespace Menu {
 
 			if (ImGui::Button("Reload")) {
 				SettingsHelper::Load();
+				Events::Dispatch(Events::Type::SettingsChanged);  // features re-read Enabled
 			};
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("Reset defaults")) {
 				SettingsHelper::Reset();
+				Events::Dispatch(Events::Type::SettingsChanged);
 			};
 
 			ImGui::SeparatorText("Menu");

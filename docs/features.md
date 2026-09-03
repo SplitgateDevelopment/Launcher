@@ -47,7 +47,8 @@ else if (applied) Destroy();   // revert, once, on the enabled -> disabled edge
 Implement the virtuals as:
 
 - **`Init()`** — one-time setup (cache pointers/originals); set `Initialized`.
-- **`UpdateEnabled()`** — `Enabled = Settings.<section>.<flag>;`.
+- **`UpdateEnabled()`** — `Enabled = Settings.<section>.<flag>;`. Called reactively
+  on `Events::Type::SettingsChanged` (dispatched by the menu), not every frame.
 - **`Check()`** — return whether it is currently valid to act (pointers ready,
   in a match, ...). **Do not gate this on `Enabled` and do not return `Enabled`** —
   the loop decides Run vs Destroy.

@@ -81,11 +81,14 @@ so it can't crash the game.
 
 ### Available events
 
-| Event         | Fired from          | When                                  |
-| ------------- | ------------------- | ------------------------------------- |
-| `Render`      | UserScripts feature | Every rendered frame (while enabled). |
-| `Shutdown`    | ProcessEvent        | Game instance is shutting down.       |
-| `LoadIntoMap` | "Load into map" button | Button pressed.                    |
+| Event             | Fired from             | When                                  |
+| ----------------- | ---------------------- | ------------------------------------- |
+| `Render`          | UserScripts feature    | Every rendered frame (while enabled). |
+| `Shutdown`        | ProcessEvent           | Game instance is shutting down.       |
+| `LoadIntoMap`     | "Load into map" button | Button pressed.                       |
+| `SettingsChanged` | Menu                   | A setting changed (also on Reload/Reset). |
+| `MenuOpened`      | Menu                   | GUI shown (Ins).                      |
+| `MenuClosed`      | Menu                   | GUI hidden (Ins).                     |
 
 More game events (player death, spawn, kills, ...) are wired through a table in
 [`hook/functions/ProcessEvent.h`](../Internal/hook/functions/ProcessEvent.h)

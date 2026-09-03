@@ -28,6 +28,14 @@ namespace Features
 		Features.push_back(std::make_unique<WeaponModifications>());
 		Features.push_back(std::make_unique<ThirdPerson>());
 
+		// Seed Enabled from current settings, then keep it in sync reactively:
+		// the menu dispatches SettingsChanged on every change, so features no
+		// longer poll their setting every frame.
+		for (auto& feature : Features) feature->UpdateEnabled();
+		Events::Register(Events::Type::SettingsChanged, [] {
+			for (auto& feature : Features) feature->UpdateEnabled();
+		});
+
 		// Subscribe event-driven features (Event != "render") to the event bus;
 		// render features run from Features::Execute each frame instead.
 		for (auto& feature : Features)

@@ -1,23 +1,28 @@
 #pragma once
 
 #include "../../settings/Settings.h"
+#include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 
 namespace Menu {
 	namespace Sections {
 		void DebugTab() {
+			bool changed = false;
+
 			ImGui::SeparatorText("Logging");
-			ImGui::ToggleButton("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
-			ImGui::ToggleButton("Features Logging", &Settings.DEBUG.FeaturesLogging);
+			changed |= ImGui::ToggleButton("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
+			changed |= ImGui::ToggleButton("Features Logging", &Settings.DEBUG.FeaturesLogging);
 
 			ImGui::SeparatorText("GUI");
-			ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
-			ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
+			changed |= ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
+			changed |= ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
 
 			ImGui::SeparatorText("Game");
-			ImGui::ToggleButton("Draw Actors", &Settings.DEBUG.DrawActors);
-			
+			changed |= ImGui::ToggleButton("Draw Actors", &Settings.DEBUG.DrawActors);
+
+			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
+
 			if (ImGui::Button("Summon Bot"))
 			{
 				if (!Globals::PlayerController) return;
