@@ -25,10 +25,10 @@ public:
 		Enabled = Settings.EXPLOITS.InfinteJetpack;
 	};
 
+	// Valid to act whenever we have a live local character; the loop decides
+	// enabled/disabled and calls Run()/Destroy() accordingly.
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
@@ -37,8 +37,7 @@ public:
 		Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 		if (!Player) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return true;
 	};
 
 	void Init()

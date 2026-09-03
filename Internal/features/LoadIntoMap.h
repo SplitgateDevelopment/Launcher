@@ -9,6 +9,7 @@ public:
 	LoadIntoMap()
 	{
 		Name = "LoadIntoMap";
+		OneTime = true;  // switching level is a one-shot action, not a per-frame effect
 		UpdateEnabled();
 
 		Log("Created");
@@ -19,16 +20,16 @@ public:
 		Enabled = Settings.MISC.LoadIntoMap;
 	};
 
+	// Only valid to load while sitting outside a match; the loop runs this once
+	// per enable (OneTime), so Run() no longer has to disable itself.
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
 		if (Globals::PlayerController->IsInGame()) return false;
 
-		return Enabled;
+		return true;
 	};
 
 	void Init()
@@ -49,6 +50,5 @@ public:
 
 		Logger::Log("INFO", "Loading into map");
 		Globals::PlayerController->SwitchLevel(L"Simulation_Alpha");
-		Settings.MISC.LoadIntoMap = false;
 	};
 };

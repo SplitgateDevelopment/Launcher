@@ -21,12 +21,7 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
-		if (!Initialized) return false;
-
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return Initialized;
 	};
 
 	void Init()
