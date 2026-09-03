@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Feature.h"
-#include "../../utils/Globals.h"
+#include "Feature.h"
+#include "../utils/Globals.h"
 
 class InfiniteJetpack : public Feature
 {

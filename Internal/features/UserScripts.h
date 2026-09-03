@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Feature.h"
-#include "../../scripting/Scripts.h"
+#include "Feature.h"
+#include "../scripting/Scripts.h"
 
 class UserScripts : public Feature
 {

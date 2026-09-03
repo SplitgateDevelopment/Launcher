@@ -67,16 +67,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="hook\Feature.h" />
-    <ClInclude Include="hook\features\DrawActors.h" />
-    <ClInclude Include="hook\features\GodMode.h" />
-    <ClInclude Include="hook\features\InfiniteJetpack.h" />
-    <ClInclude Include="hook\features\LoadIntoMap.h" />
-    <ClInclude Include="hook\features\NoRecoil.h" />
-    <ClInclude Include="hook\features\PlayerModifications.h" />
-    <ClInclude Include="hook\features\SpinBot.h" />
-    <ClInclude Include="hook\features\UserScripts.h" />
-    <ClInclude Include="hook\features\WeaponModifications.h" />
+    <ClInclude Include="features\Feature.h" />
+    <ClInclude Include="features\DrawActors.h" />
+    <ClInclude Include="features\GodMode.h" />
+    <ClInclude Include="features\InfiniteJetpack.h" />
+    <ClInclude Include="features\LoadIntoMap.h" />
+    <ClInclude Include="features\NoRecoil.h" />
+    <ClInclude Include="features\PlayerModifications.h" />
+    <ClInclude Include="features\SpinBot.h" />
+    <ClInclude Include="features\UserScripts.h" />
+    <ClInclude Include="features\WeaponModifications.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
     <ClInclude Include="menu\gui\Gui.h" />
@@ -92,8 +92,8 @@
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
     <ClInclude Include="hook\Hook.h" />
-    <ClInclude Include="hook\Features.h" />
-    <ClInclude Include="hook\FeatureRunner.h" />
+    <ClInclude Include="features\Features.h" />
+    <ClInclude Include="features\FeatureRunner.h" />
     <ClInclude Include="discord\handlers.h" />
     <ClInclude Include="discord\rpc.h" />
     <ClInclude Include="hook\functions\PostRender.h" />

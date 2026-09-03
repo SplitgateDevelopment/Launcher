@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Feature.h"
+#include "Feature.h"
 
 class WeaponModifications : public Feature
 {

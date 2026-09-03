@@ -19,6 +19,9 @@
     <Filter Include="hook\functions">
       <UniqueIdentifier>{8f847682-7656-4f88-946c-1f9d0c174975}</UniqueIdentifier>
     </Filter>
+    <Filter Include="features">
+      <UniqueIdentifier>{2c9f4b1a-3d7e-4a2b-9f10-6b5c8d0e1f23}</UniqueIdentifier>
+    </Filter>
     <Filter Include="discord">
       <UniqueIdentifier>{f288a2eb-1b81-401e-a5b6-140931ba6bfb}</UniqueIdentifier>
     </Filter>
@@ -69,8 +72,8 @@
     <ClInclude Include="hook\Hook.h">
       <Filter>hook</Filter>
     </ClInclude>
-    <ClInclude Include="hook\Features.h">
-      <Filter>hook</Filter>
+    <ClInclude Include="features\Features.h">
+      <Filter>features</Filter>
     </ClInclude>
     <ClInclude Include="hook\functions\ProcessEvent.h">
       <Filter>hook\functions</Filter>
@@ -126,16 +129,39 @@
     <ClInclude Include="menu\gui\Custom.h">
       <Filter>menu\gui</Filter>
     </ClInclude>
-    <ClInclude Include="hook\features\GodMode.h" />
-    <ClInclude Include="hook\Feature.h" />
-    <ClInclude Include="hook\features\NoRecoil.h" />
-    <ClInclude Include="hook\features\LoadIntoMap.h" />
-    <ClInclude Include="hook\features\PlayerModifications.h" />
-    <ClInclude Include="hook\features\InfiniteJetpack.h" />
-    <ClInclude Include="hook\features\UserScripts.h" />
-    <ClInclude Include="hook\features\DrawActors.h" />
-    <ClInclude Include="hook\features\SpinBot.h" />
-    <ClInclude Include="hook\features\WeaponModifications.h" />
+    <ClInclude Include="features\Feature.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\FeatureRunner.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\GodMode.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\NoRecoil.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\LoadIntoMap.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\PlayerModifications.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\InfiniteJetpack.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\UserScripts.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\DrawActors.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\SpinBot.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\WeaponModifications.h">
+      <Filter>features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">

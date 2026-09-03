@@ -2,15 +2,15 @@
 
 #include "FeatureRunner.h"
 
-#include "features/GodMode.h"
-#include "features/PlayerModifications.h"
-#include "features/LoadIntoMap.h"
-#include "features/NoRecoil.h"
-#include "features/SpinBot.h"
-#include "features/DrawActors.h"
-#include "features/UserScripts.h"
-#include "features/InfiniteJetpack.h"
-#include "features/WeaponModifications.h"
+#include "GodMode.h"
+#include "PlayerModifications.h"
+#include "LoadIntoMap.h"
+#include "NoRecoil.h"
+#include "SpinBot.h"
+#include "DrawActors.h"
+#include "UserScripts.h"
+#include "InfiniteJetpack.h"
+#include "WeaponModifications.h"
 
 namespace Features
 {

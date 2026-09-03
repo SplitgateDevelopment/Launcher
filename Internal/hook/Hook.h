@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features.h"
+#include "../features/Features.h"
 #include "functions/ProcessEvent.h"
 #include "functions/PostRender.h"
 #include "../menu/gui/Gui.h"
@@ -10,11 +10,13 @@
 
 #pragma comment(lib, "MinHook.x64.lib")
 
-namespace Hook {
+namespace Hook
+{
 	HHOOK g_hook;
 
-	BYTE* SetHook(void** VTable, int index, void* TargetFunction) {
-		BYTE* original = reinterpret_cast<BYTE*>(VTable[index]);
+	BYTE *SetHook(void **VTable, int index, void *TargetFunction)
+	{
+		BYTE *original = reinterpret_cast<BYTE *>(VTable[index]);
 
 		DWORD protect, oldProtect;
 
@@ -27,66 +29,75 @@ namespace Hook {
 		Logger::Log("SUCCESS", buffer);
 
 		return original;
-	}; 
-	
-	bool Init() {
+	};
+
+	bool Init()
+	{
 		Logger::CreateConsole();
 
-		if (!EngineInit()) {
+		if (!EngineInit())
+		{
 			Logger::Log("ERROR", "No engine init");
 			return FALSE;
 		};
 		Globals::Init();
 
-		if (!Globals::World) {
+		if (!Globals::World)
+		{
 			Logger::Log("ERROR", "No World");
 			return FALSE;
 		};
 
-		UGameInstance* OwningGameInstance = Globals::World->OwningGameInstance;
-		if (!OwningGameInstance) {
+		UGameInstance *OwningGameInstance = Globals::World->OwningGameInstance;
+		if (!OwningGameInstance)
+		{
 			Logger::Log("ERROR", "No owning game instance");
 			return FALSE;
 		};
 
-		TArray<ULocalPlayer*>LocalPlayers = OwningGameInstance->LocalPlayers;
+		TArray<ULocalPlayer *> LocalPlayers = OwningGameInstance->LocalPlayers;
 
-		UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-		if (!LocalPlayer) {
+		UPortalWarsLocalPlayer *LocalPlayer = (UPortalWarsLocalPlayer *)LocalPlayers[0];
+		if (!LocalPlayer)
+		{
 			Logger::Log("ERROR", "No LocalPlayer");
 			return FALSE;
 		};
 
-		UGameViewportClient* ViewPortClient = LocalPlayer->ViewportClient;
-		if (!ViewPortClient) {
+		UGameViewportClient *ViewPortClient = LocalPlayer->ViewportClient;
+		if (!ViewPortClient)
+		{
 			Logger::Log("ERROR", "No UGameViewportClient");
 			return FALSE;
 		};
 
-		void** ViewPortClientVTable = ViewPortClient->VFTable;
-		if (!ViewPortClientVTable) {
+		void **ViewPortClientVTable = ViewPortClient->VFTable;
+		if (!ViewPortClientVTable)
+		{
 			Logger::Log("ERROR", "No ViewPortClientVTable");
 			return FALSE;
 		};
 
 		PostRender::VTable = ViewPortClientVTable;
-		ProcessEvent::VTable = *reinterpret_cast<void***>(UObject::GetDefaultObj());
+		ProcessEvent::VTable = *reinterpret_cast<void ***>(UObject::GetDefaultObj());
 
-		UPortalWarsSaveGame* UserSave = LocalPlayer->GetUserSaveGame();
-		if (UserSave) {
+		UPortalWarsSaveGame *UserSave = LocalPlayer->GetUserSaveGame();
+		if (UserSave)
+		{
 			Logger::Log("SUCCESS", "Got user save game");
 			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
-		
-		if (SettingsHelper::Load()) {
+
+		if (SettingsHelper::Load())
+		{
 			auto settingsPath = SettingsHelper::GetSettingsFilePath();
 			Logger::Log("SUCCESS", std::string("Loaded settings from ").append(settingsPath));
 		}
 
 		Logger::Log("INFO", std::format("Found [{:d}] Objects", ObjObjects->NumElements));
-		
-		UObject* NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
-		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
+
+		UObject *NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
+		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole *>(NewObject);
 		Logger::Log("SUCCESS", "UConsole spawned");
 
 		Scripts::Init();
@@ -97,10 +108,10 @@ namespace Hook {
 			return FALSE;
 		}
 
-		const auto& ProccessEventTarget = reinterpret_cast<decltype(ProcessEvent::Original)>(ProcessEvent::VTable[ProcessEvent::Index]);
+		const auto &ProccessEventTarget = reinterpret_cast<decltype(ProcessEvent::Original)>(ProcessEvent::VTable[ProcessEvent::Index]);
 		ProcessEvent::Original = ProccessEventTarget;
 
-		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void**>(&ProcessEvent::Original));
+		MH_CreateHook(ProccessEventTarget, &ProcessEvent::HookedProcessEvent, reinterpret_cast<void **>(&ProcessEvent::Original));
 
 		PostRender::Original = reinterpret_cast<decltype(PostRender::Original)>(SetHook(PostRender::VTable, PostRender::Index, &PostRender::HookedPostRender));
 
@@ -124,7 +135,8 @@ namespace Hook {
 		return TRUE;
 	}
 
-	void UnHook() {
+	void UnHook()
+	{
 		Logger::Log("INFO", "Unloading");
 
 		if (MH_DisableHook(MH_ALL_HOOKS) != MH_OK)
@@ -141,11 +153,12 @@ namespace Hook {
 		Logger::DestroyConsole();
 		ExceptionHandler::Disable();
 		GUI::Destroy();
-		
+
 		UnhookWindowsHookEx(g_hook);
 	}
 
-	bool isKeyPressed(UCHAR key) {
+	bool isKeyPressed(UCHAR key)
+	{
 		return GetAsyncKeyState(key) & 1 && GetAsyncKeyState(key) & 0x8000;
 	};
 };
