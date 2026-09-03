@@ -63,6 +63,9 @@
     <ClInclude Include="utils\Logger.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\Ipc.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="menu\Menu.h">
       <Filter>menu</Filter>
     </ClInclude>

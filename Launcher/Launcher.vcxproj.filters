@@ -31,6 +31,18 @@
     <ClInclude Include="data/Logo.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="utils/handles/UniqueHandle.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils/handles/UniqueLibrary.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="utils/handles/UniqueHook.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Ipc.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc">

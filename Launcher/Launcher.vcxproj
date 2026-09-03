@@ -59,6 +59,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data/Logo.h" />
+    <ClInclude Include="utils/handles/UniqueHandle.h" />
+    <ClInclude Include="utils/handles/UniqueLibrary.h" />
+    <ClInclude Include="utils/handles/UniqueHook.h" />
+    <ClInclude Include="..\shared\Ipc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
