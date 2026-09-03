@@ -46,10 +46,14 @@ public:
 
 	void Run()
 	{
-		for (auto l = 0; l < Globals::World->Levels.Num(); l++) {
-			if (!Globals::World->Levels.IsValidIndex(l)) continue;
+		// Canvas is constant for the frame — bail once instead of per actor.
+		if (!Globals::Canvas) return;
 
-			ULevel* Level = Globals::World->Levels[l];
+		auto& Levels = Globals::World->Levels;
+		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++) {
+			if (!Levels.IsValidIndex(l)) continue;
+
+			ULevel* Level = Levels[l];
 			if (!Level) continue;
 
 			DrawLevelActors(Level);
@@ -58,8 +62,14 @@ public:
 
 	void DrawLevelActors(ULevel* Level)
 	{
-		auto Actors = Level->Actors;
-		for (auto a = 0; a < Actors.Num(); a++) {
+		// Reference, not a copy: `auto` here would deep-copy the whole TArray of
+		// actor pointers every level, every frame.
+		auto& Actors = Level->Actors;
+
+		auto* controller = Globals::PlayerController;
+		auto* localPawn = controller->AcknowledgedPawn;
+
+		for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++) {
 			if (!Actors.IsValidIndex(a)) continue;
 
 			auto Actor = Actors[a];
@@ -67,15 +77,13 @@ public:
 			if (!Actor) continue;
 			if (!Actor->RootComponent) continue;
 			if (!Actor->IsA(CharacterClass)) continue;
-			if (Actor == Globals::PlayerController->AcknowledgedPawn) continue;
+			if (Actor == localPawn) continue;
 
 			auto Character = reinterpret_cast<APortalWarsCharacter*>(Actor);
-			auto Mesh = Character->Mesh;
 
-			FVector2D rootPos2D = Mesh->GetBone(BoneFNames::Root, Globals::PlayerController);
+			FVector2D rootPos2D = Character->Mesh->GetBone(BoneFNames::Root, controller);
 			if (!rootPos2D.X && !rootPos2D.Y) continue;
 
-			if (!Globals::Canvas) continue;
 			Globals::Canvas->K2_DrawText(0, Actor->GetName(), rootPos2D, { 1.f, 1.f }, { 1.f, 1.f, 1.f, 1.f }, 1.f, { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f }, false, false, true, { 0.0f, 0.0f, 0.0f, 1.f });
 		};
 	};
