@@ -59,10 +59,52 @@ frame — i.e. each script's `main()` runs at the frame rate. Enable it via
 `Scripts::ExecuteUnloaded(filename)` imports and runs a single script ad-hoc
 without adding it to the loaded set.
 
-> **Note:** running every script every frame is the current model. An
-> event-driven model (scripts subscribing to callbacks such as "on player death"
-> instead of running each frame) is planned; this document will be updated when
-> it lands.
+## Events
+
+Besides the per-frame `main()`, scripts can subscribe to **named events** and run
+only when they fire, via the `Events` submodule:
+
+```python
+# UserScripts/on_death.py
+import SplitgateInternal
+
+def handle():
+    SplitgateInternal.Logger.Log("INFO", "you died")
+
+SplitgateInternal.Events.on("player_death", handle)
+```
+
+Register handlers at import time (top-level code), not inside `main()`. A
+throwing handler is caught and logged, so it can't crash the game.
+
+### Available events
+
+| Event      | Fired from            | When                                  |
+| ---------- | --------------------- | ------------------------------------- |
+| `render`   | UserScripts feature   | Every rendered frame (while enabled). |
+| `shutdown` | ProcessEvent          | Game instance is shutting down.       |
+
+More game events (player death, spawn, kills, ...) are wired through a table in
+[`hook/functions/ProcessEvent.h`](../Internal/hook/functions/ProcessEvent.h)
+that maps an **event name** to a **UFunction full name**. To add one:
+
+1. Enable `LogProcessEvent` (Debug section), trigger the action in-game, and note
+   the `Function [...]` name printed for it.
+2. Add a row to the `gameEvents` table, e.g.
+   `{ "player_death", "Function PortalWars.PortalWarsCharacter.OnDeath" }`.
+
+The table is resolved to function pointers once and matched with a single map
+lookup per call, skipped entirely when scripting is off or nothing is
+subscribed, so it stays cheap on the very hot ProcessEvent path.
+
+### How it works
+
+The registry lives in [`scripting/Events.h`](../Internal/scripting/Events.h)
+(a Python-free `name -> handlers` map, unit tested in
+`Tests/EventsTests.cpp`). The [`Events`
+submodule](../Internal/scripting/modules/Events.h) bridges Python callables onto
+it. Dispatch happens on the game/render thread inside the hooks, so handlers must
+stay quick — the same constraint as features.
 
 ## Requirements
 
