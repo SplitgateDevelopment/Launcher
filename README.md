@@ -28,3 +28,10 @@ If Python is installed somewhere custom that isn't picked up, set the `SPLITGATE
   vcpkg install
   ```
 - Compile using Visual Studio
+
+## Documentation
+
+- [Settings](docs/settings.md) — configuration structs, persistence, file location
+- [Features](docs/features.md) — the feature framework and how to add one
+- [Scripting](docs/scripting.md) — embedding Python and writing user scripts
+- [Testing](docs/testing.md) — the gtest project and how to run it
