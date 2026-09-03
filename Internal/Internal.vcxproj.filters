@@ -201,6 +201,8 @@
     <ClInclude Include="features\Radar.h">
       <Filter>features</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="..\shared\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
@@ -213,5 +215,11 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\shared\manifest.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="python.props" />
   </ItemGroup>
 </Project>
