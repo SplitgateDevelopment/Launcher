@@ -3,8 +3,21 @@
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
 #include "../../utils/ExceptionHandler.h"
+#include "../../scripting/Events.h"
+
+#include <unordered_map>
 
 namespace ProcessEvent {
+	// Game events surfaced to user scripts (see scripting docs / Events.h).
+	// Map an event name to the UFunction full name exactly as printed by
+	// LogProcessEvent, then scripts can subscribe with:
+	//   SplitgateInternal.Events.on("player_death", handler)
+	// Add a row here for each event you want to expose.
+	static const std::pair<const char*, const char*> gameEvents[] = {
+		{ "shutdown", "Function Engine.GameInstance.ReceiveShutdown" },
+		// { "player_death", "Function PortalWars.PortalWarsCharacter.OnDeath" },
+	};
+
 	void** VTable;
 	void (*Original)(UObject*, UFunction*, void*) = nullptr;
 	int Index = 68;
@@ -91,6 +104,22 @@ namespace ProcessEvent {
 			return;
 		}*/
 
-		return Original(Class, Function, Params);
+		// Dispatch registered game events to user scripts. Resolve the
+			// name->UFunction table once, then a single map lookup per call;
+			// skipped entirely when scripting is off or nothing is subscribed.
+			if (Settings.MISC.UserScriptsEnabled && !Events::Empty()) {
+				static const std::unordered_map<UObject*, const char*> gameEventByFn = [] {
+					std::unordered_map<UObject*, const char*> map;
+					for (const auto& [event, name] : gameEvents) {
+						if (UObject* obj = ObjObjects->FindObject(name)) map[obj] = event;
+					}
+					return map;
+				}();
+
+				auto it = gameEventByFn.find(Function);
+				if (it != gameEventByFn.end()) Events::Dispatch(it->second);
+			}
+
+			return Original(Class, Function, Params);
 	};
 }
