@@ -68,7 +68,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="features\Feature.h" />
-    <ClInclude Include="features\DrawActors.h" />
+    <ClInclude Include="features\Esp.h" />
     <ClInclude Include="features\GodMode.h" />
     <ClInclude Include="features\InfiniteJetpack.h" />
     <ClInclude Include="features\NoRecoil.h" />

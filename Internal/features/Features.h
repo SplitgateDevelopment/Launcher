@@ -8,7 +8,7 @@
 #include "PlayerModifications.h"
 #include "NoRecoil.h"
 #include "SpinBot.h"
-#include "DrawActors.h"
+#include "Esp.h"
 #include "UserScripts.h"
 #include "InfiniteJetpack.h"
 #include "WeaponModifications.h"
@@ -22,7 +22,7 @@ namespace Features
 		Features.push_back(std::make_unique<PlayerModifications>());
 		Features.push_back(std::make_unique<NoRecoil>());
 		Features.push_back(std::make_unique<SpinBot>());
-		Features.push_back(std::make_unique<DrawActors>());
+		Features.push_back(std::make_unique<Esp>());
 		Features.push_back(std::make_unique<UserScripts>());
 		Features.push_back(std::make_unique<InfiniteJetpack>());
 		Features.push_back(std::make_unique<WeaponModifications>());

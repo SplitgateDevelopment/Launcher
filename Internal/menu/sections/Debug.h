@@ -17,10 +17,6 @@ namespace Menu {
 			changed |= ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
 			changed |= ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
-
-			ImGui::SeparatorText("Game");
-			changed |= ImGui::ToggleButton("Draw Actors", &Settings.DEBUG.DrawActors);
-
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
 			if (ImGui::Button("Summon Bot"))

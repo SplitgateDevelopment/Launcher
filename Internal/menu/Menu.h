@@ -4,6 +4,7 @@
 #include "../scripting/Events.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
+#include "sections/Visuals.h"
 #include "sections/Settings.h"
 #include "sections/Debug.h"
 #include "sections/Watermark.h"
@@ -58,6 +59,12 @@ namespace Menu {
         if (ImGui::BeginTabItem("Exploits"))
         {
             Menu::Sections::ExploitsTab();
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Visuals"))
+        {
+            Menu::Sections::VisualsTab();
             ImGui::EndTabItem();
         }
 

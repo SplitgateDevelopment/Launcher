@@ -25,7 +25,6 @@ TEST(SettingsSerialization, JsonRoundTripPreservesPersistedFields) {
     in.EXPLOITS.NoRecoil = true;
     in.EXPLOITS.PlayerSpeed = 1.75f;
     in.MISC.PlayerName = "roundtrip";
-    in.DEBUG.DrawActors = true;
 
     const json j = in;
     const auto out = j.get<SETTINGS>();
@@ -34,7 +33,6 @@ TEST(SettingsSerialization, JsonRoundTripPreservesPersistedFields) {
     EXPECT_TRUE(out.EXPLOITS.NoRecoil);
     EXPECT_FLOAT_EQ(1.75f, out.EXPLOITS.PlayerSpeed);
     EXPECT_EQ("roundtrip", out.MISC.PlayerName);
-    EXPECT_TRUE(out.DEBUG.DrawActors);
 }
 
 // ---------------------------------------------------------------------------
@@ -101,7 +99,6 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields) {
     Settings.DEBUG.FeaturesLogging = true;
     Settings.DEBUG.ShowDemoWindow = true;
     Settings.DEBUG.ShowStyleEditor = true;
-    Settings.DEBUG.DrawActors = true;
 
     SettingsHelper::Save();
     SettingsHelper::Reset();                    // wipe in-memory state...
@@ -131,7 +128,6 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields) {
     EXPECT_TRUE(Settings.DEBUG.FeaturesLogging);
     EXPECT_TRUE(Settings.DEBUG.ShowDemoWindow);
     EXPECT_TRUE(Settings.DEBUG.ShowStyleEditor);
-    EXPECT_TRUE(Settings.DEBUG.DrawActors);
 }
 
 TEST_F(SettingsFileTest, LoadReturnsFalseWhenFileMissing) {

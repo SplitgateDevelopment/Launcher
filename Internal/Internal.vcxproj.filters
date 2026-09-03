@@ -150,7 +150,7 @@
     <ClInclude Include="features\UserScripts.h">
       <Filter>features</Filter>
     </ClInclude>
-    <ClInclude Include="features\DrawActors.h">
+    <ClInclude Include="features\Esp.h">
       <Filter>features</Filter>
     </ClInclude>
     <ClInclude Include="features\SpinBot.h">

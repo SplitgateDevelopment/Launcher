@@ -51,27 +51,51 @@ struct DebugSettings {
     bool FeaturesLogging = false;
     bool ShowDemoWindow = false;
     bool ShowStyleEditor = false;
-    bool DrawActors = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DrawActors)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor)
+
+// Plain RGBA color kept out of the UE SDK so settings stay game-independent
+// (and unit-testable). Laid out as four contiguous floats for ImGui::ColorEdit4;
+// the Esp feature converts it to an FLinearColor.
+struct Color {
+    float R = 1.f, G = 1.f, B = 1.f, A = 1.f;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Color, R, G, B, A)
+
+struct VisualsSettings {
+    bool Esp = false;    // master toggle for the ESP feature
+    bool Name = true;
+    bool Box = true;
+    bool Box3D = false;  // false = 2D box, true = 3D box
+    bool Bones = false;
+
+    Color NameColor{ 1.f, 1.f, 1.f, 1.f };
+    Color BoxColor{ 1.f, 0.f, 0.f, 1.f };
+    Color BonesColor{ 0.f, 1.f, 0.f, 1.f };
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, NameColor, BoxColor, BonesColor)
 
 struct SETTINGS {
     MenuSettings MENU;
     ExploitsSettings EXPLOITS;
     MiscSettings MISC;
     DebugSettings DEBUG;
+    VisualsSettings VISUALS;
 
     SETTINGS()
         : MENU()
         , EXPLOITS()
         , MISC()
         , DEBUG()
+        , VISUALS()
     {
     }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG, VISUALS)
 
 extern SETTINGS Settings;
 
