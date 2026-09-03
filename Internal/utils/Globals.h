@@ -2,16 +2,22 @@
 
 #include "../ue/Engine.h"
 
+/**
+ * @file
+ * @brief Cached pointers to the key engine objects, resolved once at startup so features
+ * don't re-walk the object graph each frame.
+ */
 namespace Globals
 {
-	UEngine* Engine = 0;
-	UWorld* World = 0;
-	APortalWarsPlayerController* PlayerController = 0;
-	UGameplayStatics* GameplayStatics = 0;
-	UKismetStringLibrary* KismetStringLibrary = 0;
-	UKismetTextLibrary* KismetTextLibrary = 0;
-	UCanvas* Canvas = 0;
+	UEngine* Engine = 0;							   ///< the global UEngine
+	UWorld* World = 0;								   ///< the current UWorld
+	APortalWarsPlayerController* PlayerController = 0; ///< local player controller (set elsewhere as it changes)
+	UGameplayStatics* GameplayStatics = 0;			   ///< UGameplayStatics CDO
+	UKismetStringLibrary* KismetStringLibrary = 0;	   ///< UKismetStringLibrary CDO
+	UKismetTextLibrary* KismetTextLibrary = 0;		   ///< UKismetTextLibrary CDO
+	UCanvas* Canvas = 0;							   ///< draw canvas (set during rendering)
 
+	/// Resolves the engine/world and the static library CDOs. Call once after the engine is up.
 	void Init()
 	{
 		Engine = UEngine::GetEngine();

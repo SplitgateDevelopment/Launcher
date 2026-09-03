@@ -1,5 +1,12 @@
+/**
+ * @file
+ * @brief Defines the global @ref Settings instance and implements SettingsHelper: app-path
+ * resolution and the load/save/reset/delete of the settings JSON file.
+ */
+
 #include "Settings.h"
 
+/// The one global settings instance (declared extern in Settings.h).
 SETTINGS Settings = SETTINGS{};
 
 namespace SettingsHelper

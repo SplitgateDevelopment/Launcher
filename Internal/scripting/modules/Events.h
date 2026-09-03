@@ -4,23 +4,34 @@
 #include "../Events.h"
 #include "../../utils/Logger.h"
 
+/**
+ * @file
+ * @brief pybind11 module bridging the C++ event bus (Events.h) to user scripts, exposing the
+ * `Events::Type` enum and an `on(event, callback)` subscription under `SplitgateInternal.Events`.
+ */
+
 namespace py = pybind11;
 
 namespace Scripts
 {
 	namespace Modules
 	{
-		// Exposes SplitgateInternal.Events to user scripts:
-		//
-		//   import SplitgateInternal
-		//
-		//   def on_shutdown():
-		//       SplitgateInternal.Logger.Log("INFO", "bye")
-		//
-		//   SplitgateInternal.Events.on(SplitgateInternal.Events.Shutdown, on_shutdown)
-		//
-		// The Python callable is wrapped so a failing handler is logged (and the
-		// GIL is held while it runs) instead of escaping into the engine.
+		/**
+		 * Registers the `Events` submodule on @p m: the `Type` enum values plus an `on`
+		 * function that subscribes a Python callable to an event. The callable is wrapped so a
+		 * failing handler is logged (and the GIL is held while it runs) instead of escaping
+		 * into the engine.
+		 *
+		 * @param m the parent embedded module (SplitgateInternal).
+		 *
+		 * Usage from a user script:
+		 * @code{.py}
+		 *   import SplitgateInternal
+		 *   def on_shutdown():
+		 *       SplitgateInternal.Logger.Log("INFO", "bye")
+		 *   SplitgateInternal.Events.on(SplitgateInternal.Events.Shutdown, on_shutdown)
+		 * @endcode
+		 */
 		void Events(py::module_& m)
 		{
 			auto events = m.def_submodule("Events");

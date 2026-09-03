@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Implementations of the byte-pattern scanning helpers declared in Util.h.
+ */
+
 #include "Util.h"
 #include <Psapi.h>
 
