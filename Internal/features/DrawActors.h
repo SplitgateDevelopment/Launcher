@@ -24,15 +24,12 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
 		if (!Globals::PlayerController->IsInGame()) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return true;
 	};
 
 	void Init()
