@@ -11,6 +11,15 @@ C++ conventions for this repository. Apply them when adding or editing code.
 - **lowercase** for directory names (`hook/`, `menu/gui/`, `scripting/modules/`,
   `settings/`, `utils/`).
 
+## Control flow
+
+- **Always early-return.** Guard against invalid state at the top of a function and bail
+  out (`return` / `continue` / `break`) instead of nesting the happy path inside `if`
+  blocks. Prefer a flat sequence of guard clauses over an `else` ladder, so the main logic
+  stays at the lowest indentation level.
+  - Evidenced by `Logger::_log` (returns as soon as the log file isn't open) and the
+    `Hook::Init` bootstrap (each step bails on failure before the next).
+
 ## Namespaces
 
 - Group related functionality into **reusable namespaces** rather than free-floating
