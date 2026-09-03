@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// The feature registry container and the per-feature tick/lifecycle loop
+/// (RunFeature) plus the per-frame render pass (Execute). Depends only on
+/// Feature.h so it stays unit-testable; Features.h layers concrete features on top.
+
 #include <vector>
 #include <memory>
 
@@ -9,8 +14,11 @@
 // depends on Feature.h (no game-specific feature includes) so it can be unit
 // tested in isolation. Features.h includes this and adds the concrete feature
 // registration on top.
+/// Feature registry plus execution loop. Owns every registered Feature and
+/// drives them from the render hook and the event bus.
 namespace Features
 {
+	/// The registry: owns every registered feature for the lifetime of the DLL.
 	inline std::vector<std::unique_ptr<Feature>> Features;
 
 	// Drives a single feature once: init on first use, refresh Enabled, skip if

@@ -1,14 +1,21 @@
 #pragma once
 
+/// @file
+/// The NoRecoil feature: zeroes the current weapon's recoil configuration
+/// while enabled, restoring the captured original values on disable.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
+/// Overwrites the equipped gun's recoilConfig with zeros each frame so shots
+/// have no kick or spread.
 class NoRecoil : public Feature
 {
   private:
-	FRecoilData OriginalData;
-	AGun* Gun = 0;
+	FRecoilData OriginalData; ///< recoil config captured at Init, restored by Destroy()
+	AGun* Gun = 0;			  ///< cached current weapon; refreshed each Check()
 
+	/// Copy the six recoil fields from @p inRecoilConfig into @p outRecoilConfig.
 	void ApplyRecoil(FRecoilData& outRecoilConfig, FRecoilData inRecoilConfig)
 	{
 		outRecoilConfig.horizontalRecoilAmount = inRecoilConfig.horizontalRecoilAmount;
@@ -65,6 +72,8 @@ class NoRecoil : public Feature
 		Log("Initialized");
 	};
 
+	/// Restore the original recoil on disable, but only while our zeroed config
+	/// is still in place (recoilKick == 0 marks it as ours).
 	void Destroy()
 	{
 		if (Gun->recoilConfig.recoilKick != 0.f) return;

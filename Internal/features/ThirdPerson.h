@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// The ThirdPerson feature: switches the camera to third person while enabled.
+/// See the class comment for the OneTime enable/disable semantics and the
+/// unverified camera-mode-name caveat.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
@@ -14,8 +19,8 @@
 class ThirdPerson : public Feature
 {
   private:
-	FName thirdPersonMode{};
-	FName firstPersonMode{};
+	FName thirdPersonMode{}; ///< cached FName of the third-person mode, applied by Run()
+	FName firstPersonMode{}; ///< cached FName of the default mode, restored by Destroy()
 
 	// Conv_StringToName is a static Blueprint function, so the object it is
 	// invoked on is ignored — any valid UObject works as the call context.

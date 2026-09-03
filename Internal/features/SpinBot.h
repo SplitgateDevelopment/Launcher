@@ -1,16 +1,22 @@
 #pragma once
 
+/// @file
+/// The SpinBot feature: continuously rotates the local first-person body and
+/// weapon meshes about yaw while enabled, resetting them to zero on disable.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
+/// Spins the local player's first-person meshes by advancing a yaw angle each
+/// frame (10 degrees/tick, wrapping at 360).
 class SpinBot : public Feature
 {
   private:
-	APortalWarsCharacter* Player = 0;
-	float CurrentSpinYaw = 0.f;
+	APortalWarsCharacter* Player = 0; ///< cached local character; refreshed each Check()
+	float CurrentSpinYaw = 0.f;		  ///< accumulated spin angle in degrees; 0 means "at rest"
 
-	FHitResult resultPlayer;
-	FHitResult resultWeapon;
+	FHitResult resultPlayer; ///< out-param sink for the body mesh SetRelativeRotation sweep
+	FHitResult resultWeapon; ///< out-param sink for the weapon mesh SetRelativeRotation sweep
 
   public:
 	SpinBot()

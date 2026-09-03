@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// The Radar feature: a small 2D radar in the top-right corner plotting enemy
+/// players relative to the local player's position and facing. See the class
+/// comment for the in-game tuning caveats.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
@@ -14,12 +19,13 @@
 class Radar : public Feature
 {
   private:
-	UObject* CharacterClass = 0;
+	UObject* CharacterClass = 0; ///< resolved PortalWarsCharacter UClass, used as the actor filter
 
 	static constexpr float Size = 200.f;   // radar panel size, px
 	static constexpr float Margin = 20.f;  // distance from the screen edge, px
 	static constexpr float Range = 6000.f; // world units mapped to the radar radius
 
+	/// Draw a small plus sign centred at (x, y) with arm length @p half.
 	void Cross(float x, float y, float half, float thickness, const FLinearColor& color)
 	{
 		Globals::Canvas->K2_DrawLine({x - half, y}, {x + half, y}, thickness, color);
@@ -62,6 +68,9 @@ class Radar : public Feature
 	void Destroy() {
 	};
 
+	/// Draw the radar panel and player marker, then plot each enemy: rotate its
+	/// world delta into player-relative forward/right, scale by Range onto the
+	/// radar radius (forward = up), and drop points outside the panel.
 	void Run()
 	{
 		auto* controller = Globals::PlayerController;

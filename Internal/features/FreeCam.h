@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// The FreeCam feature: toggles a free-flying camera mode while enabled. See
+/// the class comment for the OneTime enable/disable semantics and the
+/// unverified camera-mode-name caveat.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
@@ -12,9 +17,11 @@
 class FreeCam : public Feature
 {
   private:
-	FName freeCamMode{};
-	FName firstPersonMode{};
+	FName freeCamMode{};	 ///< cached FName of the free-camera mode, applied by Run()
+	FName firstPersonMode{}; ///< cached FName of the default mode, restored by Destroy()
 
+	/// Resolve a string into an FName via the Blueprint string library (using
+	/// the player controller only as a call context).
 	FName MakeName(const char* text)
 	{
 		return reinterpret_cast<UKismetStringLibrary*>(Globals::PlayerController)

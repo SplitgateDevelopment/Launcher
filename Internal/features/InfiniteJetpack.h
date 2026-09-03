@@ -1,16 +1,23 @@
 #pragma once
 
+/// @file
+/// The InfiniteJetpack feature: keeps the local character's thruster/jetpack
+/// perpetually charged and silent to bots while enabled, restoring the
+/// captured originals on disable.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
+/// Overwrites the character's thruster recharge/timing fields each frame so the
+/// jetpack never depletes.
 class InfiniteJetpack : public Feature
 {
   private:
-	APortalWarsCharacter* Player = 0;
+	APortalWarsCharacter* Player = 0; ///< cached local character; refreshed each Check()
 
-	float OriginalThrusterRechargeDelay;
-	float OriginalThrusterCurrentTime;
-	float OriginalThrusterLoudnessForBots;
+	float OriginalThrusterRechargeDelay;   ///< captured at Init, restored by Destroy()
+	float OriginalThrusterCurrentTime;	   ///< captured at Init, restored by Destroy()
+	float OriginalThrusterLoudnessForBots; ///< captured at Init, restored by Destroy()
 
   public:
 	InfiniteJetpack()
@@ -59,6 +66,8 @@ class InfiniteJetpack : public Feature
 		Log("Initialized");
 	};
 
+	/// Restore the captured thruster values on disable, but only if they still
+	/// hold our injected recharge delay (avoids overwriting the game's own value).
 	void Destroy()
 	{
 		if (Player->thrusterRechargeDelay != 0.1f) return;

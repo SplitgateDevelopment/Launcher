@@ -1,13 +1,19 @@
 #pragma once
 
+/// @file
+/// The GodMode feature: pins the local character's health (and max health) to
+/// a very large value while enabled, restoring a normal value on disable.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
+/// Keeps the local player effectively invulnerable by overwriting Health and
+/// MaxHealth every frame while enabled.
 class GodMode : public Feature
 {
   private:
-	float OriginalHealth = 0;
-	APortalWarsCharacter* Player = 0;
+	float OriginalHealth = 0;		  ///< MaxHealth captured at Init (currently unused by Destroy)
+	APortalWarsCharacter* Player = 0; ///< cached local character; refreshed each Check()
 
   public:
 	GodMode()
@@ -54,6 +60,8 @@ class GodMode : public Feature
 		Log("Initialized");
 	};
 
+	/// Revert to a normal 100 HP on disable, but only if health still looks
+	/// inflated (guards against clobbering a legitimately low value).
 	void Destroy()
 	{
 		if (Player->Health <= 100) return;
@@ -64,6 +72,7 @@ class GodMode : public Feature
 		return;
 	};
 
+	/// Force Health and MaxHealth to 9999 whenever they drift from it.
 	void Run()
 	{
 		float health = 9999;

@@ -1,15 +1,23 @@
 #pragma once
 
+/// @file
+/// The PlayerModifications feature: an always-enabled per-frame pass that
+/// applies assorted local-player tweaks (display name, FOV, movement speed,
+/// out-of-bounds timers, a NoClip collision toggle), updates Discord Rich
+/// Presence, and sends the one-time welcome chat messages.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../discord/rpc.h"
 
+/// Bundle of local-player modifications that always runs (Enabled is forced
+/// true); individual effects are gated by their own settings inside Run().
 class PlayerModifications : public Feature
 {
   private:
-	bool bSentWelcomeMessage = false;
-	std::string OriginalPlayerName = "";
-	bool bActorCollision = false;
+	bool bSentWelcomeMessage = false;	 ///< true once the join messages were sent this match
+	std::string OriginalPlayerName = ""; ///< real player name captured at Init, used in the welcome
+	bool bActorCollision = false;		 ///< current NoClip toggle state (collision disabled when true)
 
   public:
 	PlayerModifications()
@@ -52,6 +60,10 @@ class PlayerModifications : public Feature
 	void Destroy() {
 	};
 
+	/// Apply name/FOV every tick; while in a match also apply speed, disable the
+	/// out-of-bounds timer, honour the NoClip hotkey, set Discord to "In Game",
+	/// and send the welcome messages once. Resets that flag and shows "In Menu"
+	/// when not in a match.
 	void Run()
 	{
 		Globals::PlayerController->SetName(FString((Settings.MISC.PlayerName)));

@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// The Esp feature: per-frame enemy overlay (names, boxes, health bars, bone
+/// skeletons, snaplines and distance) drawn onto the game canvas. See the
+/// class comment below for scope and the in-game tuning caveats.
+
 #include "Feature.h"
 #include "../utils/Globals.h"
 
@@ -16,10 +21,13 @@
 class Esp : public Feature
 {
   private:
-	UObject* CharacterClass = 0;
+	UObject* CharacterClass = 0; ///< resolved PortalWarsCharacter UClass, used as the actor filter
 
+	/// Convert a settings Color (0-1 RGBA) into the canvas FLinearColor.
 	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
 
+	/// Treat an exactly-zero projected point as off-screen (world-to-screen
+	/// returns {0,0} when the point is behind the camera or failed to project).
 	static bool OffScreen(const FVector2D& p) { return !p.X && !p.Y; }
 
 	// 2D bounding box from the head (top) down to the root/feet (bottom).
@@ -59,12 +67,16 @@ class Esp : public Feature
 		Globals::Canvas->K2_DrawLine({barX, feet.Y}, {barX, feet.Y - height * pct}, 3.f, color);
 	}
 
+	/// Euclidean distance between two world points, returned in metres
+	/// (Unreal world units are centimetres).
 	static float Distance(const FVector& a, const FVector& b)
 	{
 		const float dx = a.X - b.X, dy = a.Y - b.Y, dz = a.Z - b.Z;
 		return sqrtf(dx * dx + dy * dy + dz * dz) / 100.f; // cm -> m
 	}
 
+	/// Draw the bone skeleton by projecting each bone pair to screen space and
+	/// connecting them; segments with an off-screen endpoint are skipped.
 	template <typename Mesh>
 	void DrawSkeleton(Mesh mesh, APlayerController* controller, const FLinearColor& color)
 	{
@@ -122,6 +134,8 @@ class Esp : public Feature
 		return true;
 	};
 
+	/// Resolve the PortalWarsCharacter class once; Initialized stays false (and
+	/// the feature idle) until it is found.
 	void Init()
 	{
 		CharacterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
@@ -133,6 +147,9 @@ class Esp : public Feature
 	void Destroy() {
 	};
 
+	/// Iterate every actor in every level once, and for each enemy
+	/// PortalWarsCharacter draw whatever Settings.VISUALS enables (snapline,
+	/// box, health bar, skeleton, name, distance). The local pawn is skipped.
 	void Run()
 	{
 		const auto& visuals = Settings.VISUALS;

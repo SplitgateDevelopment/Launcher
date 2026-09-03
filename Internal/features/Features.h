@@ -1,5 +1,10 @@
 #pragma once
 
+/// @file
+/// Concrete feature wiring: pulls in every feature header, registers one
+/// instance of each in the runner, and connects them to the event bus
+/// (SettingsChanged, event-driven features, and the LoadIntoMap one-shot).
+
 #include "FeatureRunner.h"
 #include "../utils/Globals.h"
 #include "../scripting/Events.h"
@@ -18,6 +23,9 @@
 
 namespace Features
 {
+	/// Populate the registry with one instance of each feature, seed their
+	/// Enabled state, and wire event-bus subscriptions. Call once at startup,
+	/// after Globals and the event system are ready.
 	void Init()
 	{
 		Features.push_back(std::make_unique<GodMode>());
