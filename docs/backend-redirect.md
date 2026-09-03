@@ -132,7 +132,9 @@ plain HTTP, matching the Fiddler rule).
   (`Launcher/utils/Mitmproxy.h`), reading the mode/map from the DLL's settings file
   (`Launcher/utils/ProxyConfig.h`). This covers the pre-injection calls the in-process hook
   can't (see [early-injection.md](early-injection.md)); mitmproxy still needs the game routed
-  through it (system proxy / transparent mode).
+  through it (system proxy / transparent mode). mitmdump runs **hidden** (`CREATE_NO_WINDOW`),
+  and a watchdog addon (always appended, given the game PID) waits on the game process and exits
+  mitmdump when the game closes so it doesn't linger.
 - `Manual` — do nothing (bring your own proxy, as before).
 
 **Which mitmproxy addon runs is a launcher-only setting** — a `Shared::MitmproxySettings`

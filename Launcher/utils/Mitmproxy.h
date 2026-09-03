@@ -22,6 +22,10 @@
  * - Path: an addon file already on disk is run as-is (`mitmdump -s <path>`).
  * - Inline: the inline python is written to a temp file and run as the addon.
  *
+ * mitmdump runs **hidden** (CREATE_NO_WINDOW) and its lifetime is tied to the game: a second,
+ * always-appended watchdog addon waits on the game process and exits mitmdump when the game
+ * closes, so the background proxy never lingers.
+ *
  * NOTE: like the manual setup this replaces, the game still has to route through the proxy —
  * mitmproxy's default mode needs the Windows system proxy pointed at it (127.0.0.1:8080), or a
  * transparent/WinDivert mode. This helper only launches mitmdump; wiring the system proxy (or a
@@ -78,12 +82,32 @@ namespace Launcher::Mitmproxy
 			   "addons = [Proxy(), MaybeTls()]\n";
 	}
 
-	/// Writes @p content to a temp .py file and returns its path (empty on failure). A single
-	/// stable name is reused so repeated launches overwrite rather than pile up temp files.
-	inline std::string WriteTempScript(const std::string& content)
+	/// A watchdog addon that waits on the game process (PID passed via the SPLITGATE_GAME_PID env
+	/// var) and hard-exits mitmdump when the game closes. Appended alongside every main addon so
+	/// the hidden proxy doesn't outlive the game.
+	inline std::string WatchdogScript()
+	{
+		return "import os, ctypes, threading\n"
+			   "\n"
+			   "def _watch(pid):\n"
+			   "    kernel32 = ctypes.windll.kernel32\n"
+			   "    handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE\n"
+			   "    if handle:\n"
+			   "        kernel32.WaitForSingleObject(handle, 0xFFFFFFFF)  # block until the game exits\n"
+			   "        kernel32.CloseHandle(handle)\n"
+			   "    os._exit(0)\n"
+			   "\n"
+			   "_pid = int(os.environ.get(\"SPLITGATE_GAME_PID\", \"0\"))\n"
+			   "if _pid:\n"
+			   "    threading.Thread(target=_watch, args=(_pid,), daemon=True).start()\n";
+	}
+
+	/// Writes @p content to a temp .py file named @p fileName and returns its path (empty on
+	/// failure). Stable names are reused so repeated launches overwrite rather than pile up.
+	inline std::string WriteTempScript(const std::string& content, const std::string& fileName)
 	{
 		std::error_code ec;
-		const auto path = std::filesystem::temp_directory_path(ec) / "splitgate_mitm.py";
+		const auto path = std::filesystem::temp_directory_path(ec) / fileName;
 		if (ec) return {};
 
 		std::ofstream file(path, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -103,21 +127,23 @@ namespace Launcher::Mitmproxy
 		case Shared::MitmScriptMode::Path:
 			return config.ScriptPath;
 		case Shared::MitmScriptMode::Inline:
-			return WriteTempScript(config.InlineScript);
+			return WriteTempScript(config.InlineScript, "splitgate_mitm.py");
 		case Shared::MitmScriptMode::Default:
 		default:
-			return WriteTempScript(GenerateDefaultScript(redirects));
+			return WriteTempScript(GenerateDefaultScript(redirects), "splitgate_mitm.py");
 		}
 	}
 
 	/**
-	 * Starts mitmdump in a new console, running the addon chosen by the launcher's mitmproxy
-	 * settings (Default/Path/Inline). Reads those settings itself, so callers only pass the
-	 * redirect map used to generate the Default addon.
+	 * Starts mitmdump hidden, running the addon chosen by the launcher's mitmproxy settings
+	 * (Default/Path/Inline). Reads those settings itself, so callers only pass the redirect map
+	 * and the game PID.
 	 * @param redirects original host -> "host[:port]" target (from the DLL's NETWORK settings).
+	 * @param gamePid   the game's process id; when non-zero, a watchdog addon exits mitmdump when
+	 *                  that process ends. Pass 0 to leave mitmdump running until closed manually.
 	 * @return true if the process was started (mitmdump must be on PATH), false otherwise.
 	 */
-	inline bool Spawn(const std::map<std::string, std::string>& redirects)
+	inline bool Spawn(const std::map<std::string, std::string>& redirects, DWORD gamePid = 0)
 	{
 		const auto config = ReadLauncherSettings().MITMPROXY;
 
@@ -126,11 +152,23 @@ namespace Launcher::Mitmproxy
 
 		std::string command = "mitmdump -s \"" + script + "\"";
 
+		// Tie mitmdump to the game via the watchdog addon (passed the PID through the environment,
+		// which the child inherits).
+		if (gamePid)
+		{
+			const std::string watchdog = WriteTempScript(WatchdogScript(), "splitgate_mitm_watchdog.py");
+			if (!watchdog.empty())
+			{
+				command += " -s \"" + watchdog + "\"";
+				SetEnvironmentVariableA("SPLITGATE_GAME_PID", std::to_string(gamePid).c_str());
+			}
+		}
+
 		STARTUPINFOA startup{sizeof(startup)};
 		PROCESS_INFORMATION process{};
 
-		// CreateProcessA needs a writable command buffer.
-		if (!CreateProcessA(nullptr, command.data(), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &startup, &process))
+		// CREATE_NO_WINDOW: run mitmdump in the background with no console window.
+		if (!CreateProcessA(nullptr, command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &startup, &process))
 			return false;
 
 		CloseHandle(process.hThread);
