@@ -145,6 +145,17 @@ TEST_F(SettingsFileTest, LoadReturnsFalseOnCorruptFile) {
     EXPECT_FALSE(SettingsHelper::Load());  // must not throw
 }
 
+// With the WITH_DEFAULT macros, a settings file that predates a field (missing
+// key) still loads — absent fields fall back to their defaults instead of
+// failing the whole load.
+TEST_F(SettingsFileTest, LoadToleratesMissingKeys) {
+    { std::ofstream(path) << "{}"; }
+    ASSERT_TRUE(SettingsHelper::Load());
+    EXPECT_TRUE(Settings.MENU.ShowMenu);                          // default
+    EXPECT_FLOAT_EQ(80.f, Settings.EXPLOITS.FOV);                 // default
+    EXPECT_EQ("SplitgateDevelopment", Settings.MISC.PlayerName);  // default
+}
+
 TEST_F(SettingsFileTest, DeleteRemovesFile) {
     SettingsHelper::Save();
     ASSERT_TRUE(fs::exists(path));

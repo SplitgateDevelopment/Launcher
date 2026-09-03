@@ -17,7 +17,7 @@ struct MenuSettings {
     int ShowHotkey = VK_INSERT;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey)
 
 struct ExploitsSettings {
     float FOV = 80.f;
@@ -32,7 +32,7 @@ struct ExploitsSettings {
     bool NoReload = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload)
 
 struct MiscSettings {
     bool LoadIntoMap = false;
@@ -44,7 +44,7 @@ struct MiscSettings {
     bool UserScriptsEnabled = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MiscSettings, PlayerName, UserScriptsEnabled, DiscordRPCEnabled)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, PlayerName, UserScriptsEnabled, DiscordRPCEnabled)
 
 struct DebugSettings {
     bool LogProcessEvent = false;
@@ -54,7 +54,7 @@ struct DebugSettings {
     bool DrawActors = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DrawActors)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DrawActors)
 
 struct SETTINGS {
     MenuSettings MENU;
@@ -71,7 +71,7 @@ struct SETTINGS {
     }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SETTINGS, MENU, EXPLOITS, MISC, DEBUG)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG)
 
 extern SETTINGS Settings;
 
