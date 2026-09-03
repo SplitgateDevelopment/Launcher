@@ -36,9 +36,9 @@ namespace ProcessEvent
 		{Events::Type::DamageTaken, "Function PortalWars.PortalWarsPlayerController.ClientNotifyDamageTaken"},
 		{Events::Type::RoundEnded, "Function PortalWars.PortalWarsPlayerController.ClientSetRoundResult"},
 		{Events::Type::MatchEnded, "Function PortalWars.PortalWarsPlayerController.ClientSetMatchResult"},
-		// Richer kill event (killer/victim/headshot in params) — needs per-event params
-		// decoding rather than the generic {Class} payload, so left for a follow-up:
-		// { Events::Type::PlayerKilled, "Function PortalWars.PortalWarsPlayerState.BroadcastDeath_Multicast" },
+		// Events::Type::PlayerKilled is NOT in this table: it decodes params (killer/victim/
+		// headshot) into the payload rather than using the generic {Class}, so it is handled by
+		// a dedicated block in HookedProcessEvent below.
 	};
 
 	void** VTable;											 ///< VTable the hook is installed into.
@@ -139,6 +139,33 @@ namespace ProcessEvent
 			Logger::Log("INFO", "IsInputActionEnabled modified");
 			return;
 		}*/
+
+		// Rich kill event: decode BroadcastDeath_Multicast's params (killer / victim /
+		// headshot) into the payload so handlers get context, not just the caller. Gated on
+		// HasHandlers so the params struct is only touched when something is subscribed.
+		// Parameter layout comes from the Dumpspace dump (see docs/game-dump.md).
+		if (Events::HasHandlers(Events::Type::PlayerKilled))
+		{
+			static UObject* BroadcastDeath = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerState.BroadcastDeath_Multicast");
+
+			if (Function == BroadcastDeath)
+			{
+				// Parameters in declaration order; only the leading fields are read, so the
+				// trailing float/TArrays are omitted. Object pointers are 8 bytes each, so the
+				// bool lands at offset 0x18.
+				struct BroadcastDeathParams
+				{
+					void* KillerPlayerState; // 0x00
+					void* KillerDamageType;	 // 0x08
+					void* KilledPlayerState; // 0x10
+					bool bIsHeadshot;		 // 0x18
+				};
+
+				const auto* params = reinterpret_cast<BroadcastDeathParams*>(Params);
+				Events::Dispatch(Events::Type::PlayerKilled,
+								 {params->KillerPlayerState, params->KilledPlayerState, params->bIsHeadshot ? 1.f : 0.f});
+			}
+		}
 
 		// Dispatch registered game events to user scripts. Resolve the
 		// name->UFunction table once, then a single map lookup per call;
