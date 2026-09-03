@@ -65,33 +65,39 @@ Besides the per-frame `main()`, scripts can subscribe to **named events** and ru
 only when they fire, via the `Events` submodule:
 
 ```python
-# UserScripts/on_death.py
+# UserScripts/on_shutdown.py
 import SplitgateInternal
 
 def handle():
-    SplitgateInternal.Logger.Log("INFO", "you died")
+    SplitgateInternal.Logger.Log("INFO", "bye")
 
-SplitgateInternal.Events.on("player_death", handle)
+SplitgateInternal.Events.on(SplitgateInternal.Events.Shutdown, handle)
 ```
 
-Register handlers at import time (top-level code), not inside `main()`. A
-throwing handler is caught and logged, so it can't crash the game.
+Events are an enum (`Events::Type`), exposed to Python as `SplitgateInternal.Events.<Name>`
+(`Render`, `Shutdown`, `LoadIntoMap`, ...). Register handlers at import time
+(top-level code), not inside `main()`. A throwing handler is caught and logged,
+so it can't crash the game.
 
 ### Available events
 
-| Event      | Fired from            | When                                  |
-| ---------- | --------------------- | ------------------------------------- |
-| `render`   | UserScripts feature   | Every rendered frame (while enabled). |
-| `shutdown` | ProcessEvent          | Game instance is shutting down.       |
+| Event         | Fired from          | When                                  |
+| ------------- | ------------------- | ------------------------------------- |
+| `Render`      | UserScripts feature | Every rendered frame (while enabled). |
+| `Shutdown`    | ProcessEvent        | Game instance is shutting down.       |
+| `LoadIntoMap` | "Load into map" button | Button pressed.                    |
 
 More game events (player death, spawn, kills, ...) are wired through a table in
 [`hook/functions/ProcessEvent.h`](../Internal/hook/functions/ProcessEvent.h)
-that maps an **event name** to a **UFunction full name**. To add one:
+that maps an `Events::Type` value to a **UFunction full name**. To add one:
 
-1. Enable `LogProcessEvent` (Debug section), trigger the action in-game, and note
+1. Add a value to `Events::Type` in
+   [`scripting/Events.h`](../Internal/scripting/Events.h) (and to the pybind enum
+   in `modules/Events.h`).
+2. Enable `LogProcessEvent` (Debug section), trigger the action in-game, and note
    the `Function [...]` name printed for it.
-2. Add a row to the `gameEvents` table, e.g.
-   `{ "player_death", "Function PortalWars.PortalWarsCharacter.OnDeath" }`.
+3. Add a row to the `gameEvents` table, e.g.
+   `{ Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" }`.
 
 The table is resolved to function pointers once and matched with a single map
 lookup per call, skipped entirely when scripting is off or nothing is
@@ -100,7 +106,7 @@ subscribed, so it stays cheap on the very hot ProcessEvent path.
 ### How it works
 
 The registry lives in [`scripting/Events.h`](../Internal/scripting/Events.h)
-(a Python-free `name -> handlers` map, unit tested in
+(a Python-free `Events::Type -> handlers` map, unit tested in
 `Tests/EventsTests.cpp`). The [`Events`
 submodule](../Internal/scripting/modules/Events.h) bridges Python callables onto
 it. Dispatch happens on the game/render thread inside the hooks, so handlers must

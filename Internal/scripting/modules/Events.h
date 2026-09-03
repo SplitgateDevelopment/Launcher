@@ -12,16 +12,23 @@ namespace Scripts {
 		//
 		//   import SplitgateInternal
 		//
-		//   def on_death():
-		//       SplitgateInternal.Logger.Log("INFO", "died")
+		//   def on_shutdown():
+		//       SplitgateInternal.Logger.Log("INFO", "bye")
 		//
-		//   SplitgateInternal.Events.on("player_death", on_death)
+		//   SplitgateInternal.Events.on(SplitgateInternal.Events.Shutdown, on_shutdown)
 		//
 		// The Python callable is wrapped so a failing handler is logged (and the
 		// GIL is held while it runs) instead of escaping into the engine.
 		void Events(py::module_& m) {
 			auto events = m.def_submodule("Events");
-			events.def("on", [](const std::string& event, py::function callback) {
+
+			py::enum_<::Events::Type>(events, "Type")
+				.value("Render", ::Events::Type::Render)
+				.value("Shutdown", ::Events::Type::Shutdown)
+				.value("LoadIntoMap", ::Events::Type::LoadIntoMap)
+				.export_values();
+
+			events.def("on", [](::Events::Type event, py::function callback) {
 				::Events::Register(event, [callback]() {
 					try {
 						py::gil_scoped_acquire gil;

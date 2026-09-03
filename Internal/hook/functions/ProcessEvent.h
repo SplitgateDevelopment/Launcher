@@ -9,13 +9,13 @@
 
 namespace ProcessEvent {
 	// Game events surfaced to user scripts (see scripting docs / Events.h).
-	// Map an event name to the UFunction full name exactly as printed by
-	// LogProcessEvent, then scripts can subscribe with:
-	//   SplitgateInternal.Events.on("player_death", handler)
-	// Add a row here for each event you want to expose.
-	static const std::pair<const char*, const char*> gameEvents[] = {
-		{ "shutdown", "Function Engine.GameInstance.ReceiveShutdown" },
-		// { "player_death", "Function PortalWars.PortalWarsCharacter.OnDeath" },
+	// Map an Events::Type to the UFunction full name exactly as printed by
+	// LogProcessEvent. Add a value to Events::Type and a row here for each event
+	// you want to expose; scripts then subscribe with:
+	//   SplitgateInternal.Events.on(SplitgateInternal.Events.PlayerDeath, handler)
+	static const std::pair<Events::Type, const char*> gameEvents[] = {
+		{ Events::Type::Shutdown, "Function Engine.GameInstance.ReceiveShutdown" },
+		// { Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" },
 	};
 
 	void** VTable;
@@ -108,8 +108,8 @@ namespace ProcessEvent {
 			// name->UFunction table once, then a single map lookup per call;
 			// skipped entirely when scripting is off or nothing is subscribed.
 			if (Settings.MISC.UserScriptsEnabled && !Events::Empty()) {
-				static const std::unordered_map<UObject*, const char*> gameEventByFn = [] {
-					std::unordered_map<UObject*, const char*> map;
+				static const std::unordered_map<UObject*, Events::Type> gameEventByFn = [] {
+					std::unordered_map<UObject*, Events::Type> map;
 					for (const auto& [event, name] : gameEvents) {
 						if (UObject* obj = ObjObjects->FindObject(name)) map[obj] = event;
 					}

@@ -43,7 +43,7 @@ public:
 			Scripts::Execute(i);
 		}
 
-		// Event model: scripts subscribed to "render" run each frame too.
-		Events::Dispatch("render");
+		// Event model: scripts subscribed to Render run each frame too.
+		Events::Dispatch(Events::Type::Render);
 	};
 };
