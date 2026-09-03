@@ -12,7 +12,8 @@
 
 namespace Hook
 {
-	HHOOK g_hook;
+	inline HHOOK g_hook;
+	inline bool g_initialized = false;
 
 	BYTE *SetHook(void **VTable, int index, void *TargetFunction)
 	{
@@ -154,7 +155,11 @@ namespace Hook
 		ExceptionHandler::Disable();
 		GUI::Destroy();
 
-		UnhookWindowsHookEx(g_hook);
+		if (g_hook)
+		{
+			UnhookWindowsHookEx(g_hook);
+			g_hook = nullptr;
+		}
 	}
 
 	bool isKeyPressed(UCHAR key)
