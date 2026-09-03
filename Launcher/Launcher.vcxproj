@@ -71,6 +71,7 @@
     <ClInclude Include="..\shared\ExceptionHandler.h" />
     <ClInclude Include="..\shared\Settings.h" />
     <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="..\shared\Version.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="utils\ProxyConfig.h" />
@@ -78,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
+    <ResourceCompile Include="..\shared\manifest.rc" />
   </ItemGroup>
   <ItemGroup>
     <!-- Bundled mitmproxy addon scripts, copied next to the exe (see CopyMitmproxyScripts). -->

@@ -1,0 +1,51 @@
+// Version information (VS_VERSION_INFO / StringFileInfo) shared by Launcher.exe and Internal.dll.
+// Both projects compile this file; Internal defines SPLITGATE_DLL for its variant (the launcher
+// gets the default, application, variant). Common fields live in Version.h.
+
+#include <winver.h>
+#include "Version.h"
+
+#ifdef SPLITGATE_DLL
+#define SPLITGATE_FILE_DESCRIPTION "Splitgate Internal (in-game module)"
+#define SPLITGATE_INTERNAL_NAME "Internal"
+#define SPLITGATE_ORIGINAL_FILENAME "Internal.dll"
+#define SPLITGATE_FILE_TYPE VFT_DLL
+#else
+#define SPLITGATE_FILE_DESCRIPTION "Splitgate Launcher"
+#define SPLITGATE_INTERNAL_NAME "Launcher"
+#define SPLITGATE_ORIGINAL_FILENAME "Launcher.exe"
+#define SPLITGATE_FILE_TYPE VFT_APP
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION SPLITGATE_VERSION_MAJOR, SPLITGATE_VERSION_MINOR, SPLITGATE_VERSION_PATCH, SPLITGATE_VERSION_BUILD
+ PRODUCTVERSION SPLITGATE_VERSION_MAJOR, SPLITGATE_VERSION_MINOR, SPLITGATE_VERSION_PATCH, SPLITGATE_VERSION_BUILD
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE SPLITGATE_FILE_TYPE
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0" // US English, Unicode
+        BEGIN
+            VALUE "CompanyName", SPLITGATE_COMPANY
+            VALUE "FileDescription", SPLITGATE_FILE_DESCRIPTION
+            VALUE "FileVersion", SPLITGATE_VERSION_STRING
+            VALUE "InternalName", SPLITGATE_INTERNAL_NAME
+            VALUE "LegalCopyright", SPLITGATE_COPYRIGHT
+            VALUE "OriginalFilename", SPLITGATE_ORIGINAL_FILENAME
+            VALUE "ProductName", SPLITGATE_PRODUCT
+            VALUE "ProductVersion", SPLITGATE_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
