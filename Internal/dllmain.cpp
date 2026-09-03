@@ -18,7 +18,7 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 	MSG* msg = (MSG*)lparam;
 
 	constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
-	if (msg->message != WM_SPLITGATE_INIT || g_initialized)
+	if (msg->message != WM_SPLITGATE_INIT || Hook::g_initialized)
 	{
 		return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
 	}
