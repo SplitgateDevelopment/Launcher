@@ -2,6 +2,24 @@
 
 These edits are in files I'm not allowed to modify. Apply them when you're back.
 
+## `Internal/dllmain.cpp` — qualify `g_initialized` (blocks the whole Internal build)
+
+A full `Tools/build.bat` currently fails **only** here:
+
+```
+dllmain.cpp(21): error C2065: 'g_initialized': undeclared identifier
+```
+
+`g_initialized` lives in the `Hook` namespace (`Hook::g_initialized`, declared in `Hook.h`).
+Around line 21, qualify it:
+
+```cpp
+Hook::g_initialized
+```
+
+(or add `using namespace Hook;`). Check `g_hook` there too — it should likewise be
+`Hook::g_hook`. Once fixed, `Internal.dll` builds — everything else compiled clean.
+
 ## `Launcher/Launcher.cpp` — spawn mitmproxy for `ProxyMode::Mitmproxy`
 
 The proxy helpers exist (`Launcher/utils/ProxyConfig.h`, `Launcher/utils/Mitmproxy.h`); they

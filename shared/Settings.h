@@ -60,6 +60,7 @@ namespace Shared
 			std::ifstream file(path, std::ios::in | std::ios::binary);
 			if (!file.is_open() || !file.good()) return false;
 
+			bool ok = true;
 			try
 			{
 				nlohmann::json json;
@@ -69,9 +70,13 @@ namespace Shared
 			catch (const std::exception& e)
 			{
 				std::cerr << "[Settings] Failed to load " << path.string() << ": " << e.what() << std::endl;
-				return false;
+				ok = false;
 			}
-			return true;
+
+			// Release the handle before returning so the other process (launcher/DLL) can open
+			// the file. (The stream would also close on scope exit, but be explicit.)
+			file.close();
+			return ok;
 		}
 
 		/// Serializes the bound struct to the file (pretty-printed).
@@ -92,6 +97,8 @@ namespace Shared
 			{
 				std::cerr << "[Settings] Failed to save " << path.string() << ": " << e.what() << std::endl;
 			}
+
+			file.close(); // release the handle before returning (see Load)
 		}
 
 		/// Resets the bound struct to defaults in memory (does not save).
