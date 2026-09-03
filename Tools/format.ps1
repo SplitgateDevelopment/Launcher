@@ -9,7 +9,7 @@ param([switch]$Check)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 
-$files = Get-ChildItem -Path (Join-Path $root 'Internal'), (Join-Path $root 'Launcher') `
+$files = Get-ChildItem -Path (Join-Path $root 'Internal'), (Join-Path $root 'Launcher'), (Join-Path $root 'shared'), (Join-Path $root 'Tests') `
     -Recurse -Include *.h, *.cpp |
     Where-Object { $_.FullName -notmatch '\\external\\|\\vcpkg_installed\\|\\x64\\' } |
     Select-Object -ExpandProperty FullName
