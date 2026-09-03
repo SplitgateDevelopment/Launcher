@@ -71,6 +71,8 @@
     <ClInclude Include="..\shared\ExceptionHandler.h" />
     <ClInclude Include="..\shared\Settings.h" />
     <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="utils\Logger.h" />
+    <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="utils\ProxyConfig.h" />
     <ClInclude Include="utils\Mitmproxy.h" />
   </ItemGroup>
