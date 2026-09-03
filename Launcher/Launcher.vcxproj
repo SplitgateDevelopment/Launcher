@@ -82,6 +82,10 @@
     <ResourceCompile Include="..\shared\manifest.rc" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Win32 application manifest (merged into the linker's asInvoker manifest by mt.exe). -->
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
     <!-- Bundled mitmproxy addon scripts, copied next to the exe (see CopyMitmproxyScripts). -->
     <None Include="scripts\default_proxy.py" />
     <None Include="scripts\watchdog.py" />
