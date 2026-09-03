@@ -65,7 +65,7 @@ namespace Logger
         g_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
         g_hWnd = GetConsoleWindow();
 
-        fs::path logFilePath = SettingsHelper::GetAppPath() / "splitgate.log";
+        fs::path logFilePath = SettingsHelper::GetAppPath() / "internal.log";
         fopen_s(&logFile, logFilePath.string().c_str(), "w");
 
         freopen_s(&consoleStream, "CONOUT$", "w", stdout);
