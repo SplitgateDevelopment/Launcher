@@ -9,7 +9,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "ProxyConfig.h" // Launcher::ReadLauncherSettings, Shared::MitmproxySettings
+#include "../../shared/Logger.h" // Shared::Logger (optional progress/failure sink)
+#include "ProxyConfig.h"		 // Launcher::ReadLauncherSettings, Shared::MitmproxySettings
 
 /**
  * @file
@@ -64,9 +65,10 @@ namespace Launcher::Mitmproxy
 		return path.string();
 	}
 
-	/// Resolves the main addon script path for the configured mode. Default uses the bundled
+	/// Resolves the main addon script path for the configured mode. Default points at the bundled
 	/// scripts/default_proxy.py (passing the redirect map through SPLITGATE_REDIRECTS); Path uses
-	/// the file as-is; Inline is written to a temp file. Empty string on failure.
+	/// the file as-is; Inline is written to a temp file. The path is not existence-checked here —
+	/// Spawn validates it so it can log a clear reason.
 	inline std::string ResolveScript(const Shared::MitmproxySettings& config, const std::map<std::string, std::string>& redirects)
 	{
 		switch (config.ScriptMode)
@@ -77,11 +79,8 @@ namespace Launcher::Mitmproxy
 			return WriteInlineScript(config.InlineScript);
 		case Shared::MitmScriptMode::Default:
 		default:
-		{
 			SetEnvironmentVariableA("SPLITGATE_REDIRECTS", nlohmann::json(redirects).dump().c_str());
-			const auto path = ScriptsDir() / "default_proxy.py";
-			return std::filesystem::exists(path) ? path.string() : std::string{};
-		}
+			return (ScriptsDir() / "default_proxy.py").string();
 		}
 	}
 
@@ -89,26 +88,49 @@ namespace Launcher::Mitmproxy
 	 * Starts mitmdump running the addon chosen by the launcher's mitmproxy settings
 	 * (Default/Path/Inline), plus the watchdog addon. Reads those settings itself, so callers only
 	 * pass the redirect map and the game PID.
+	 *
+	 * A missing addon (e.g. the bundled scripts/ folder was deleted) is not a hard error: it's
+	 * logged through @p logger and Spawn returns false, so the caller can carry on without the
+	 * proxy rather than aborting.
+	 *
 	 * @param redirects original host -> "host[:port]" target (from the DLL's NETWORK settings).
 	 * @param gamePid   the game's process id; when non-zero, the watchdog addon exits mitmdump when
 	 *                  that process ends. Pass 0 to leave mitmdump running until closed manually.
+	 * @param logger    optional sink for progress/failure lines (the launcher's logger); may be null.
 	 * @return true if the process was started (mitmdump must be on PATH), false otherwise.
 	 */
-	inline bool Spawn(const std::map<std::string, std::string>& redirects, DWORD gamePid = 0)
+	inline bool Spawn(const std::map<std::string, std::string>& redirects, DWORD gamePid = 0, Shared::Logger* logger = nullptr)
 	{
+		const auto log = [&](const std::string& level, const std::string& message)
+		{
+			if (logger) logger->log(level, message);
+		};
+
 		const auto config = ReadLauncherSettings().MITMPROXY;
 
 		const std::string script = ResolveScript(config, redirects);
-		if (script.empty()) return false;
+		if (script.empty() || !std::filesystem::exists(script))
+		{
+			log("ERROR", "mitmproxy: addon script not found (" + (script.empty() ? std::string("<none>") : script) + "); proxy not started");
+			return false;
+		}
 
 		std::string command = "mitmdump -s \"" + script + "\"";
 
-		// Watchdog: exit mitmdump when the game process ends (PID passed via the environment).
-		const auto watchdog = ScriptsDir() / "watchdog.py";
-		if (gamePid && std::filesystem::exists(watchdog))
+		// Watchdog: exit mitmdump when the game process ends (PID passed via the environment). Its
+		// absence is non-fatal — mitmdump just won't auto-close with the game.
+		if (gamePid)
 		{
-			command += " -s \"" + watchdog.string() + "\"";
-			SetEnvironmentVariableA("SPLITGATE_GAME_PID", std::to_string(gamePid).c_str());
+			const auto watchdog = ScriptsDir() / "watchdog.py";
+			if (std::filesystem::exists(watchdog))
+			{
+				command += " -s \"" + watchdog.string() + "\"";
+				SetEnvironmentVariableA("SPLITGATE_GAME_PID", std::to_string(gamePid).c_str());
+			}
+			else
+			{
+				log("WARN", "mitmproxy: watchdog.py not found; mitmdump won't auto-close with the game");
+			}
 		}
 
 		STARTUPINFOA startup{sizeof(startup)};
@@ -118,10 +140,14 @@ namespace Launcher::Mitmproxy
 		const DWORD creationFlags = config.ShowConsole ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW;
 
 		if (!CreateProcessA(nullptr, command.data(), nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &startup, &process))
+		{
+			log("ERROR", "mitmproxy: failed to start mitmdump (is it on PATH?)");
 			return false;
+		}
 
 		CloseHandle(process.hThread);
 		CloseHandle(process.hProcess);
+		log("SUCCESS", "mitmproxy started (" + script + ")");
 		return true;
 	}
 } // namespace Launcher::Mitmproxy
