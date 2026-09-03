@@ -68,6 +68,9 @@ namespace GUI
 		ImGui::GetMainViewport()->PlatformHandleRaw = Window::WindowHandle;
 		Window::OldWindowProcess = (WNDPROC)SetWindowLongPtr(Window::WindowHandle, GWLP_WNDPROC, (__int3264)(LONG_PTR)Window::WndProc);
 
+		// Apply the persisted streamproof setting now that the real game window is known.
+		Window::SetStreamproof(Settings.MENU.Streamproof);
+
 		initialized = true;
 		return true;
 	}

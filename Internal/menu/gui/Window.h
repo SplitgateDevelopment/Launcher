@@ -18,6 +18,12 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+// Defined on Windows 10 2004+ SDKs; provide a fallback so older SDKs still build (the call just
+// no-ops at runtime on pre-2004 Windows).
+#ifndef WDA_EXCLUDEFROMCAPTURE
+#define WDA_EXCLUDEFROMCAPTURE 0x00000011
+#endif
+
 /// @brief Overlay windowing/D3D11 state and the hook plumbing that backs the GUI.
 namespace Window
 {
@@ -117,6 +123,14 @@ namespace Window
 
 		Device->CreateRenderTargetView(pBackBuffer, nullptr, &RenderTargetView);
 		pBackBuffer->Release();
+	}
+
+	/// @brief Toggles whether the overlay window is excluded from screen capture (OBS, Discord,
+	/// Game Bar). WDA_EXCLUDEFROMCAPTURE needs Windows 10 2004+; no-op until WindowHandle is set.
+	/// @param enabled true to hide from capture, false to show normally.
+	void SetStreamproof(bool enabled)
+	{
+		if (WindowHandle) SetWindowDisplayAffinity(WindowHandle, enabled ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 	}
 
 	/// @brief Releases the render target view if present.

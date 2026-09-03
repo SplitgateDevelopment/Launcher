@@ -6,6 +6,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
+#include "../gui/Window.h" // Window::SetStreamproof
 
 namespace Menu
 {
@@ -34,6 +35,14 @@ namespace Menu
 				Events::Dispatch(Events::Type::LoadIntoMap);
 			};
 			if (isInGame) ImGui::EndDisabled();
+
+			ImGui::SeparatorText("Overlay");
+			ImGui::Tooltip("Hide the overlay from screen capture (OBS, Discord, Game Bar). Needs Windows 10 2004+.");
+			if (ImGui::ToggleButton("Streamproof", &Settings.MENU.Streamproof))
+			{
+				Window::SetStreamproof(Settings.MENU.Streamproof);
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
 
 			ImGui::SeparatorText("User Scripts");
 			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))

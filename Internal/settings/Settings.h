@@ -32,9 +32,10 @@ struct MenuSettings
 	bool ShowWatermark = true;
 	std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
 	int ShowHotkey = VK_INSERT; ///< virtual-key code toggling the GUI (default Insert)
+	bool Streamproof = false;	///< hide the overlay from screen capture (SetWindowDisplayAffinity)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 struct ExploitsSettings
