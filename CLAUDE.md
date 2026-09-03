@@ -107,7 +107,9 @@ self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;ND
   whole job is process/window discovery + installing the Windows hook + handing off the
   handle. It does not unhook (the DLL owns that).
 - `utils/Logger.h` — a `Logger` class: `error`/`success`/`info` print `[LEVEL] msg` to stdout
-  (`std::format`); `errorBox(fn)` pops a Win32 `MessageBox` with the `GetLastError()` text;
+  (`std::format`) and also mirror each line, with a local-time `[HH:MM:SS]` prefix, to a
+  `launcher.log` file (opened truncating in the ctor) — kept separate from the DLL's own
+  `internal.log`; `errorBox(fn)` pops a Win32 `MessageBox` with the `GetLastError()` text;
   `stop(code)` does the "press any key to exit" console wait. Uses WinAPI directly.
 - `data/` — Win32 resources: `Logo.rc` (compiled), `Logo.h`, `logo.ico` (the app icon);
   `.aps` files are the resource editor's cache.
@@ -173,4 +175,14 @@ Source folders (from the project file; contents documented as they are read):
 ## Conventions
 
 See [.claude/rules/code-style.md](.claude/rules/code-style.md) — PascalCase file/namespace/
-class names, camelCase variables, lowercase directories, reusable namespaces.
+class names, camelCase variables, lowercase directories, reusable namespaces, and
+always-early-return control flow.
+
+## Version control
+
+- Prefer **many small, focused commits** over one large one — split unrelated changes (a fix,
+  a refactor, docs) into separate commits so each is reviewable and revertable on its own.
+- Write commit messages in the **[Conventional Commits](https://www.conventionalcommits.org/)**
+  style: `type(scope): summary` (e.g. `fix(hook): capture the injection hook handle`,
+  `docs: add docs/hooking.md`). Common types: `feat`, `fix`, `docs`, `refactor`, `chore`,
+  `test`.
