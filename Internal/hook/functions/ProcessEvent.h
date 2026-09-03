@@ -14,16 +14,7 @@
 #include "../../utils/ExceptionHandler.h"
 #include "../../scripting/Events.h"
 
-#include <atomic>
-#include <thread>
 #include <unordered_map>
-
-/// Hook::UnHook lives in hook/Hook.h, which includes this file, so it can't be included here;
-/// forward-declare it for the shutdown teardown below.
-namespace Hook
-{
-	void UnHook();
-}
 
 /// @brief Hook and support code for UObject::ProcessEvent.
 namespace ProcessEvent
@@ -118,26 +109,9 @@ namespace ProcessEvent
 	{
 		if (Settings.DEBUG.LogProcessEvent) LogProcessEvent(Class, Function);
 
-		static UObject* ReceiveShutdown = ObjObjects->FindObject("Function Engine.GameInstance.ReceiveShutdown");
-
-		if (Function == ReceiveShutdown)
-		{
-			Logger::Log("INFO", "Received shutdown");
-
-			// Forward the shutdown to the game, then tear our hooks down. We can't unhook from
-			// inside ProcessEvent (MH_Uninitialize would free the very trampoline we'd return
-			// through), so defer it to a detached thread and return without falling through to
-			// the bottom Original() call. The guard avoids a double teardown if the event
-			// fires twice.
-			// NOTE: UnHook also destroys the GUI, which can race the PostRender/render thread;
-			// acceptable during shutdown (the render loop is winding down) but wants in-game
-			// verification.
-			Original(Class, Function, Params);
-
-			static std::atomic<bool> unhooking = false;
-			if (!unhooking.exchange(true)) std::thread(&Hook::UnHook).detach();
-			return;
-		};
+		// Shutdown is no longer special-cased here: it's a normal game event
+		// (Events::Type::Shutdown in the gameEvents table), and the teardown handler is
+		// registered on the event bus in Hook::Init.
 
 		// Force-enable UI input actions (e.g. a greyed-out Play button). The widget calls
 		// IsInputActionEnabled(FGameplayTag ActionTag, bool& InIsEnabled) as an out-param
@@ -189,10 +163,11 @@ namespace ProcessEvent
 			}
 		}
 
-		// Dispatch registered game events to user scripts. Resolve the
-		// name->UFunction table once, then a single map lookup per call;
-		// skipped entirely when scripting is off or nothing is subscribed.
-		if (Settings.MISC.UserScriptsEnabled && !Events::Empty())
+		// Dispatch registered game events to their subscribers (features, the shutdown
+		// teardown, and user scripts). Resolve the name->UFunction table once, then a single
+		// map lookup per call; skipped entirely when nothing is subscribed. (No longer gated on
+		// UserScriptsEnabled, so C++ subscribers like the shutdown handler always fire.)
+		if (!Events::Empty())
 		{
 			static const std::unordered_map<UObject*, Events::Type> gameEventByFn = []
 			{

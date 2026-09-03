@@ -5,7 +5,9 @@
 #include "functions/PostRender.h"
 #include "../menu/gui/Gui.h"
 
+#include <atomic>
 #include <format>
+#include <thread>
 #include <MinHook.h>
 
 #pragma comment(lib, "MinHook.x64.lib")
@@ -31,6 +33,9 @@ namespace Hook
 
 		return original;
 	};
+
+	// Defined below; forward-declared so Init can register it as the shutdown handler.
+	void UnHook();
 
 	bool Init()
 	{
@@ -132,6 +137,17 @@ namespace Hook
 
 		Features::Init();
 		Logger::Log("SUCCESS", std::format("Initialized {} Features", Features::Features.size()));
+
+		// Tear our hooks down when the game shuts down (Events::Type::Shutdown is dispatched
+		// from ProcessEvent when GameInstance.ReceiveShutdown fires). Deferred to a detached
+		// thread: the event runs inside ProcessEvent, and unhooking there would free the
+		// trampoline we return through. Guarded against a double teardown.
+		// NOTE: UnHook also destroys the GUI, which can race the render thread; acceptable
+		// during shutdown but wants in-game verification.
+		Events::Register(Events::Type::Shutdown, []
+						 {
+			static std::atomic<bool> unhooking = false;
+			if (!unhooking.exchange(true)) std::thread(&UnHook).detach(); });
 
 		return TRUE;
 	}
