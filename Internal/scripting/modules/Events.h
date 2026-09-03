@@ -48,6 +48,7 @@ namespace Scripts
 				.value("DamageTaken", ::Events::Type::DamageTaken)
 				.value("RoundEnded", ::Events::Type::RoundEnded)
 				.value("MatchEnded", ::Events::Type::MatchEnded)
+				.value("PlayerKilled", ::Events::Type::PlayerKilled)
 				.export_values();
 
 			events.def("on", [](::Events::Type event, py::function callback)
