@@ -20,7 +20,7 @@
 #include "ThirdPerson.h"
 #include "FreeCam.h"
 #include "Radar.h"
-#include "BackendRedirect.h"
+#include "../network/Network.h"
 
 namespace Features
 {
@@ -41,10 +41,10 @@ namespace Features
 		Features.push_back(std::make_unique<FreeCam>());
 		Features.push_back(std::make_unique<Radar>());
 
-		// Backend redirection is a subsystem, not a per-frame feature: install its WinHTTP
-		// hooks once here (they self-gate on Settings.NETWORK.RedirectEnabled). MinHook is
-		// already initialized by this point (Hook::Init runs before Features::Init).
-		Backend::Install();
+		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install
+		// its hooks once here. They self-gate on Settings.NETWORK, and MinHook is already
+		// initialized by this point (Hook::Init runs before Features::Init).
+		Network::Init();
 
 		// Seed Enabled from current settings, then keep it in sync reactively:
 		// the menu dispatches SettingsChanged on every change, so features no

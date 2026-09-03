@@ -22,6 +22,9 @@
     <Filter Include="features">
       <UniqueIdentifier>{2c9f4b1a-3d7e-4a2b-9f10-6b5c8d0e1f23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{7a1e6c2d-9b48-4f31-8e05-2c7d3a9b1e64}</UniqueIdentifier>
+    </Filter>
     <Filter Include="discord">
       <UniqueIdentifier>{f288a2eb-1b81-401e-a5b6-140931ba6bfb}</UniqueIdentifier>
     </Filter>
@@ -141,8 +144,23 @@
     <ClInclude Include="features\Feature.h">
       <Filter>features</Filter>
     </ClInclude>
-    <ClInclude Include="features\BackendRedirect.h">
-      <Filter>features</Filter>
+    <ClInclude Include="network\Network.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\Redirect.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\HttpLogger.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\WinHttpHook.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\CurlHook.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Network.h">
+      <Filter>menu\sections</Filter>
     </ClInclude>
     <ClInclude Include="features\FeatureRunner.h">
       <Filter>features</Filter>
