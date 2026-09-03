@@ -23,12 +23,13 @@ struct FakeFeature : public Feature {
     int destroyCount = 0;
     bool checkResult = true;
     bool throwOnRun = false;
+    bool legacyCheck = false;  // emulate the old contract where Check() returns Enabled
 
     explicit FakeFeature(std::string name = "Fake") { Name = name; }
 
     void Init() override { initCount++; Initialized = true; }
     void UpdateEnabled() override {}
-    bool Check() override { checkCount++; return checkResult; }
+    bool Check() override { checkCount++; return legacyCheck ? Enabled : checkResult; }
     void Destroy() override { destroyCount++; }
     void Run() override { runCount++; if (throwOnRun) throw std::runtime_error("boom"); }
 };
@@ -79,12 +80,66 @@ TEST_F(FeaturesTest, RunsWhenEnabledAndCheckPasses) {
     EXPECT_EQ(0, f->destroyCount);
 }
 
-TEST_F(FeaturesTest, DestroysWhenDisabledAndCheckPasses) {
+TEST_F(FeaturesTest, DoesNotDestroyWhenNeverApplied) {
     FakeFeature* f = add();
-    f->Enabled = false;
+    f->Enabled = false;  // disabled from the start, so nothing was ever applied
+    Features::Execute();
     Features::Execute();
     EXPECT_EQ(0, f->runCount);
+    EXPECT_EQ(0, f->destroyCount);
+}
+
+TEST_F(FeaturesTest, DestroysOnceOnDisableTransition) {
+    FakeFeature* f = add();
+
+    f->Enabled = true;
+    Features::Execute();           // applied
+    EXPECT_EQ(1, f->runCount);
+
+    f->Enabled = false;
+    Features::Execute();           // enabled -> disabled edge: revert once
+    Features::Execute();           // still disabled: no repeated Destroy
+    Features::Execute();
     EXPECT_EQ(1, f->destroyCount);
+}
+
+TEST_F(FeaturesTest, OneTimeRunsOncePerEnable) {
+    FakeFeature* f = add();
+    f->OneTime = true;
+    f->Enabled = true;
+    Features::Execute();
+    Features::Execute();
+    Features::Execute();
+    EXPECT_EQ(1, f->runCount);
+}
+
+TEST_F(FeaturesTest, OneTimeReArmsAfterDisable) {
+    FakeFeature* f = add();
+    f->OneTime = true;
+
+    f->Enabled = true;
+    Features::Execute();           // run #1
+    f->Enabled = false;
+    Features::Execute();           // disable re-arms
+    f->Enabled = true;
+    Features::Execute();           // run #2
+    EXPECT_EQ(2, f->runCount);
+}
+
+// A legacy feature whose Check() returns Enabled keeps its old behavior: when
+// disabled, Check() returns false, the loop skips it, and Destroy() is never
+// reached. This guards the migration path for features still on the old contract.
+TEST_F(FeaturesTest, LegacyCheckReturningEnabledNeverDestroys) {
+    FakeFeature* f = add();
+    f->legacyCheck = true;
+
+    f->Enabled = true;
+    Features::Execute();           // Check() true, Run
+    f->Enabled = false;
+    Features::Execute();           // Check() returns Enabled == false -> skipped
+    Features::Execute();
+    EXPECT_EQ(1, f->runCount);
+    EXPECT_EQ(0, f->destroyCount);
 }
 
 TEST_F(FeaturesTest, ProcessesEveryRegisteredFeature) {

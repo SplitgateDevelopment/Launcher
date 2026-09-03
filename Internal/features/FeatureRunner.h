@@ -15,23 +15,48 @@ namespace Features
 
 	// Runs a single execution pass over every registered feature. Called once
 	// per rendered frame from PostRender.
+	//
+	// A feature is Run() while enabled (once, if OneTime) and Destroy()'d exactly
+	// once when it goes enabled -> disabled, so a disabled feature costs nothing
+	// beyond UpdateEnabled()/Check() instead of Destroy() every frame. Features
+	// whose Check() still returns Enabled keep their previous behavior (they just
+	// skip on disable and never reach Destroy).
 	inline void Execute()
 	{
 		try
 		{
-			for (const auto& Feature : Features)
+			for (const auto& feature : Features)
 			{
-				if (!Feature->Initialized)
+				if (!feature->Initialized)
 				{
-					Feature->Init();
+					feature->Init();
 				};
 
-				if (!Feature->Check())
+				feature->UpdateEnabled();
+
+				if (!feature->Check())
 				{
 					continue;
 				};
 
-				Feature->Enabled ? Feature->Run() : Feature->Destroy();
+				if (feature->Enabled)
+				{
+					if (!feature->OneTime || !feature->hasRun)
+					{
+						feature->Run();
+						feature->hasRun = true;
+					}
+					feature->applied = true;
+				}
+				else
+				{
+					if (feature->applied)
+					{
+						feature->Destroy();
+						feature->applied = false;
+					}
+					feature->hasRun = false;
+				}
 			}
 		}
 		catch (char* e)
