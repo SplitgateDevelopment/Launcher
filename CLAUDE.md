@@ -22,9 +22,11 @@ The Visual Studio solution (`.sln` at the repo root) contains three projects:
 - **Tests** — a GoogleTest console `.exe` (vcpkg `gtest`) covering the self-contained modules
   (settings, feature framework, event bus). See [docs/testing.md](docs/testing.md).
 
-Other top-level items: `Tools/` (build scripts, incl. `build.bat` used by CI, and
-`format.ps1` for clang-format), `.github/workflows/msbuild.yml` (CI),
-`.clang-format` / `.clang-tidy` (style/lint config), `docs/` (see below), `README.md`.
+Other top-level items: `shared/` (headers used by **both** projects — `Ipc.h` for the
+launcher/DLL init handshake, `Logger.h` for the shared console logger), `Tools/` (build
+scripts, incl. `build.bat` used by CI, and `format.ps1` for clang-format),
+`.github/workflows/msbuild.yml` (CI), `.clang-format` / `.clang-tidy` (style/lint config),
+`docs/` (see below), `README.md`.
 
 ## Documentation
 
@@ -106,11 +108,10 @@ self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;ND
   posts a thread message (with the `HHOOK` in its `lParam`) to trigger it, then exits. Its
   whole job is process/window discovery + installing the Windows hook + handing off the
   handle. It does not unhook (the DLL owns that).
-- `utils/Logger.h` — a `Logger` class: `error`/`success`/`info` print `[LEVEL] msg` to stdout
-  (`std::format`) and also mirror each line, with a local-time `[HH:MM:SS]` prefix, to a
-  `launcher.log` file (opened truncating in the ctor) — kept separate from the DLL's own
-  `internal.log`; `errorBox(fn)` pops a Win32 `MessageBox` with the `GetLastError()` text;
-  `stop(code)` does the "press any key to exit" console wait. Uses WinAPI directly.
+- `utils/Logger.h` — a thin `Logger` subclass of `Shared::Logger` (`shared/Logger.h`) bound
+  to the launcher's existing console and `launcher.log`. All logging behavior (leveled/colored
+  output, file mirroring with a local-time `[HH:MM:SS]` prefix, `errorBox`, `stop`) lives in
+  the shared class.
 - `data/` — Win32 resources: `Logo.rc` (compiled), `Logo.h`, `logo.ico` (the app icon);
   `.aps` files are the resource editor's cache.
 
@@ -159,7 +160,10 @@ Source folders (from the project file; contents documented as they are read):
 - `ue/` — Unreal Engine SDK (`Engine.h/.cpp`, `UObjects.h`).
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
-- `utils/` — helpers (`Globals.h`, `Logger.h`, `ExceptionHandler.h`, `Util.h/.cpp`).
+- `utils/` — helpers (`Globals.h`, `ExceptionHandler.h`, `Util.h/.cpp`, and `Logger.h` — a
+  `namespace Logger` facade (`Log`/`CreateConsole`/`DestroyConsole`/`SetConsoleVisibility`)
+  forwarding to one `Shared::Logger` from `shared/Logger.h`; it spawns the in-game console and
+  logs to `internal.log`).
 - `dllmain.cpp` — DLL entry point. Exports the `WH_GETMESSAGE` hook procedure the launcher
   installs — `LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam)`
   (`lparam` is the `MSG*`, valid only when `code >= 0`). It is **not** `extern "C"`, so the
