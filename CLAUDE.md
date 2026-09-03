@@ -127,6 +127,10 @@ self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;ND
   the shared class.
 - `data/` — Win32 resources: `Logo.rc` (compiled), `Logo.h`, `logo.ico` (the app icon);
   `.aps` files are the resource editor's cache.
+- `scripts/` — bundled mitmproxy addon `.py` files (`default_proxy.py`, `watchdog.py`) used by
+  `utils/Mitmproxy.h` in `ProxyMode::Mitmproxy`. Copied next to `Launcher.exe` (into a `scripts/`
+  folder) at build time; fed their inputs via environment variables (`SPLITGATE_REDIRECTS`,
+  `SPLITGATE_GAME_PID`) so they stay static, editable Python.
 
 ## Internal (`Internal.dll`) — structure
 

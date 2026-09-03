@@ -79,7 +79,19 @@
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Bundled mitmproxy addon scripts, copied next to the exe (see CopyMitmproxyScripts). -->
+    <None Include="scripts\default_proxy.py" />
+    <None Include="scripts\watchdog.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Ship the mitmproxy addon scripts alongside Launcher.exe (in a scripts\ subfolder). -->
+  <Target Name="CopyMitmproxyScripts" AfterTargets="Build">
+    <ItemGroup>
+      <MitmproxyScripts Include="$(ProjectDir)scripts\*.py" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MitmproxyScripts)" DestinationFolder="$(OutDir)scripts" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

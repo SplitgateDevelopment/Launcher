@@ -132,9 +132,10 @@ plain HTTP, matching the Fiddler rule).
   (`Launcher/utils/Mitmproxy.h`), reading the mode/map from the DLL's settings file
   (`Launcher/utils/ProxyConfig.h`). This covers the pre-injection calls the in-process hook
   can't (see [early-injection.md](early-injection.md)); mitmproxy still needs the game routed
-  through it (system proxy / transparent mode). mitmdump runs **hidden** (`CREATE_NO_WINDOW`),
-  and a watchdog addon (always appended, given the game PID) waits on the game process and exits
-  mitmdump when the game closes so it doesn't linger.
+  through it (system proxy / transparent mode). mitmdump runs **hidden** by default
+  (`CREATE_NO_WINDOW`; the `ShowConsole` setting shows the window instead), and a watchdog addon
+  (always appended, given the game PID) waits on the game process and exits mitmdump when the game
+  closes so it doesn't linger.
 - `Manual` — do nothing (bring your own proxy, as before).
 
 **Which mitmproxy addon runs is a launcher-only setting** — a `Shared::MitmproxySettings`
@@ -143,12 +144,19 @@ game-focused. It persists to its own `launcher.settings` (same app folder), is e
 DLL's Network tab (a "Mitmproxy script" section, shown in `Mitmproxy` mode), and is read back by
 the launcher when it spawns. Three modes:
 
-- `Default` — generate an addon from the redirect map: an in-`request` host/scheme rewrite plus a
-  conservative TLS passthrough (stop intercepting a host once its handshake fails), matching the
+- `Default` — run the bundled `scripts/default_proxy.py`: an in-`request` host/scheme rewrite plus
+  a conservative TLS passthrough (stop intercepting a host once its handshake fails), matching the
   backend's `scripts/proxy.py`. Plain `--map-remote` had no such passthrough, so it would MITM
   every TLS host and break cert-pinned/unrelated ones.
 - `Path` — run an addon file already on disk (`mitmdump -s <path>`).
 - `Inline` — write the inline python to a temp file and run it as the addon.
+
+The default addon and the watchdog are real `.py` files under `Launcher/scripts/` (rather than
+strings inlined in C++), copied next to `Launcher.exe` into a `scripts/` folder at build time.
+They are static — the launcher feeds them their inputs through environment variables the child
+inherits: `SPLITGATE_REDIRECTS` (the redirect map as JSON) for `default_proxy.py`, and
+`SPLITGATE_GAME_PID` for `watchdog.py`. So distributing `Launcher.exe` for the Mitmproxy path
+means shipping the `scripts/` folder beside it.
 
 The DLL's settings live in one file shared via `Shared::SettingsFile<T>` (`shared/Settings.h`),
 which the launcher reads with a narrow view to get `NETWORK` without the game-only sections; the
