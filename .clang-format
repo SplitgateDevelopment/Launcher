@@ -1,0 +1,18 @@
+# clang-format — the C++ formatter for this repo (the "Biome/SwiftLint format" step).
+# Tuned to the existing style (tabs, Allman braces, indented namespaces) so
+# running it is low-churn. Run: clang-format -i <files>  (or Tools/format.ps1).
+Language: Cpp
+BasedOnStyle: Microsoft
+
+UseTab: Always
+TabWidth: 4
+IndentWidth: 4
+
+BreakBeforeBraces: Allman
+ColumnLimit: 0
+NamespaceIndentation: All
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+SortIncludes: false
+SpaceBeforeParens: ControlStatements
