@@ -35,7 +35,6 @@ struct ExploitsSettings {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload)
 
 struct MiscSettings {
-    bool LoadIntoMap = false;
     bool ShowConsole = true;
     std::string PlayerName = "SplitgateDevelopment";
     std::string DiscordAppID = "1078744504066117703";

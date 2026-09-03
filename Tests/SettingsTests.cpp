@@ -191,7 +191,6 @@ TEST_F(SettingsFileTest, ShowConsolePersists) {
 // written — they always keep their defaults across a save/load.
 TEST_F(SettingsFileTest, RuntimeOnlyFieldsAreNotPersisted) {
     Settings.MENU.Watermark = "custom-watermark";
-    Settings.MISC.LoadIntoMap = true;
     Settings.MISC.DiscordAppID = "111222333";
     Settings.MISC.SteamAppId = "999999";
 
@@ -200,7 +199,6 @@ TEST_F(SettingsFileTest, RuntimeOnlyFieldsAreNotPersisted) {
     ASSERT_TRUE(SettingsHelper::Load());
 
     EXPECT_EQ("github.com/SplitgateDevelopment/Launcher", Settings.MENU.Watermark);
-    EXPECT_FALSE(Settings.MISC.LoadIntoMap);
     EXPECT_EQ("1078744504066117703", Settings.MISC.DiscordAppID);
     EXPECT_EQ("677620", Settings.MISC.SteamAppId);
 }

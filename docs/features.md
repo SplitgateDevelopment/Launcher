@@ -68,9 +68,22 @@ Features that still `return Enabled` keep working (they simply never reach
 
 ### One-time features
 
-Set `OneTime = true` for a one-shot action (e.g. `LoadIntoMap`, which switches
-level). It runs once per enable and re-arms when disabled — no need to disable
-itself from inside `Run()`.
+Set `OneTime = true` for a feature whose `Run()` should fire once per enable
+rather than every frame. It re-arms when disabled.
+
+### Event-driven features
+
+Every feature has an `Event` (an `Events::Type`, default `Render`). `Render`
+features run from the per-frame `Features::Execute` loop. A feature with any
+other `Event` is instead subscribed to the [event bus](scripting.md#events) in
+`Features::Init` and driven by `Features::RunFeature` when that event is
+dispatched — e.g. set `Event = Events::Type::PlayerDeath` to run a feature when
+the player dies. Same toggle/Check/Run/Destroy contract, just a different clock.
+
+One-shot **actions** that don't need a toggle (like the "Load into map" button)
+are better as a plain event handler than a feature — see the `LoadIntoMap`
+handler registered in `Features::Init`, dispatched by the button via
+`Events::Dispatch(Events::Type::LoadIntoMap)`.
 
 ## Adding a feature
 
@@ -82,8 +95,8 @@ itself from inside `Run()`.
 ## Current features
 
 GodMode, InfiniteJetpack, NoRecoil, SpinBot, PlayerModifications,
-WeaponModifications, DrawActors (ESP), LoadIntoMap, UserScripts (runs Python
-user scripts — see [scripting.md](scripting.md)).
+WeaponModifications, DrawActors (ESP), UserScripts (runs Python user scripts —
+see [scripting.md](scripting.md)).
 
 ## Tests
 

@@ -2,6 +2,7 @@
 
 #include "../settings/Settings.h"
 #include "../utils/Logger.h"
+#include "../scripting/Events.h"
 
 // Base class for a gameplay feature. Features::Execute drives every registered
 // feature once per rendered frame:
@@ -29,6 +30,10 @@ public:
 	bool OneTime = false;      // Run() fires once per enable instead of every frame
 
 	std::string Name = "BaseFeature";
+	// Which event drives this feature. Render runs every frame (the fast loop in
+	// Features::Execute); any other event subscribes it to the event bus and runs
+	// it when that event is dispatched (e.g. Events::Type::PlayerDeath).
+	Events::Type Event = Events::Type::Render;
 
 	// Bookkeeping owned by Features::Execute; subclasses should not touch these.
 	bool applied = false;      // Run() has been applied and not yet reverted by Destroy()

@@ -13,62 +13,71 @@ namespace Features
 {
 	inline std::vector<std::unique_ptr<Feature>> Features;
 
-	// Runs a single execution pass over every registered feature. Called once
-	// per rendered frame from PostRender.
-	//
-	// A feature is Run() while enabled (once, if OneTime) and Destroy()'d exactly
-	// once when it goes enabled -> disabled, so a disabled feature costs nothing
-	// beyond UpdateEnabled()/Check() instead of Destroy() every frame. Features
+	// Drives a single feature once: init on first use, refresh Enabled, skip if
+	// idle-disabled, then Run() while enabled (once, if OneTime) or Destroy()
+	// exactly once on the enabled -> disabled edge. Used both by the per-frame
+	// render loop and by the event bus (for event-driven features). Features
 	// whose Check() still returns Enabled keep their previous behavior (they just
 	// skip on disable and never reach Destroy).
-	inline void Execute()
+	inline void RunFeature(Feature& feature)
 	{
 		try
 		{
-			for (const auto& feature : Features)
+			if (!feature.Initialized)
 			{
-				if (!feature->Initialized)
-				{
-					feature->Init();
-				};
+				feature.Init();
+			};
 
-				feature->UpdateEnabled();
+			feature.UpdateEnabled();
 
-				// Idle disabled features have nothing to run and nothing applied
-				// to revert, so skip their per-frame validity work entirely.
-				if (!feature->Enabled && !feature->applied)
-				{
-					continue;
-				};
+			// Idle disabled features have nothing to run and nothing applied to
+			// revert, so skip their per-frame validity work entirely.
+			if (!feature.Enabled && !feature.applied)
+			{
+				return;
+			};
 
-				if (!feature->Check())
-				{
-					continue;
-				};
+			if (!feature.Check())
+			{
+				return;
+			};
 
-				if (feature->Enabled)
+			if (feature.Enabled)
+			{
+				if (!feature.OneTime || !feature.hasRun)
 				{
-					if (!feature->OneTime || !feature->hasRun)
-					{
-						feature->Run();
-						feature->hasRun = true;
-					}
-					feature->applied = true;
+					feature.Run();
+					feature.hasRun = true;
 				}
-				else
+				feature.applied = true;
+			}
+			else
+			{
+				if (feature.applied)
 				{
-					if (feature->applied)
-					{
-						feature->Destroy();
-						feature->applied = false;
-					}
-					feature->hasRun = false;
+					feature.Destroy();
+					feature.applied = false;
 				}
+				feature.hasRun = false;
 			}
 		}
 		catch (char* e)
 		{
 			Logger::Log("ERROR", "Failed to execute feature: " + std::string(e));
+		}
+	}
+
+	// Runs every render-driven feature. Called once per rendered frame from
+	// PostRender. Event-driven features (Event != "render") are skipped here and
+	// run from the event bus instead.
+	inline void Execute()
+	{
+		for (const auto& feature : Features)
+		{
+			if (feature->Event == Events::Type::Render)
+			{
+				RunFeature(*feature);
+			}
 		}
 	}
 };

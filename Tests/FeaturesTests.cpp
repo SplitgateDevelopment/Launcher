@@ -43,8 +43,8 @@ FakeFeature* add(std::string name = "Fake") {
 
 class FeaturesTest : public ::testing::Test {
 protected:
-    void SetUp() override { Features::Features.clear(); }
-    void TearDown() override { Features::Features.clear(); }
+    void SetUp() override { Features::Features.clear(); Events::Clear(); }
+    void TearDown() override { Features::Features.clear(); Events::Clear(); }
 };
 
 TEST_F(FeaturesTest, InitializesUninitializedFeatures) {
@@ -171,6 +171,30 @@ TEST_F(FeaturesTest, PropagatesNonCharPointerExceptions) {
     f->Enabled = true;
     f->throwOnRun = true;
     EXPECT_THROW(Features::Execute(), std::runtime_error);
+}
+
+// Execute() only drives render features; event-driven ones run from the bus.
+TEST_F(FeaturesTest, ExecuteSkipsEventDrivenFeatures) {
+    FakeFeature* f = add();
+    f->Event = Events::Type::Shutdown;
+    f->Enabled = true;
+    Features::Execute();
+    EXPECT_EQ(0, f->runCount);
+}
+
+// An event feature runs when its event is dispatched (this is how Features::Init
+// wires non-render features onto the bus).
+TEST_F(FeaturesTest, EventFeatureRunsWhenDispatched) {
+    FakeFeature f;
+    f.Event = Events::Type::Shutdown;
+    f.Enabled = true;
+    Events::Register(f.Event, [&] { Features::RunFeature(f); });
+
+    Events::Dispatch(Events::Type::Render);
+    EXPECT_EQ(0, f.runCount);        // wrong event
+
+    Events::Dispatch(Events::Type::Shutdown);
+    EXPECT_EQ(1, f.runCount);        // fires on its event
 }
 
 }  // namespace

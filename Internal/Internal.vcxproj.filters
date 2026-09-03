@@ -141,9 +141,6 @@
     <ClInclude Include="features\NoRecoil.h">
       <Filter>features</Filter>
     </ClInclude>
-    <ClInclude Include="features\LoadIntoMap.h">
-      <Filter>features</Filter>
-    </ClInclude>
     <ClInclude Include="features\PlayerModifications.h">
       <Filter>features</Filter>
     </ClInclude>

@@ -71,7 +71,6 @@
     <ClInclude Include="features\DrawActors.h" />
     <ClInclude Include="features\GodMode.h" />
     <ClInclude Include="features\InfiniteJetpack.h" />
-    <ClInclude Include="features\LoadIntoMap.h" />
     <ClInclude Include="features\NoRecoil.h" />
     <ClInclude Include="features\PlayerModifications.h" />
     <ClInclude Include="features\SpinBot.h" />

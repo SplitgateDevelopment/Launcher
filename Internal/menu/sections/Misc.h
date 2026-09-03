@@ -2,6 +2,7 @@
 
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
+#include "../../scripting/Events.h"
 
 namespace Menu {
 	namespace Sections {
@@ -20,7 +21,7 @@ namespace Menu {
 			if (isInGame) ImGui::BeginDisabled();
 			if (ImGui::Button("Load into map"))
 			{
-				Settings.MISC.LoadIntoMap = true;
+				Events::Dispatch(Events::Type::LoadIntoMap);
 			};
 			if (isInGame) ImGui::EndDisabled();
 
