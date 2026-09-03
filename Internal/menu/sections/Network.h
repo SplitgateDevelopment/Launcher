@@ -4,16 +4,35 @@
 /// @brief Network tab: backend-redirect toggle + editable redirect map, and HTTP-logging
 /// controls. Backed by Settings.NETWORK and read live by the hooks in the network/ module.
 
+#include <cstring>
 #include <string>
 
 #include "../../network/HttpLogger.h"
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
+#include "../../../shared/LauncherSettings.h" // Shared::LauncherSettings (launcher.settings)
 
 namespace Menu
 {
 	namespace Sections
 	{
+		/// The launcher's own settings (launcher.settings), edited here so the launcher picks the
+		/// mitmproxy config up on its next start. Kept separate from the DLL's SETTINGS on purpose.
+		inline Shared::LauncherSettings& LauncherConfig()
+		{
+			static Shared::LauncherSettings settings;
+			return settings;
+		}
+
+		/// The file bound to @ref LauncherConfig (same app folder as splitgate.settings).
+		inline Shared::SettingsFile<Shared::LauncherSettings>& LauncherConfigFile()
+		{
+			static Shared::SettingsFile<Shared::LauncherSettings> file(
+				LauncherConfig(),
+				Shared::AppDataPath(SettingsHelper::AppFolder, Shared::LauncherSettingsFileName));
+			return file;
+		}
+
 		/// @brief Renders the Network tab: the redirect enable toggle, an add/remove editor for
 		/// the original->target redirect map, and the HTTP-logging switches. Dispatches
 		/// SettingsChanged on any change.
@@ -57,6 +76,69 @@ namespace Menu
 				originalBuffer[0] = '\0';
 				targetBuffer[0] = '\0';
 				changed = true;
+			}
+
+			// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
+			// the DLL's SETTINGS. Only relevant when the launcher will spawn mitmproxy.
+			if (Settings.NETWORK.Proxy == ProxyMode::Mitmproxy)
+			{
+				ImGui::SeparatorText("Mitmproxy script");
+				ImGui::Tooltip("How the launcher starts mitmdump (saved to launcher.settings, applied next launch).\n"
+							   "Default: a generated addon (redirects above + TLS passthrough).\n"
+							   "Path: mitmdump -s <file>. Inline: your python, run as the addon.");
+
+				// Load launcher.settings once, then mirror its strings into edit buffers.
+				static bool launcherLoaded = LauncherConfigFile().Load();
+				auto& mitm = LauncherConfig().MITMPROXY;
+
+				static char pathBuffer[512] = "";
+				static char inlineBuffer[8192] = "";
+				static bool buffersInit = [&]
+				{
+					const auto copyInto = [](char* dst, std::size_t size, const std::string& src)
+					{
+						const std::size_t count = src.size() < size - 1 ? src.size() : size - 1;
+						std::memcpy(dst, src.data(), count);
+						dst[count] = '\0';
+					};
+					copyInto(pathBuffer, sizeof(pathBuffer), mitm.ScriptPath);
+					copyInto(inlineBuffer, sizeof(inlineBuffer), mitm.InlineScript);
+					return true;
+				}();
+				(void)launcherLoaded;
+				(void)buffersInit;
+
+				bool launcherChanged = false;
+				int scriptMode = static_cast<int>(mitm.ScriptMode);
+				launcherChanged |= ImGui::RadioButton("Default##mitm", &scriptMode, static_cast<int>(Shared::MitmScriptMode::Default));
+				ImGui::SameLine();
+				launcherChanged |= ImGui::RadioButton("Path##mitm", &scriptMode, static_cast<int>(Shared::MitmScriptMode::Path));
+				ImGui::SameLine();
+				launcherChanged |= ImGui::RadioButton("Inline##mitm", &scriptMode, static_cast<int>(Shared::MitmScriptMode::Inline));
+				mitm.ScriptMode = static_cast<Shared::MitmScriptMode>(scriptMode);
+
+				if (mitm.ScriptMode == Shared::MitmScriptMode::Path)
+				{
+					if (ImGui::InputText("Script path", pathBuffer, sizeof(pathBuffer)))
+					{
+						mitm.ScriptPath = pathBuffer;
+						launcherChanged = true;
+					}
+				}
+				else if (mitm.ScriptMode == Shared::MitmScriptMode::Inline)
+				{
+					if (ImGui::InputTextMultiline("Inline python", inlineBuffer, sizeof(inlineBuffer), ImVec2(0, 160)))
+					{
+						mitm.InlineScript = inlineBuffer;
+						launcherChanged = true;
+					}
+				}
+				else
+				{
+					ImGui::TextDisabled("Generates an addon from the redirects above (with TLS passthrough).");
+				}
+
+				if (launcherChanged) LauncherConfigFile().Save();
 			}
 
 			ImGui::SeparatorText("HTTP logging");
