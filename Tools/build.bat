@@ -1,6 +1,6 @@
 set BUILD_CONFIGURATION=Release
 
-set AdditionalLibPaths="%pythonLocation%\libs"
-set IncludePath="$(ProjectDir)\external\pybind11\include;%pythonLocation%\include;$(IncludePath)"
-
-msbuild /m /p:Configuration=%BUILD_CONFIGURATION% /p:AdditionalLibPaths=%AdditionalLibPaths% /p:IncludePath=%IncludePath% %SOLUTION_FILE_PATH%
+REM Python include/lib paths are resolved by Internal\python.props (from SPLITGATE_PYTHON_DIR
+REM in CI, or a local install), and the pybind11 include dir is added by Internal.vcxproj, so
+REM no AdditionalLibPaths/IncludePath overrides are needed here.
+msbuild /m /p:Configuration=%BUILD_CONFIGURATION% %SOLUTION_FILE_PATH%
