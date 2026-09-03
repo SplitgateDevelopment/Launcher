@@ -1,4 +1,8 @@
 #include "utils/Logger.h"
+#include "utils/handles/UniqueHandle.h"
+#include "utils/handles/UniqueHook.h"
+#include "utils/handles/UniqueLibrary.h"
+#include "../shared/Ipc.h"
 #include <thread>
 #include <chrono>
 
@@ -9,24 +13,25 @@ int main()
 	Logger logger;
 	logger.info("Loading...");
 
-	HMODULE lib = LoadLibraryA("internal.dll");
+	Launcher::UniqueHandle initEvent(Ipc::Create(Ipc::Event::Initialized));
+	if (!initEvent)
+	{
+		logger.errorBox(TEXT("CreateEventW"));
+		return logger.stop(-1);
+	}
+
+	Launcher::UniqueLibrary lib(LoadLibraryA("Internal.dll"));
 	if (!lib)
 	{
-		logger.error("Failed to load target module!");
 		logger.errorBox(TEXT("LoadLibraryA"));
-
-		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success("Loaded target module!");
 
-	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib, "?SplitgateCallBack@@YA_JH_K_J@Z"));
+	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib.get(), "?SplitgateCallBack@@YA_JH_K_J@Z"));
 	if (!proc)
 	{
-		logger.error("Failed to get exported function address!");
-		logger.errorBox(TEXT("HOOKPROC"));
-
-		FreeLibrary(lib);
+		logger.errorBox(TEXT("GetProcAddress"));
 		return logger.stop(-1);
 	}
 	logger.success("Got exported function address!");
@@ -37,49 +42,55 @@ int main()
 		logger.error("Failed to get game window!");
 		logger.errorBox(TEXT("FindWindowA"));
 
-		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success("Got game window!");
 
-	DWORD ProcessID = 0, ThreadID = GetWindowThreadProcessId(GameWindow, &ProcessID);
-	if (!ThreadID)
+	DWORD ProcessID = 0, threadId = GetWindowThreadProcessId(GameWindow, &ProcessID);
+	if (!threadId)
 	{
 		logger.error("Failed to get thread id!");
 		logger.errorBox(TEXT("GetWindowThreadProcessId"));
 
-		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
-	logger.success(std::format("Thread id: {}", ThreadID));
+	logger.success(std::format("Thread id: {}", threadId));
 	logger.success(std::format("Process id: {}", ProcessID));
 
-	HHOOK hook = SetWindowsHookExW(WH_GETMESSAGE, proc, lib, ThreadID);
+	Launcher::UniqueHook hook(SetWindowsHookExW(WH_GETMESSAGE, proc, lib.get(), threadId));
 	if (!hook)
 	{
-		logger.error("Failed to place hook");
 		logger.errorBox(TEXT("SetWindowsHookExW"));
-
-		UnhookWindowsHookEx(hook);
-		FreeLibrary(lib);
-
 		return logger.stop(-1);
-	};
+	}
 	logger.success("Placed hook!");
 
-	constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
-	if (!PostThreadMessageW(ThreadID, WM_SPLITGATE_INIT, 0, reinterpret_cast<LPARAM>(hook)))
+	const UINT initMsg = RegisterWindowMessageW(L"SplitgateInit");
+	if (!initMsg)
 	{
-		logger.error("Failed to post thread message!");
+		logger.errorBox(TEXT("RegisterWindowMessageW"));
+		return logger.stop(-1);
+	}
+	logger.success("Registered window message!");
+
+	constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
+	if (!PostThreadMessageW(threadId, initMsg, 0, reinterpret_cast<LPARAM>(hook.get())))
+	{
 		logger.errorBox(TEXT("PostThreadMessageW"));
-
-		UnhookWindowsHookEx(hook);
-		FreeLibrary(lib);
-
 		return logger.stop(-1);
 	}
 	logger.success("DLL injected into process!");
 
+	constexpr DWORD TIMEOUT = 15000;
+	if (!Ipc::Wait(initEvent.get(), TIMEOUT))
+	{
+		logger.error("DLL failed to initialize (timed out)!");
+		return logger.stop(-1);
+	}
+	logger.success("DLL initialized successfully!");
+
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+	hook.release();
+
 	return 0;
 }
