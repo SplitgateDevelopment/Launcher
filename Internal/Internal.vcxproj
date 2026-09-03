@@ -132,7 +132,19 @@
       <PreprocessorDefinitions>SPLITGATE_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="python.props" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Ship the Python runtime next to Internal.dll: it's a hard dependency of the embedded
+       interpreter, and the game process must be able to resolve it when the DLL is injected.
+       $(PythonRoot) is resolved by python.props (same version the DLL linked against). -->
+  <Target Name="CopyPythonRuntime" AfterTargets="Build" Condition="'$(PythonRoot)' != ''">
+    <ItemGroup>
+      <PythonRuntime Include="$(PythonRoot)python3*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PythonRuntime)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

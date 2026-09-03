@@ -5,7 +5,13 @@
   • Build the project or download the latest precompiled binaries from [here](https://nightly.link/SplitgateDevelopment/Launcher/workflows/msbuild/master/Release.zip)
 
   • Make sure Launcher.exe and Internal.dll in the same folder
-  
+
+  • Copy `python3XY.dll` (matching the build, e.g. `python314.dll`) and `minhook.x64.dll` into the
+    game's binaries folder — `...\steamapps\common\Splitgate\PortalWars\Binaries\Win64` — next to
+    `PortalWars-Win64-Shipping.exe`. Internal.dll depends on them, and the game process resolves an
+    injected DLL's dependencies from its own folder, not from Internal.dll's. (Both are shipped in
+    the release next to Internal.dll.)
+
   • Start the game
   
   • Open Launcher.exe
