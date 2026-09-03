@@ -22,7 +22,7 @@ via nightly.link; otherwise build from source.
 
 ## Build
 
-- Toolchain: **Visual Studio 2022** (`v143`), C++ latest standard, x64 **Release** only.
+- Toolchain: **Visual Studio 2022** (`v145`), C++ latest standard, x64 **Release** only.
 - Dependencies via **vcpkg** (manifest mode). `Internal` also uses submodules under
   `Internal/external/` (pybind11, discord-rpc).
 - `Internal` embeds **CPython** (pybind11 + `<Python.h>`) for user scripting, so a Python
@@ -42,7 +42,7 @@ via nightly.link; otherwise build from source.
 ## Launcher (`Launcher.exe`) — structure
 
 **Console** application (`SubSystem=Console`), root namespace `Launcher`, x64 Release only
-(`v143`, C++ latest, Unicode). No vcpkg/external dependencies and no extra linked libs — it's
+(`v145`, C++ latest, Unicode). No vcpkg/external dependencies and no extra linked libs — it's
 self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE`.
 
 - `Launcher.cpp` — entry point / launcher logic.
