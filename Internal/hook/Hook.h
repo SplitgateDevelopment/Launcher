@@ -94,9 +94,9 @@ namespace Hook
 			Settings.EXPLOITS.FOV = UserSave->FOV;
 		};
 
-		if (SettingsHelper::Load())
+		if (SettingsHelper::File().Load())
 		{
-			auto settingsPath = SettingsHelper::GetSettingsFilePath();
+			auto settingsPath = SettingsHelper::File().Path().string();
 			Logger::Log("SUCCESS", std::string("Loaded settings from ").append(settingsPath));
 		}
 

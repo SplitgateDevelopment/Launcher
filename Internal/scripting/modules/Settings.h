@@ -20,8 +20,10 @@ namespace Scripts
 		void Settings(py::module_& m)
 		{
 			auto settings = m.def_submodule("Settings");
-			settings.def("Reset", &SettingsHelper::Reset);
-			settings.def("Save", &SettingsHelper::Save);
+			settings.def("Reset", []
+						 { SettingsHelper::File().Reset(); });
+			settings.def("Save", []
+						 { SettingsHelper::File().Save(); });
 		}
 	} // namespace Modules
 } // namespace Scripts

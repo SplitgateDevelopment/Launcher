@@ -47,7 +47,7 @@ namespace Menu
 
 			if (ImGui::Button("Dump GObjects"))
 			{
-				fs::path dumpsDir = SettingsHelper::GetAppPath() / "Dumps";
+				fs::path dumpsDir = Shared::AppDataPath(SettingsHelper::AppFolder) / "Dumps";
 				if (!fs::exists(dumpsDir)) fs::create_directories(dumpsDir);
 
 				fs::path filePath = dumpsDir / "GObjects.txt";

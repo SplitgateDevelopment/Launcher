@@ -22,7 +22,7 @@ namespace ExceptionHandler
 	inline void Init(ExitMode exitMode = ExitMode::Silent)
 	{
 		Shared::ExceptionHandler::Config config;
-		config.crashDir = SettingsHelper::GetAppPath() / "Crashes";
+		config.crashDir = Shared::AppDataPath(SettingsHelper::AppFolder) / "Crashes";
 		config.exitMode = exitMode;
 		config.log = [](const std::string& level, const std::string& message)
 		{ Logger::Log(level, message); };
@@ -31,7 +31,7 @@ namespace ExceptionHandler
 			if (!Settings.DEBUG.DeleteSettingsOnCrash) return;
 
 			Logger::Log("INFO", "Deleted settings to prevent further errors");
-			SettingsHelper::Delete();
+			SettingsHelper::File().Remove();
 		};
 
 		Shared::ExceptionHandler::Install(config);

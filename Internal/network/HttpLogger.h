@@ -49,7 +49,7 @@ namespace Network::Http
 		if (!Settings.NETWORK.HttpLogToFile) return;
 
 		if (!logFile.is_open())
-			logFile.open(SettingsHelper::GetAppPath("http.log"), std::ios::out | std::ios::app);
+			logFile.open(Shared::AppDataPath(SettingsHelper::AppFolder, "http.log"), std::ios::out | std::ios::app);
 		if (logFile.is_open()) logFile << line << std::endl;
 	}
 

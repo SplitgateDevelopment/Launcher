@@ -1,49 +1,20 @@
 /**
  * @file
- * @brief Defines the global @ref Settings instance and the SettingsHelper facade. Persistence
- * is delegated to Shared::SettingsFile (shared with the launcher); the Documents app-path
- * resolution stays here since it's DLL-specific.
+ * @brief Defines the global @ref Settings instance and the settings-file accessor bound to it.
+ * Persistence and app-path resolution live in shared/Settings.h (Shared::SettingsFile /
+ * Shared::AppDataPath), included via Settings.h.
  */
 
 #include "Settings.h"
-#include "../../shared/Settings.h"
 
 /// The one global settings instance (declared extern in Settings.h).
 SETTINGS Settings = SETTINGS{};
 
 namespace SettingsHelper
 {
-	fs::path GetAppPath(std::string filename)
+	Shared::SettingsFile<SETTINGS>& File()
 	{
-		return Shared::AppDataPath(AppFolder, filename);
-	}
-
-	std::string GetSettingsFilePath()
-	{
-		return GetAppPath(SettingsFileName).string();
-	}
-
-	/// The settings file, bound to the global @ref Settings.
-	static Shared::SettingsFile<SETTINGS>& file()
-	{
-		static Shared::SettingsFile<SETTINGS> instance(Settings, GetSettingsFilePath());
+		static Shared::SettingsFile<SETTINGS> instance(Settings, Shared::AppDataPath(AppFolder, SettingsFileName));
 		return instance;
-	}
-
-	bool Load()
-	{
-		return file().Load();
-	}
-	void Save()
-	{
-		file().Save();
-	}
-	void Reset()
-	{
-		file().Reset();
-	}
-	void Delete()
-	{
-		file().Remove();
 	}
 } // namespace SettingsHelper

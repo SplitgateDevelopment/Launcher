@@ -56,7 +56,7 @@ class SettingsFileTest : public ::testing::Test
 
 	void SetUp() override
 	{
-		path = SettingsHelper::GetSettingsFilePath();
+		path = SettingsHelper::File().Path().string();
 		backup = fs::path(path).concat(".uttmp");
 
 		std::error_code ec;
@@ -65,7 +65,7 @@ class SettingsFileTest : public ::testing::Test
 			fs::rename(path, backup, ec);
 			hadBackup = !ec;
 		}
-		SettingsHelper::Reset();
+		SettingsHelper::File().Reset();
 	}
 
 	void TearDown() override
@@ -73,14 +73,14 @@ class SettingsFileTest : public ::testing::Test
 		std::error_code ec;
 		fs::remove(path, ec);
 		if (hadBackup) fs::rename(backup, path, ec);
-		SettingsHelper::Reset();
+		SettingsHelper::File().Reset();
 	}
 };
 
 TEST_F(SettingsFileTest, SaveCreatesFile)
 {
 	ASSERT_FALSE(fs::exists(path));
-	SettingsHelper::Save();
+	SettingsHelper::File().Save();
 	EXPECT_TRUE(fs::exists(path));
 }
 
@@ -111,10 +111,10 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields)
 	Settings.DEBUG.ShowDemoWindow = true;
 	Settings.DEBUG.ShowStyleEditor = true;
 
-	SettingsHelper::Save();
-	SettingsHelper::Reset();			 // wipe in-memory state...
-	ASSERT_TRUE(Settings.MENU.ShowMenu); // ...confirm it's back to default
-	ASSERT_TRUE(SettingsHelper::Load()); // ...then reload from disk
+	SettingsHelper::File().Save();
+	SettingsHelper::File().Reset();				// wipe in-memory state...
+	ASSERT_TRUE(Settings.MENU.ShowMenu);		// ...confirm it's back to default
+	ASSERT_TRUE(SettingsHelper::File().Load()); // ...then reload from disk
 
 	EXPECT_FALSE(Settings.MENU.ShowMenu);
 	EXPECT_FALSE(Settings.MENU.ShowWatermark);
@@ -144,7 +144,7 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields)
 TEST_F(SettingsFileTest, LoadReturnsFalseWhenFileMissing)
 {
 	ASSERT_FALSE(fs::exists(path));
-	EXPECT_FALSE(SettingsHelper::Load());
+	EXPECT_FALSE(SettingsHelper::File().Load());
 }
 
 TEST_F(SettingsFileTest, LoadReturnsFalseOnCorruptFile)
@@ -153,7 +153,7 @@ TEST_F(SettingsFileTest, LoadReturnsFalseOnCorruptFile)
 		std::ofstream(path) << "{ this is not valid json ";
 	}
 	ASSERT_TRUE(fs::exists(path));
-	EXPECT_FALSE(SettingsHelper::Load()); // must not throw
+	EXPECT_FALSE(SettingsHelper::File().Load()); // must not throw
 }
 
 // With the WITH_DEFAULT macros, a settings file that predates a field (missing
@@ -164,7 +164,7 @@ TEST_F(SettingsFileTest, LoadToleratesMissingKeys)
 	{
 		std::ofstream(path) << "{}";
 	}
-	ASSERT_TRUE(SettingsHelper::Load());
+	ASSERT_TRUE(SettingsHelper::File().Load());
 	EXPECT_TRUE(Settings.MENU.ShowMenu);						 // default
 	EXPECT_FLOAT_EQ(80.f, Settings.EXPLOITS.FOV);				 // default
 	EXPECT_EQ("SplitgateDevelopment", Settings.MISC.PlayerName); // default
@@ -172,9 +172,9 @@ TEST_F(SettingsFileTest, LoadToleratesMissingKeys)
 
 TEST_F(SettingsFileTest, DeleteRemovesFile)
 {
-	SettingsHelper::Save();
+	SettingsHelper::File().Save();
 	ASSERT_TRUE(fs::exists(path));
-	SettingsHelper::Delete();
+	SettingsHelper::File().Remove();
 	EXPECT_FALSE(fs::exists(path));
 }
 
@@ -182,7 +182,7 @@ TEST_F(SettingsFileTest, ResetRestoresDefaults)
 {
 	Settings.EXPLOITS.FOV = 42.f;
 	Settings.MISC.PlayerName = "changed";
-	SettingsHelper::Reset();
+	SettingsHelper::File().Reset();
 	EXPECT_FLOAT_EQ(80.f, Settings.EXPLOITS.FOV);
 	EXPECT_EQ("SplitgateDevelopment", Settings.MISC.PlayerName);
 }
@@ -194,10 +194,10 @@ TEST_F(SettingsFileTest, ShowConsolePersists)
 	ASSERT_TRUE(Settings.MISC.ShowConsole); // default
 	Settings.MISC.ShowConsole = false;
 
-	SettingsHelper::Save();
-	SettingsHelper::Reset();
+	SettingsHelper::File().Save();
+	SettingsHelper::File().Reset();
 	ASSERT_TRUE(Settings.MISC.ShowConsole); // reset back to default
-	ASSERT_TRUE(SettingsHelper::Load());
+	ASSERT_TRUE(SettingsHelper::File().Load());
 
 	EXPECT_FALSE(Settings.MISC.ShowConsole);
 }
@@ -212,9 +212,9 @@ TEST_F(SettingsFileTest, RuntimeOnlyFieldsAreNotPersisted)
 	Settings.MISC.DiscordAppID = "111222333";
 	Settings.MISC.SteamAppId = "999999";
 
-	SettingsHelper::Save();
-	SettingsHelper::Reset();
-	ASSERT_TRUE(SettingsHelper::Load());
+	SettingsHelper::File().Save();
+	SettingsHelper::File().Reset();
+	ASSERT_TRUE(SettingsHelper::File().Load());
 
 	EXPECT_EQ("github.com/SplitgateDevelopment/Launcher", Settings.MENU.Watermark);
 	EXPECT_EQ("1078744504066117703", Settings.MISC.DiscordAppID);

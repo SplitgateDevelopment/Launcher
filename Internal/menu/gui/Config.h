@@ -14,8 +14,8 @@ namespace GUI
 		/// at app-relative paths (imgui.ini / imgui_log.txt).
 		void Init()
 		{
-			auto iniPath = SettingsHelper::GetAppPath("imgui.ini").string();
-			auto logsPath = SettingsHelper::GetAppPath("imgui_log.txt").string();
+			auto iniPath = Shared::AppDataPath(SettingsHelper::AppFolder, "imgui.ini").string();
+			auto logsPath = Shared::AppDataPath(SettingsHelper::AppFolder, "imgui_log.txt").string();
 
 			ImGuiIO& io = ImGui::GetIO();
 			(void)io;

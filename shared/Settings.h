@@ -49,7 +49,7 @@ namespace Shared
 		SettingsFile(T& data, std::filesystem::path path) : value(data), path(std::move(path)) {}
 
 		/// @return the on-disk path.
-		const std::filesystem::path& File() const { return path; }
+		const std::filesystem::path& Path() const { return path; }
 
 		/**
 		 * Reads the file into the bound struct, tolerating missing keys (WITH_DEFAULT) and

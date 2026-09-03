@@ -9,6 +9,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
+#include "../../shared/Settings.h"
+
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
@@ -191,7 +193,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, 
 /// The one global settings instance (defined in Settings.cpp).
 extern SETTINGS Settings;
 
-/// On-disk persistence for the global @ref Settings: path resolution plus load/save/reset/delete.
+/// The app-data location and the settings file for the global @ref Settings. Persistence is
+/// done through the returned @ref Shared::SettingsFile (Load/Save/Reset/Remove); general
+/// app-data paths come from `Shared::AppDataPath(AppFolder, ...)`.
 namespace SettingsHelper
 {
 	/// App-data folder and settings file name. Single source of truth — the DLL owns the file,
@@ -199,18 +203,7 @@ namespace SettingsHelper
 	inline constexpr const char* AppFolder = "SplitgateInternal";
 	inline constexpr const char* SettingsFileName = "splitgate.settings";
 
-	/// @param filename optional leaf to append.
-	/// @return the app data folder (Documents\SplitgateInternal), with @p filename appended if given.
-	fs::path GetAppPath(std::string filename = "");
-	/// @return the full path to the settings JSON file.
-	std::string GetSettingsFilePath();
-	/// Loads the settings file into @ref Settings, keeping defaults for missing/invalid keys.
-	/// @return true if a file was read, false if none existed (or it couldn't be opened).
-	bool Load();
-	/// Serializes @ref Settings to disk.
-	void Save();
-	/// Resets @ref Settings to defaults in memory and saves.
-	void Reset();
-	/// Deletes the settings file from disk (used on crash recovery).
-	void Delete();
+	/// The settings file bound to the global @ref Settings (lazily created on first use). Use
+	/// its `Load()` / `Save()` / `Reset()` / `Remove()` for persistence and `Path()` for its path.
+	Shared::SettingsFile<SETTINGS>& File();
 } // namespace SettingsHelper

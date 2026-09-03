@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../shared/Logger.h"
-#include "../settings/Settings.h" // SettingsHelper::GetAppPath
+#include "../settings/Settings.h" // SettingsHelper::AppFolder, Shared::AppDataPath
 
 /**
  * @file
@@ -33,7 +33,7 @@ namespace Logger
 	/// Spawns the in-game console and opens internal.log (in the app folder).
 	inline void CreateConsole()
 	{
-		const auto logPath = SettingsHelper::GetAppPath("internal.log");
+		const auto logPath = Shared::AppDataPath(SettingsHelper::AppFolder, "internal.log");
 		Instance().createConsole("Splitgate Internal", logPath.string());
 
 		Log("SUCCESS", "Created console");

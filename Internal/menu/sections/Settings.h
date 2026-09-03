@@ -20,14 +20,14 @@ namespace Menu
 			ImGui::SeparatorText("Config");
 			if (ImGui::Button("Save"))
 			{
-				SettingsHelper::Save();
+				SettingsHelper::File().Save();
 			};
 
 			ImGui::SameLine();
 
 			if (ImGui::Button("Reload"))
 			{
-				SettingsHelper::Load();
+				SettingsHelper::File().Load();
 				Events::Dispatch(Events::Type::SettingsChanged); // features re-read Enabled
 			};
 
@@ -35,7 +35,7 @@ namespace Menu
 
 			if (ImGui::Button("Reset defaults"))
 			{
-				SettingsHelper::Reset();
+				SettingsHelper::File().Reset();
 				Events::Dispatch(Events::Type::SettingsChanged);
 			};
 

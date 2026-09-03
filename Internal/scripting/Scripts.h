@@ -53,7 +53,7 @@ namespace Scripts
 	void Init()
 	{
 		fs::path scriptsFolder("UserScripts");
-		scriptsPath = SettingsHelper::GetAppPath() / scriptsFolder;
+		scriptsPath = Shared::AppDataPath(SettingsHelper::AppFolder) / scriptsFolder;
 
 		Logger::Log("INFO", std::format("Loading scripts from {}", scriptsPath.string()));
 
