@@ -77,7 +77,12 @@ namespace Hook
 			LocalPlayer = nullptr;
 			ViewPortClient = nullptr;
 			ViewPortClientVTable = nullptr;
-			if (attempt == 0) Logger::Log("INFO", "Waiting for the world / local player to be ready...");
+
+			if (attempt == 0)
+			{
+				Logger::Log("INFO", "Waiting for the world / local player to be ready...");
+			}
+
 			Sleep(100);
 		}
 
