@@ -13,17 +13,14 @@ SETTINGS Settings = SETTINGS{};
 
 namespace SettingsHelper
 {
-	fs::path folder("SplitgateInternal");
-	fs::path filename("splitgate.settings");
-
 	fs::path GetAppPath(std::string filename)
 	{
-		return Shared::AppDataPath(folder.string(), filename);
+		return Shared::AppDataPath(AppFolder, filename);
 	}
 
 	std::string GetSettingsFilePath()
 	{
-		return GetAppPath(filename.string()).string();
+		return GetAppPath(SettingsFileName).string();
 	}
 
 	/// The settings file, bound to the global @ref Settings.

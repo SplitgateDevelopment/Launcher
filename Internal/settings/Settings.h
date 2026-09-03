@@ -167,6 +167,11 @@ extern SETTINGS Settings;
 /// On-disk persistence for the global @ref Settings: path resolution plus load/save/reset/delete.
 namespace SettingsHelper
 {
+	/// App-data folder and settings file name. Single source of truth — the DLL owns the file,
+	/// the launcher reads it (Launcher/utils/ProxyConfig.h), so both reference these.
+	inline constexpr const char* AppFolder = "SplitgateInternal";
+	inline constexpr const char* SettingsFileName = "splitgate.settings";
+
 	/// @param filename optional leaf to append.
 	/// @return the app data folder (Documents\SplitgateInternal), with @p filename appended if given.
 	fs::path GetAppPath(std::string filename = "");

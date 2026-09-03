@@ -24,7 +24,7 @@ namespace Launcher
 	inline NetworkSettings ReadNetworkSettings()
 	{
 		NetworkView view;
-		Shared::SettingsFile<NetworkView> file(view, Shared::AppDataPath("SplitgateInternal", "splitgate.settings"));
+		Shared::SettingsFile<NetworkView> file(view, Shared::AppDataPath(SettingsHelper::AppFolder, SettingsHelper::SettingsFileName));
 		file.Load();
 		return view.NETWORK;
 	}
