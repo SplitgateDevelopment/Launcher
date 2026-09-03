@@ -113,6 +113,7 @@
     <ClInclude Include="..\shared\Logger.h" />
     <ClInclude Include="..\shared\ExceptionHandler.h" />
     <ClInclude Include="..\shared\Settings.h" />
+    <ClInclude Include="..\shared\LauncherSettings.h" />
     <ClInclude Include="ue\UObjects.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="utils\Util.h" />
