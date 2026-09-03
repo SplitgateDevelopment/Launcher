@@ -13,6 +13,7 @@
 
 #include "modules/Logger.h"
 #include "modules/Settings.h"
+#include "modules/Events.h"
 
 namespace py = pybind11;
 namespace fs = std::filesystem;
@@ -23,6 +24,7 @@ PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m) {
 
 	Scripts::Modules::Logger(m);
 	Scripts::Modules::Settings(m);
+	Scripts::Modules::Events(m);
 }
 
 namespace Scripts {
