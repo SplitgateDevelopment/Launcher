@@ -1,7 +1,10 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <format>
+#include <chrono>
+#include <string>
 #include <Windows.h>
 #include <strsafe.h>
 
@@ -11,6 +14,10 @@ struct logDTO {
 
 class Logger {
 public:
+	Logger(const std::string& logPath = "launcher.log") {
+		logFile.open(logPath, std::ios::out | std::ios::trunc);
+	}
+
 	void error(std::string message) {
 		return _log({
 			"ERROR",
@@ -66,8 +73,14 @@ public:
 	};
 
 private:
-	void _log(logDTO logDTO, std::string message) {
+	std::ofstream logFile;
 
+	void _log(logDTO logDTO, std::string message) {
 		std::cout << format("[{}] ", logDTO.text) << message << std::endl;
+
+		if (!logFile.is_open()) return;
+
+		const auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+		logFile << std::format("[{:%Y-%m-%d %H:%M:%S}] [{}] ", now, logDTO.text) << message << std::endl;
 	};
 };
