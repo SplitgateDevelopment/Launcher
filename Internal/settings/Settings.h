@@ -31,9 +31,10 @@ struct ExploitsSettings {
     bool InfiniteAmmo = false;
     bool NoReload = false;
     bool ThirdPerson = false;
+    bool FreeCam = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam)
 
 struct MiscSettings {
     bool ShowConsole = true;
@@ -70,13 +71,19 @@ struct VisualsSettings {
     bool Box = true;
     bool Box3D = false;  // false = 2D box, true = 3D box
     bool Bones = false;
+    bool Snaplines = false;
+    bool Health = false;
+    bool Distance = false;
+
+    bool Radar = false;  // separate 2D radar feature
 
     Color NameColor{ 1.f, 1.f, 1.f, 1.f };
     Color BoxColor{ 1.f, 0.f, 0.f, 1.f };
     Color BonesColor{ 0.f, 1.f, 0.f, 1.f };
+    Color SnaplineColor{ 1.f, 1.f, 0.f, 1.f };
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, NameColor, BoxColor, BonesColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, NameColor, BoxColor, BonesColor, SnaplineColor)
 
 struct SETTINGS {
     MenuSettings MENU;

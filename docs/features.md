@@ -96,9 +96,9 @@ handler registered in `Features::Init`, dispatched by the button via
 ## Current features
 
 GodMode, InfiniteJetpack, NoRecoil, SpinBot, PlayerModifications,
-WeaponModifications, ThirdPerson, Esp (player name/box/bones ESP, configured in
-the Visuals tab), UserScripts (runs Python user scripts —
-see [scripting.md](scripting.md)).
+WeaponModifications, ThirdPerson, FreeCam, Radar, Esp (player
+name/box/bones/snaplines/health/distance ESP, configured in the Visuals tab),
+UserScripts (runs Python user scripts — see [scripting.md](scripting.md)).
 
 ## Tests
 

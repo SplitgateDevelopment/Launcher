@@ -13,6 +13,8 @@
 #include "InfiniteJetpack.h"
 #include "WeaponModifications.h"
 #include "ThirdPerson.h"
+#include "FreeCam.h"
+#include "Radar.h"
 
 namespace Features
 {
@@ -27,6 +29,8 @@ namespace Features
 		Features.push_back(std::make_unique<InfiniteJetpack>());
 		Features.push_back(std::make_unique<WeaponModifications>());
 		Features.push_back(std::make_unique<ThirdPerson>());
+		Features.push_back(std::make_unique<FreeCam>());
+		Features.push_back(std::make_unique<Radar>());
 
 		// Seed Enabled from current settings, then keep it in sync reactively:
 		// the menu dispatches SettingsChanged on every change, so features no
