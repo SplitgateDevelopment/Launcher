@@ -6,11 +6,11 @@
 
   • Make sure Launcher.exe and Internal.dll in the same folder
 
-  • Copy `python3XY.dll` (matching the build, e.g. `python314.dll`) and `minhook.x64.dll` into the
-    game's binaries folder — `...\steamapps\common\Splitgate\PortalWars\Binaries\Win64` — next to
-    `PortalWars-Win64-Shipping.exe`. Internal.dll depends on them, and the game process resolves an
-    injected DLL's dependencies from its own folder, not from Internal.dll's. (Both are shipped in
-    the release next to Internal.dll.)
+  • Have a Python 3.x installed (the same version the DLL was built against — e.g. `python314.dll`
+    for a Python 3.14 build). The embedded interpreter loads it from the install and finds its
+    standard library there. Do **not** copy `python3XY.dll` next to `Internal.dll` or into the game
+    folder — that makes Python look for its stdlib in the wrong place ("Could not find platform
+    independent libraries").
 
   • Start the game
   

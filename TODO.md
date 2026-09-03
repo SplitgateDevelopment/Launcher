@@ -1,31 +1,34 @@
 # TODO — changes needed in forbidden files
 
-These edits are in files I can't touch (`Launcher/Launcher.cpp`). Everything else for each
-item is already in place.
+These are in files I can't edit (`Internal/dllmain.cpp`, `Launcher/Launcher.cpp`).
 
-## Pass the game PID (and logger) to the mitmproxy spawn
+## 1. Fix the injection trigger-message id (THIS is why the DLL never initializes)
 
-`Launcher::Mitmproxy::Spawn` now takes the game's process id and an optional logger:
+The launcher posts the trigger message resolved with `RegisterWindowMessageW(L"SplitgateInit")`,
+but `dllmain.cpp` still checks the message against `WM_APP + 1`. The two ids don't match, so
+`SplitgateCallBack` drops the trigger, `Hook::Init()` never runs (no console, no `internal.log`),
+and the launcher reports **"DLL failed to initialize (timed out)"**.
 
-```cpp
-bool Spawn(const std::map<std::string, std::string>& redirects, DWORD gamePid = 0, Shared::Logger* logger = nullptr);
-```
-
-- `gamePid` — the game's process id (the one from `GetWindowThreadProcessId(gameWindow, &pid)`
-  used during injection). Lets the watchdog addon exit mitmdump when the game closes.
-- `logger` — the launcher's logger, so Spawn can report what happened (started / mitmdump not on
-  PATH / **addon scripts not found**).
-
-At the `Mitmproxy::Spawn` call site in `Launcher/Launcher.cpp`:
+In `Internal/dllmain.cpp`, resolve the id the same way the launcher does — `RegisterWindowMessageW`
+returns the identical value in every process for the same string:
 
 ```cpp
 // before
-Launcher::Mitmproxy::Spawn(network.Redirects);
-// after
-Launcher::Mitmproxy::Spawn(network.Redirects, gamePid, &logger); // gamePid = game process id, logger = the launcher Logger
+constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
+
+// after — it's a runtime call now, so not constexpr; compute it once
+static const UINT WM_SPLITGATE_INIT = RegisterWindowMessageW(L"SplitgateInit");
 ```
 
-Treat a `false` return as **non-fatal** in Mitmproxy mode — Spawn already logs the specific
-reason (e.g. the bundled `scripts/` folder was deleted), so just log/continue rather than
-aborting the launcher. Passing nothing still compiles (mitmdump stays hidden, no watchdog, no
-logging).
+Leave the `if (msg->message != WM_SPLITGATE_INIT) ...` check unchanged. (This matches the launcher
+and [docs/hooking.md](docs/hooking.md#trigger-message-id).)
+
+## 2. Pass the game PID (and logger) to the mitmproxy spawn — optional
+
+`Launcher::Mitmproxy::Spawn(redirects, gamePid = 0, logger = nullptr)`. `Spawn` already resolves
+the game PID itself when passed 0, so this is optional — pass `&logger` if you want it to log
+"proxy started / scripts not found / mitmdump not on PATH":
+
+```cpp
+Launcher::Mitmproxy::Spawn(network.Redirects, gamePid, &logger);
+```
