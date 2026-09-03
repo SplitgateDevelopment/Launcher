@@ -107,43 +107,81 @@ Recommended next step if pursued: a short RE pass on your own client (traffic ca
 review) to find the URL/connect hook point and confirm how TLS is handled, then wire the
 settings-driven rewrite.
 
-## Implementation (first cut)
+## Implementation
 
-Implemented in `Internal/features/BackendRedirect.h`, toggled from **Misc → Redirect to private
-server** and configured under the `NETWORK` section of the settings JSON
-(`RedirectEnabled`, `OfficialHost`, `PrivateHost`, `PrivatePort` — defaults
-`splitgate.accelbyte.io` → `127.0.0.1:5005`).
+Lives in **`Internal/network/`** and is configured from the **Network** menu tab (backed by
+the `NETWORK` settings section). Structure:
 
-The first cut targets **WinHTTP**, chosen because its exports resolve via `GetProcAddress`
-(no game-specific offsets) and because the game honoring the Fiddler/mitmproxy **system proxy**
-implies a proxy-aware stack:
+- **`Redirect.h`** — pure logic (no OS deps, unit-tested): `HostOf`, `Target` (map lookup),
+  `RewriteUrl` (downgrades `https://<host>` → `http://<target>`), `IsRedirectHost` (log filter).
+- **`HttpLogger.h`** — `Http::Log(method, url)` → console and optional `http.log`, with an
+  optional "redirected hosts only" filter.
+- **`CurlHook.h`** — the **libcurl** hook (the game's real stack; see below).
+- **`WinHttpHook.h`** — the WinHTTP hook (offset-free fallback).
+- **`Network.h`** — `Network::Init()` installs both hooks; called once from `Features::Init`.
 
-- `WinHttpConnect` — when the server host equals `OfficialHost`, reconnect to
-  `PrivateHost:PrivatePort` instead, and remember that connection handle.
-- `WinHttpOpenRequest` — on a remembered (rerouted) handle, clear `WINHTTP_FLAG_SECURE` so the
-  request is plain **HTTP** (the emulator serves HTTP, matching the Fiddler rule's
-  `http://localhost:5005`). Paths/headers/bodies are untouched.
+**Config is a map**, not a single host: `Settings.NETWORK.Redirects` is
+`{ "original host" → "host[:port]" }` (default `splitgate.accelbyte.io` → `127.0.0.1:5005`),
+plus `RedirectEnabled` and the three `HttpLog*` flags. Everything self-gates on the settings,
+so the Network tab toggles/edits behavior live. HTTPS is downgraded to HTTP on redirect (the
+private server is plain HTTP, matching the Fiddler rule).
 
-The hooks install once from `Features::Init` (MinHook is already up) and **self-gate on
-`RedirectEnabled`**, so the menu toggle enables/disables live. `Backend::RewriteUrl` is also
-provided as a reusable URL rewriter for the fallback case below.
+### Getting around libcurl
 
-### How to verify / when to pivot
+Splitgate's UE HTTP goes through **libcurl** (`FCurlHttpRequest`), which is **statically
+linked**, so its symbols aren't exported and `GetProcAddress` can't find them. The approach
+(`CurlHook.h`):
 
-Enable the toggle in-game with the console open. On success you'll see
-`[Backend] Redirecting splitgate.accelbyte.io -> …`. **If nothing logs**, the game isn't using
-WinHTTP — it's almost certainly **libcurl** (`FCurlHttpRequest`, the common UE4-on-Windows
-default). Then the pivot is: hook libcurl's `curl_easy_setopt` (found via a signature scan —
-`Internal/utils/Util.h` `FindSignature`, guided by the [dump](game-dump.md)) and run each
-`CURLOPT_URL` through `Backend::RewriteUrl`, which already downgrades
-`https://OfficialHost` → `http://PrivateHost:PrivatePort`.
+1. **Locate `curl_easy_setopt` by an AOB signature.** Since it isn't exported, we scan the game
+   module for its prologue with `Util.h::FindSignature`. The signature is **build-specific and
+   left empty** — fill it once from a RE pass (IDA/Ghidra/x64dbg); `0x00` bytes are wildcards.
+   Until it's set, the curl hook is inert and WinHTTP is the fallback.
+2. **Hook it and rewrite `CURLOPT_URL`.** `curl_easy_setopt(CURL*, CURLoption, ...)` is
+   variadic, but on x64 the single vararg lands in one register, so a three-parameter prototype
+   is ABI-compatible for the `CURLOPT_URL` (a `char*`) case. On that option we log the URL and,
+   if its host is a redirect key, pass `RewriteUrl(url)` instead. curl copies the string during
+   `setopt`, so a rewritten temporary is safe.
+
+That single choke point covers **all** of the game's HTTP (login, profile, matchmaking, feed),
+because every request's URL flows through `curl_easy_setopt`.
+
+### How to verify
+
+Enable the toggle in the Network tab with the console open. On a redirect you'll see
+`[Network] curl https://splitgate.accelbyte.io/… -> http://127.0.0.1:5005/…` (or the WinHTTP
+variant). With HTTP logging on, every call is printed (and optionally written to `http.log`) —
+which also confirms which stack the game uses.
 
 ### Known limitations
 
-- **Timing.** The external proxy is active before launch; our in-process hook installs only
-  after injection, so backend calls the game makes *before* injection aren't redirected. Fine
-  for calls after injection; a full replacement of the proxy needs earlier injection.
-- **Stack assumption.** As above — WinHTTP first, libcurl the likely pivot; unverified until
-  tested against the real client.
-- Not yet built/tested against the game here (DLL requires the VS toolchain); the settings
-  round-trip is covered by the test suite.
+- **libcurl signature.** The one piece needing your RE — an empty AOB until you fill it. WinHTTP
+  works offset-free in the meantime.
+- **Timing** — see the launcher note below; the in-process hook only covers calls made *after*
+  injection.
+- **Live map edits** race the network threads that read the map; fine for occasional edits
+  (the map is normally set in the JSON before launch), but not lock-protected yet.
+- Not built/tested against the game here (DLL needs the VS toolchain); the pure redirect logic
+  and settings round-trip are covered by the test suite (`Tests/NetworkTests.cpp`).
+
+## Timing: covering the calls made before injection (design only — not implemented)
+
+The in-process hook installs after the DLL is injected, so any backend call the game makes
+*before* that (early login) isn't redirected. The external Fiddler/mitmproxy avoids this by
+being active before launch. Options to close the gap, in the launcher:
+
+1. **Launch suspended, inject, then resume.** The launcher already owns process start; instead
+   of letting the game run and injecting via the window hook, `CreateProcess` with
+   `CREATE_SUSPENDED`, inject the DLL (or set up the hook) while the process is frozen, then
+   `ResumeThread`. The DLL's hooks are then live *before any game code runs*, so no call
+   escapes. This is the clean fix and keeps everything in-process. (It also changes the
+   injection method from the `WH_GETMESSAGE` window hook to early injection.)
+2. **Launcher sets a temporary redirect at the OS level**, then removes it — e.g. a `hosts`
+   entry (`splitgate.accelbyte.io → 127.0.0.1`, needs the server on 443 with a trusted cert) or
+   a temporary system proxy pointed at the private server. This is essentially the current
+   external approach, just automated by the launcher; it reintroduces the TLS/cert problem the
+   in-process hook avoids.
+3. **Accept the gap.** If the game retries or the pre-injection calls are non-critical, the
+   post-injection hook may be enough in practice — cheapest, but unreliable for login.
+
+Recommendation (for later): **option 1** (suspended launch + early injection) is the robust,
+self-contained answer and belongs in the launcher; it's out of scope here and not implemented.
