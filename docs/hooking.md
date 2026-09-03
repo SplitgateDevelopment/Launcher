@@ -20,27 +20,26 @@ mechanism that makes Windows load our DLL into the target for us: a **thread-loc
 
 ### Flow
 
-```
-Launcher (its own process)                       Game process (PortalWars)
-──────────────────────────                       ─────────────────────────
-Ipc::Create(Event::Initialized)   (before triggering, so the DLL can open it)
-LoadLibraryA("Internal.dll")
-GetProcAddress(lib, "<mangled SplitgateCallBack>")
-FindWindow / GetWindowThreadProcessId  ─┐
-SetWindowsHookExW(WH_GETMESSAGE,        │  Windows maps Internal.dll into the game
-                  proc, lib, threadId)  ├─────────────►  and will call proc there
-      └─ returns HHOOK                   │
-PostThreadMessageW(threadId,            │
-      <trigger msg>, 0, (LPARAM)HHOOK)  ─┘
-Ipc::Wait(initEvent) ◄───────────┐                SplitgateCallBack(code, wparam, lparam)
-success → hook.release()         │                 ├─ capture HHOOK from msg->lParam
-exit  (does NOT unhook)          │                 │     into Hook::g_hook
-                                 │                 ├─ guard with Hook::g_initialized
-                                 │                 ├─ ExceptionHandler::Init()
-                                 │                 ├─ Hook::Init()   (see §2)
-                                 └── Ipc::Signal ◄──┤     (on success)
-                                                    ├─ DiscordRPC::Init()
-                                                    └─ CallNextHookEx(...)
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as Launcher
+    participant OS as Windows
+    participant DLL as Internal.dll in game
+
+    L->>L: Ipc::Create(Event::Initialized)
+    L->>L: LoadLibraryA + GetProcAddress(mangled name)
+    L->>OS: SetWindowsHookExW(WH_GETMESSAGE, proc, lib, threadId)
+    Note over OS,DLL: Windows maps Internal.dll into the game process
+    L->>OS: PostThreadMessageW(threadId, trigger, HHOOK)
+    L->>L: Ipc::Wait(initEvent) — blocks
+    OS->>DLL: SplitgateCallBack(code, wparam, lparam)
+    DLL->>DLL: capture HHOOK → Hook::g_hook, guard g_initialized
+    DLL->>DLL: ExceptionHandler::Init(), Hook::Init() (see §2)
+    DLL-->>L: Ipc::Signal(Event::Initialized) (on success)
+    DLL->>DLL: DiscordRPC::Init()
+    DLL->>OS: CallNextHookEx(...)
+    L->>L: Wait returns → hook.release() → exit (does NOT unhook)
 ```
 
 Key points:
@@ -71,18 +70,18 @@ Posting the trigger message only means the message was queued — not that the D
 So instead of the launcher guessing with a fixed sleep, the two sides shake hands over a
 **named Win32 event** (see [shared/Ipc.h](../shared/Ipc.h)):
 
-```
-Launcher                                  DLL (SplitgateCallBack)
-────────                                  ───────────────────────
-Ipc::Create(Event::Initialized)   ┐  create the manual-reset event BEFORE triggering,
-   (CreateEventW, "Local\\…")      │  so the DLL can open it
-install hook + post trigger        │
-Ipc::Wait(event, 15000)  ──────────┘
-   (WaitForSingleObject)                  Hook::Init() succeeds
-        ▲                                 Ipc::Signal(Event::Initialized)  (OpenEventW+SetEvent)
-        └───────────── signaled ──────────┘
-success → hook.release()                  (only signals on success; on failure it just
-                                           returns, so the launcher times out)
+```mermaid
+sequenceDiagram
+    participant L as Launcher
+    participant DLL as SplitgateCallBack
+
+    L->>L: Ipc::Create(Event::Initialized) — CreateEventW, manual-reset, before triggering
+    L->>DLL: install hook + post trigger
+    L->>L: Ipc::Wait(event, 15000) — WaitForSingleObject
+    DLL->>DLL: Hook::Init() succeeds
+    DLL-->>L: Ipc::Signal(Event::Initialized) — OpenEventW + SetEvent
+    Note over L,DLL: only signals on success; on failure the DLL just returns, so the launcher times out
+    L->>L: Wait returns → hook.release()
 ```
 
 - The event lives in the `Local\` namespace (both processes share one user session) and is
