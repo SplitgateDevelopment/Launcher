@@ -43,10 +43,10 @@ namespace ProcessEvent {
 		"Received_Notify",
 	};
 
+	// Caller gates this on Settings.DEBUG.LogProcessEvent so the hot path pays
+	// nothing when logging is off.
 	void LogProcessEvent(UObject* Class, UFunction* Function)
 	{
-		if (!Settings.DEBUG.LogProcessEvent) return;
-
 		std::string className = Class->GetName().c_str();
 		std::string functionName = Function->GetFullName();
 
@@ -59,7 +59,7 @@ namespace ProcessEvent {
 	}
 
 	void HookedProcessEvent(UObject* Class, UFunction* Function, void* Params) {
-		LogProcessEvent(Class, Function);
+		if (Settings.DEBUG.LogProcessEvent) LogProcessEvent(Class, Function);
 
 		static UObject* ReceiveShutdown = ObjObjects->FindObject("Function Engine.GameInstance.ReceiveShutdown");
 
