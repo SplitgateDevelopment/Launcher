@@ -122,9 +122,23 @@ the `NETWORK` settings section). Structure:
 
 **Config is a map**, not a single host: `Settings.NETWORK.Redirects` is
 `{ "original host" → "host[:port]" }` (default `splitgate.accelbyte.io` → `127.0.0.1:5005`),
-plus `RedirectEnabled` and the three `HttpLog*` flags. Everything self-gates on the settings,
-so the Network tab toggles/edits behavior live. HTTPS is downgraded to HTTP on redirect (the
-private server is plain HTTP, matching the Fiddler rule).
+plus the three `HttpLog*` flags. HTTPS is downgraded to HTTP on redirect (the private server is
+plain HTTP, matching the Fiddler rule).
+
+**`NETWORK.Proxy` selects the mechanism** (a `ProxyMode`, replacing the old on/off toggle):
+
+- `Internal` — the DLL redirects in-process (the hooks below). The Network-tab map/logging edit
+  behavior live.
+- `Mitmproxy` — the **launcher** spawns `mitmdump` at startup with a `--map-remote` rule per
+  redirect (`Launcher/utils/Mitmproxy.h`), reading the mode/map from the DLL's settings file
+  (`Launcher/utils/ProxyConfig.h`). This covers the pre-injection calls the in-process hook
+  can't (see [early-injection.md](early-injection.md)); mitmproxy still needs the game routed
+  through it (system proxy / transparent mode). Wiring the spawn into `Launcher.cpp` is listed
+  in `TODO.md`.
+- `Manual` — do nothing (bring your own proxy, as before).
+
+The DLL's settings live in one file shared via `Shared::SettingsFile<T>` (`shared/Settings.h`),
+which the launcher reads with a narrow view to get `NETWORK` without the game-only sections.
 
 ### Getting around libcurl
 
@@ -147,7 +161,7 @@ because every request's URL flows through `curl_easy_setopt`.
 
 ### How to verify
 
-Enable the toggle in the Network tab with the console open. On a redirect you'll see
+Set **Proxy = Internal** in the Network tab with the console open. On a redirect you'll see
 `[Network] curl https://splitgate.accelbyte.io/… -> http://127.0.0.1:5005/…` (or the WinHTTP
 variant). With HTTP logging on, every call is printed (and optionally written to `http.log`, or
 watched live in the Network tab's **Request flow** section) — which also confirms which stack
