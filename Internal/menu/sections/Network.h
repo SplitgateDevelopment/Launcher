@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "../../network/HttpLogger.h"
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 
@@ -54,6 +55,20 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Log HTTP calls", &Settings.NETWORK.HttpLogging);
 			changed |= ImGui::ToggleButton("Also log to http.log", &Settings.NETWORK.HttpLogToFile);
 			changed |= ImGui::ToggleButton("Redirected hosts only", &Settings.NETWORK.HttpLogRedirectedOnly);
+
+			// Live request flow — populated while HTTP logging is on.
+			if (ImGui::CollapsingHeader("Request flow"))
+			{
+				if (ImGui::SmallButton("Clear")) Network::Http::Clear();
+
+				const auto requests = Network::Http::Recent();
+				ImGui::BeginChild("RequestFlow", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+				if (requests.empty() && !Settings.NETWORK.HttpLogging)
+					ImGui::TextDisabled("Enable \"Log HTTP calls\" to capture requests.");
+				for (const auto& request : requests)
+					ImGui::TextUnformatted(request.c_str());
+				ImGui::EndChild();
+			}
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}
