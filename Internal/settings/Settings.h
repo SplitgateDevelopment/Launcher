@@ -109,7 +109,19 @@ struct VisualsSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, NameColor, BoxColor, BonesColor, SnaplineColor)
 
-/// Root settings object — the five sections that persist together as one JSON document.
+/// Backend redirection — point the game's AccelByte host at a private server (see the
+/// BackendRedirect feature and docs/backend-redirect.md).
+struct NetworkSettings
+{
+	bool RedirectEnabled = false;						 ///< master toggle for backend redirection
+	std::string OfficialHost = "splitgate.accelbyte.io"; ///< host to intercept
+	std::string PrivateHost = "127.0.0.1";				 ///< where to send it
+	int PrivatePort = 5005;								 ///< private server port (the emulator's default)
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, RedirectEnabled, OfficialHost, PrivateHost, PrivatePort)
+
+/// Root settings object — the sections that persist together as one JSON document.
 struct SETTINGS
 {
 	MenuSettings MENU;
@@ -117,14 +129,15 @@ struct SETTINGS
 	MiscSettings MISC;
 	DebugSettings DEBUG;
 	VisualsSettings VISUALS;
+	NetworkSettings NETWORK;
 
 	SETTINGS()
-		: MENU(), EXPLOITS(), MISC(), DEBUG(), VISUALS()
+		: MENU(), EXPLOITS(), MISC(), DEBUG(), VISUALS(), NETWORK()
 	{
 	}
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG, VISUALS)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG, VISUALS, NETWORK)
 
 /// The one global settings instance (defined in Settings.cpp).
 extern SETTINGS Settings;
