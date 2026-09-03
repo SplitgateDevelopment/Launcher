@@ -23,7 +23,8 @@ The Visual Studio solution (`.sln` at the repo root) contains three projects:
   (settings, feature framework, event bus). See [docs/testing.md](docs/testing.md).
 
 Other top-level items: `shared/` (headers used by **both** projects — `Ipc.h` for the
-launcher/DLL init handshake, `Logger.h` for the shared console logger), `Tools/` (build
+launcher/DLL init handshake, `Logger.h` for the shared console logger, `ExceptionHandler.h`
+for the reusable crash handler), `Tools/` (build
 scripts, incl. `build.bat` used by CI, and `format.ps1` for clang-format),
 `.github/workflows/msbuild.yml` (CI), `.clang-format` / `.clang-tidy` (style/lint config),
 `docs/` (see below), `README.md`.
@@ -160,10 +161,12 @@ Source folders (from the project file; contents documented as they are read):
 - `ue/` — Unreal Engine SDK (`Engine.h/.cpp`, `UObjects.h`).
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
-- `utils/` — helpers (`Globals.h`, `ExceptionHandler.h`, `Util.h/.cpp`, and `Logger.h` — a
-  `namespace Logger` facade (`Log`/`CreateConsole`/`DestroyConsole`/`SetConsoleVisibility`)
-  forwarding to one `Shared::Logger` from `shared/Logger.h`; it spawns the in-game console and
-  logs to `internal.log`).
+- `utils/` — helpers (`Globals.h`, `Util.h/.cpp`, plus two facades over `shared/`: `Logger.h`
+  is a `namespace Logger` facade (`Log`/`CreateConsole`/`DestroyConsole`/`SetConsoleVisibility`)
+  over one `Shared::Logger` that spawns the in-game console and logs to `internal.log`; and
+  `ExceptionHandler.h` wires `Shared::ExceptionHandler` with the game's crash folder, the
+  logger, and `SettingsHelper::Delete` as the recovery hook, keeping the `Init()`/`Disable()`
+  surface unchanged).
 - `dllmain.cpp` — DLL entry point. Exports the `WH_GETMESSAGE` hook procedure the launcher
   installs — `LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam)`
   (`lparam` is the `MSG*`, valid only when `code >= 0`). It is **not** `extern "C"`, so the

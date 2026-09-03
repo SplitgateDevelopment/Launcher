@@ -12,6 +12,10 @@ SDK, DirectX, the game `Logger`) is out of scope.
 | -------------------------- | ------------------------------------------------------------- |
 | `Tests/SettingsTests.cpp`  | `settings/Settings.cpp`: JSON round-trip, save→load, missing/corrupt files, defaults, persisted-vs-runtime fields. |
 | `Tests/FeaturesTests.cpp`  | `features/FeatureRunner.h`: init-once, check gating, run-when-enabled, destroy-once on the disable edge, OneTime run/re-arm, legacy `Check()` contract. |
+| `Tests/EventsTests.cpp`    | `scripting/Events.h`: register/dispatch, payloads, `HasHandlers`/`Empty`/`Clear`, contained throwing handlers. |
+| `Tests/IpcTests.cpp`       | `shared/Ipc.h`: event name mapping, and a Create→Signal→Wait round-trip within one process. |
+| `Tests/LoggerTests.cpp`    | `shared/Logger.h`: file mirroring with level tags and the `[HH:MM:SS]` prefix; logging safely with no file attached. |
+| `Tests/ExceptionHandlerTests.cpp` | `shared/ExceptionHandler.h`: `WriteCrashLog` (driven with an `RtlCaptureContext` context) writes the report and runs the recovery hook; timestamp shape; `Install`/`Uninstall`. |
 
 Feature tests use **fake features** (subclasses of `Feature` that count calls),
 since the concrete features require the game. Settings tests use a fixture that
@@ -42,7 +46,8 @@ x64/Release/Tests.exe --gtest_list_tests                 # list all
 
 - Compiles the code under test in place (e.g.
   `..\Internal\settings\Settings.cpp`) plus the test `.cpp` files.
-- Include paths point at `..\Internal\features` and `..\Internal\settings`.
+- Include paths point at `..\Internal\features`, `..\Internal\settings`,
+  `..\Internal\scripting`, and `..\shared`.
 - `vcpkg.json` declares `gtest` + `nlohmann-json`; `gtest_main` supplies
   `main()`, so there is no hand-written entry point.
 - Registered in `Splitgate.sln` for `Release|x64`.
