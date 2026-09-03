@@ -55,7 +55,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="utils/Logger.h" />
     <ClCompile Include="Launcher.cpp" />
   </ItemGroup>
   <ItemGroup>
