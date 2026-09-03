@@ -20,6 +20,7 @@
 #include "ThirdPerson.h"
 #include "FreeCam.h"
 #include "Radar.h"
+#include "BackendRedirect.h"
 
 namespace Features
 {
@@ -39,6 +40,11 @@ namespace Features
 		Features.push_back(std::make_unique<ThirdPerson>());
 		Features.push_back(std::make_unique<FreeCam>());
 		Features.push_back(std::make_unique<Radar>());
+
+		// Backend redirection is a subsystem, not a per-frame feature: install its WinHTTP
+		// hooks once here (they self-gate on Settings.NETWORK.RedirectEnabled). MinHook is
+		// already initialized by this point (Hook::Init runs before Features::Init).
+		Backend::Install();
 
 		// Seed Enabled from current settings, then keep it in sync reactively:
 		// the menu dispatches SettingsChanged on every change, so features no

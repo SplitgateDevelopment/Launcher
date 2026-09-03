@@ -141,6 +141,9 @@
     <ClInclude Include="features\Feature.h">
       <Filter>features</Filter>
     </ClInclude>
+    <ClInclude Include="features\BackendRedirect.h">
+      <Filter>features</Filter>
+    </ClInclude>
     <ClInclude Include="features\FeatureRunner.h">
       <Filter>features</Filter>
     </ClInclude>
