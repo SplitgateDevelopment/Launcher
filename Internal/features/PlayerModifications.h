@@ -27,13 +27,11 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 		if (!Globals::PlayerController) return false;
 		if (!Globals::PlayerController->PlayerState) return false;
 
-		return Enabled;
+		return true;
 	};
 
 	void Init()

@@ -38,7 +38,7 @@ public:
 		Weapon = Player->CurrentWeapon;
 		if (!Weapon) return false;
 
-		return Enabled;
+		return true;
 	};
 
 	void Init()
