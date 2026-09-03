@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <ShlObj.h>
 #include <fstream>
+#include <map>
 #include <Windows.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -109,17 +110,22 @@ struct VisualsSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, NameColor, BoxColor, BonesColor, SnaplineColor)
 
-/// Backend redirection — point the game's AccelByte host at a private server (see the
-/// BackendRedirect feature and docs/backend-redirect.md).
+/// Networking — backend redirection and HTTP logging (see the `network/` module and
+/// docs/backend-redirect.md). Configurable from the Network tab.
 struct NetworkSettings
 {
-	bool RedirectEnabled = false;						 ///< master toggle for backend redirection
-	std::string OfficialHost = "splitgate.accelbyte.io"; ///< host to intercept
-	std::string PrivateHost = "127.0.0.1";				 ///< where to send it
-	int PrivatePort = 5005;								 ///< private server port (the emulator's default)
+	bool RedirectEnabled = false; ///< master toggle for backend redirection
+	/// original host -> "host[:port]" to route it to. https is downgraded to http on redirect.
+	std::map<std::string, std::string> Redirects = {
+		{"splitgate.accelbyte.io", "127.0.0.1:5005"},
+	};
+
+	bool HttpLogging = false;			///< log outgoing HTTP calls to the console
+	bool HttpLogToFile = false;			///< also mirror the HTTP log to http.log
+	bool HttpLogRedirectedOnly = false; ///< only log calls whose host is a redirect key
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, RedirectEnabled, OfficialHost, PrivateHost, PrivatePort)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, RedirectEnabled, Redirects, HttpLogging, HttpLogToFile, HttpLogRedirectedOnly)
 
 /// Root settings object — the sections that persist together as one JSON document.
 struct SETTINGS
