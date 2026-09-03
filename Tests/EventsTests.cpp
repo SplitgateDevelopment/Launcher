@@ -70,4 +70,23 @@ TEST_F(EventsTest, ClearRemovesHandlers) {
     EXPECT_TRUE(Events::Empty());
 }
 
+TEST_F(EventsTest, DispatchPassesPayloadToHandlers) {
+    void* gotSource = nullptr;
+    float gotValue = 0.f;
+    int marker = 42;
+
+    Events::Register(Type::Render, [&](const Events::Payload& p) {
+        gotSource = p.source;
+        gotValue = p.value;
+    });
+
+    Events::Payload payload;
+    payload.source = &marker;
+    payload.value = 1.5f;
+    Events::Dispatch(Type::Render, payload);
+
+    EXPECT_EQ(&marker, gotSource);
+    EXPECT_FLOAT_EQ(1.5f, gotValue);
+}
+
 }  // namespace

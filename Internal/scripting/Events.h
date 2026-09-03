@@ -27,11 +27,28 @@ namespace Events
 		// PlayerDeath, PlayerSpawn, ... (wire in ProcessEvent)
 	};
 
-	inline std::unordered_map<Type, std::vector<std::function<void()>>> handlers;
+	// Optional data an event can carry. Most events dispatch with a default
+	// (empty) payload; game events can fill in the objects/scalar involved
+	// (e.g. source = the pawn that died). Handlers that don't care ignore it.
+	struct Payload
+	{
+		void* source = nullptr;  // primary object involved
+		void* target = nullptr;  // secondary object (e.g. the instigator)
+		float value = 0.f;       // a scalar (e.g. damage)
+	};
 
-	inline void Register(Type event, std::function<void()> handler)
+	inline std::unordered_map<Type, std::vector<std::function<void(const Payload&)>>> handlers;
+
+	// Payload-aware handler.
+	inline void Register(Type event, std::function<void(const Payload&)> handler)
 	{
 		handlers[event].push_back(std::move(handler));
+	}
+
+	// Convenience overload for handlers that don't need the payload.
+	inline void Register(Type event, std::function<void()> handler)
+	{
+		handlers[event].push_back([h = std::move(handler)](const Payload&) { h(); });
 	}
 
 	inline bool HasHandlers(Type event)
@@ -46,16 +63,16 @@ namespace Events
 		return handlers.empty();
 	}
 
-	// Invoke every handler subscribed to the event. A throwing handler is
-	// contained so it can never unwind into a game hook.
-	inline void Dispatch(Type event)
+	// Invoke every handler subscribed to the event with the given payload. A
+	// throwing handler is contained so it can never unwind into a game hook.
+	inline void Dispatch(Type event, const Payload& payload = {})
 	{
 		auto it = handlers.find(event);
 		if (it == handlers.end()) return;
 
 		for (auto& handler : it->second)
 		{
-			try { handler(); }
+			try { handler(payload); }
 			catch (...) {}
 		}
 	}

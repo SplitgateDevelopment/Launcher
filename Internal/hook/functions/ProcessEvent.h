@@ -117,7 +117,7 @@ namespace ProcessEvent {
 				}();
 
 				auto it = gameEventByFn.find(Function);
-				if (it != gameEventByFn.end()) Events::Dispatch(it->second);
+				if (it != gameEventByFn.end()) Events::Dispatch(it->second, { Class });
 			}
 
 			return Original(Class, Function, Params);
