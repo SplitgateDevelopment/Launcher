@@ -69,6 +69,9 @@
     <ClInclude Include="..\shared\Logger.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\ExceptionHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="menu\Menu.h">
       <Filter>menu</Filter>
     </ClInclude>
