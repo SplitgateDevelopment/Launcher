@@ -128,16 +128,29 @@ plain HTTP, matching the Fiddler rule).
 
 - `Internal` — the DLL redirects in-process (the hooks below). The Network-tab map/logging edit
   behavior live.
-- `Mitmproxy` — the **launcher** spawns `mitmdump` at startup with a `--map-remote` rule per
-  redirect (`Launcher/utils/Mitmproxy.h`), reading the mode/map from the DLL's settings file
+- `Mitmproxy` — the **launcher** spawns `mitmdump -s <addon>` at startup
+  (`Launcher/utils/Mitmproxy.h`), reading the mode/map from the DLL's settings file
   (`Launcher/utils/ProxyConfig.h`). This covers the pre-injection calls the in-process hook
   can't (see [early-injection.md](early-injection.md)); mitmproxy still needs the game routed
-  through it (system proxy / transparent mode). Wiring the spawn into `Launcher.cpp` is listed
-  in `TODO.md`.
+  through it (system proxy / transparent mode).
 - `Manual` — do nothing (bring your own proxy, as before).
 
+**Which mitmproxy addon runs is a launcher-only setting** — a `Shared::MitmproxySettings`
+(`shared/LauncherSettings.h`) kept out of the DLL's `SETTINGS` so the internal file stays
+game-focused. It persists to its own `launcher.settings` (same app folder), is edited from the
+DLL's Network tab (a "Mitmproxy script" section, shown in `Mitmproxy` mode), and is read back by
+the launcher when it spawns. Three modes:
+
+- `Default` — generate an addon from the redirect map: an in-`request` host/scheme rewrite plus a
+  conservative TLS passthrough (stop intercepting a host once its handshake fails), matching the
+  backend's `scripts/proxy.py`. Plain `--map-remote` had no such passthrough, so it would MITM
+  every TLS host and break cert-pinned/unrelated ones.
+- `Path` — run an addon file already on disk (`mitmdump -s <path>`).
+- `Inline` — write the inline python to a temp file and run it as the addon.
+
 The DLL's settings live in one file shared via `Shared::SettingsFile<T>` (`shared/Settings.h`),
-which the launcher reads with a narrow view to get `NETWORK` without the game-only sections.
+which the launcher reads with a narrow view to get `NETWORK` without the game-only sections; the
+launcher's own `launcher.settings` uses the same `Shared::SettingsFile<T>` mechanism.
 
 ### Getting around libcurl
 

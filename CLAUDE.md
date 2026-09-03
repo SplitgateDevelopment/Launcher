@@ -24,7 +24,9 @@ The Visual Studio solution (`.sln` at the repo root) contains three projects:
 
 Other top-level items: `shared/` (headers used by **both** projects — `Ipc.h` for the
 launcher/DLL init handshake, `Logger.h` for the shared console logger, `ExceptionHandler.h`
-for the reusable crash handler), `Tools/` (build
+for the reusable crash handler, `Settings.h` for the generic `SettingsFile<T>` persistence,
+`LauncherSettings.h` for the launcher-only settings the DLL's Network tab edits and the
+launcher reads), `Tools/` (build
 scripts, incl. `build.bat` used by CI, and `format.ps1` for clang-format),
 `.github/workflows/msbuild.yml` (CI), `.clang-format` / `.clang-tidy` (style/lint config),
 `docs/` (see below), `README.md`.
