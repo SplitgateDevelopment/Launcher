@@ -16,6 +16,8 @@ int main()
 	logger.info("Loading...");
 
 	const auto network = Launcher::ReadNetworkSettings();
+	logger.info(std::format("Network proxy mode: {}", network.Proxy));
+
 	if (network.Proxy == ProxyMode::Mitmproxy)
 	{
 		if (Launcher::Mitmproxy::Spawn(network.Redirects))
