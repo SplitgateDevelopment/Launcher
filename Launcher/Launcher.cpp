@@ -14,6 +14,8 @@ int main()
 	{
 		logger.error("Failed to load target module!");
 		logger.errorBox(TEXT("LoadLibraryA"));
+
+		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success("Loaded target module!");
@@ -23,14 +25,19 @@ int main()
 	{
 		logger.error("Failed to get exported function address!");
 		logger.errorBox(TEXT("HOOKPROC"));
+
+		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success("Got exported function address!");
 
-	HWND GameWindow = FindWindowA(0, "PortalWars  ");
+	HWND GameWindow = FindWindowA(nullptr, "PortalWars  ");
 	if (!GameWindow)
 	{
 		logger.error("Failed to get game window!");
+		logger.errorBox(TEXT("FindWindowA"));
+
+		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success("Got game window!");
@@ -40,6 +47,8 @@ int main()
 	{
 		logger.error("Failed to get thread id!");
 		logger.errorBox(TEXT("GetWindowThreadProcessId"));
+
+		FreeLibrary(lib);
 		return logger.stop(-1);
 	}
 	logger.success(std::format("Thread id: {}", ThreadID));
@@ -50,6 +59,10 @@ int main()
 	{
 		logger.error("Failed to place hook");
 		logger.errorBox(TEXT("SetWindowsHookExW"));
+
+		UnhookWindowsHookEx(hook);
+		FreeLibrary(lib);
+
 		return logger.stop(-1);
 	};
 	logger.success("Placed hook!");
@@ -59,6 +72,10 @@ int main()
 	{
 		logger.error("Failed to post thread message!");
 		logger.errorBox(TEXT("PostThreadMessageW"));
+
+		UnhookWindowsHookEx(hook);
+		FreeLibrary(lib);
+
 		return logger.stop(-1);
 	}
 	logger.success("DLL injected into process!");
