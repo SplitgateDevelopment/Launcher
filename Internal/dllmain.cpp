@@ -10,6 +10,10 @@ __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam
 
     MSG* msg = (MSG*)lparam;
 	if (msg->message != HCBT_CREATEWND) return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
+	if (code < 0)
+	{
+		return CallNextHookEx(Hook::g_hook, code, wparam, lparam);
+	}
 
 	if (!Hook::Init()) return CallNextHookEx(Hook::g_hook, code, wparam, HCBT_CREATEWND);
 	Hook::g_hook = reinterpret_cast<HHOOK>(msg->lParam);
