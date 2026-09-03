@@ -3,6 +3,8 @@
 /// @file
 /// @brief Misc tab: player FOV/speed sliders, load-into-map action, and user-scripting controls.
 
+#include <format>
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
@@ -48,6 +50,11 @@ namespace Menu
 
 				ImGui::TreePop();
 			}
+
+			ImGui::SeparatorText("Backend");
+			if (ImGui::ToggleButton("Redirect to private server", &Settings.NETWORK.RedirectEnabled))
+				Events::Dispatch(Events::Type::SettingsChanged);
+			ImGui::Tooltip(std::format("{} -> {}:{}\n(host/port editable in the settings file)", Settings.NETWORK.OfficialHost, Settings.NETWORK.PrivateHost, Settings.NETWORK.PrivatePort).c_str());
 		}
 	} // namespace Sections
 } // namespace Menu
