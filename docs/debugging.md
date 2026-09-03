@@ -11,8 +11,10 @@ Both components log to a **console** and to a **file**:
 
 | Component | Console | Log file |
 | --------- | ------- | -------- |
-| **Launcher** (`Launcher.exe`) | its own console window | `launcher.log`, next to `Launcher.exe` (truncated each run) |
-| **DLL** (`Internal.dll`) | a console it spawns on inject | `internal.log`, in `Documents\SplitgateInternal\` (truncated each run) |
+| **Launcher** (`Launcher.exe`) | its own console window | `Documents\SplitgateInternal\logs\launcher.log` (truncated each run) |
+| **DLL** (`Internal.dll`) | a console it spawns on inject | `Documents\SplitgateInternal\logs\internal.log` (truncated each run) |
+
+Both logs live together under the app folder's `logs\` subfolder.
 
 The DLL's app folder — `Documents\SplitgateInternal\` — also holds:
 

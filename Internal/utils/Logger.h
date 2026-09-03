@@ -30,10 +30,10 @@ namespace Logger
 		Instance().log(title, message);
 	}
 
-	/// Spawns the in-game console and opens internal.log (in the app folder).
+	/// Spawns the in-game console and opens internal.log (in the app folder's logs/).
 	inline void CreateConsole()
 	{
-		const auto logPath = Shared::AppDataPath(SettingsHelper::AppFolder, "internal.log");
+		const auto logPath = Shared::AppDataPath(SettingsHelper::AppFolder, "logs/internal.log");
 		Instance().createConsole("Splitgate Internal", logPath.string());
 
 		Log("SUCCESS", "Created console");

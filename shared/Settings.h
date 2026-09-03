@@ -29,9 +29,13 @@ namespace Shared
 		std::filesystem::path base = std::filesystem::path(documents) / folder;
 		CoTaskMemFree(documents);
 
+		std::filesystem::path result = filename.empty() ? base : base / filename;
+
+		// Create the directory that will hold the result — the base folder, or a nested folder
+		// when filename carries subdirectories (e.g. "logs/internal.log").
 		std::error_code ec;
-		std::filesystem::create_directories(base, ec);
-		return filename.empty() ? base : base / filename;
+		std::filesystem::create_directories(filename.empty() ? result : result.parent_path(), ec);
+		return result;
 	}
 
 	/**
