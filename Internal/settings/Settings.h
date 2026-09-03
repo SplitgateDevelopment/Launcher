@@ -48,9 +48,10 @@ struct ExploitsSettings
 	bool NoReload = false;
 	bool ThirdPerson = false;
 	bool FreeCam = false;
+	bool EnableAllInput = false; ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
