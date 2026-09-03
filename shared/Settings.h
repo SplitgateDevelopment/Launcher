@@ -43,6 +43,9 @@ namespace Shared
 	class SettingsFile
 	{
 	  public:
+		/// Binds @p data to the file at @p path. Nothing is read or written until Load/Save.
+		/// @param data the settings struct this file loads into / saves from (kept by reference).
+		/// @param path the on-disk location.
 		SettingsFile(T& data, std::filesystem::path path) : value(data), path(std::move(path)) {}
 
 		/// @return the on-disk path.
@@ -112,7 +115,7 @@ namespace Shared
 		}
 
 	  private:
-		T& value;
-		std::filesystem::path path;
+		T& value;					///< the bound settings struct (loaded into / saved from)
+		std::filesystem::path path; ///< the file location
 	};
 } // namespace Shared
