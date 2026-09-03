@@ -23,6 +23,7 @@
     <PythonRoot Condition="'$(PythonRoot)' == '' and '$(SPLITGATE_PYTHON_DIR)' != '' and Exists('$(SPLITGATE_PYTHON_DIR)\include\Python.h')">$(SPLITGATE_PYTHON_DIR)\</PythonRoot>
 
     <!-- 3. Manual C:\Python3XY convention, newest first. -->
+    <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('C:\Python315\include\Python.h')">C:\Python315\</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('C:\Python314\include\Python.h')">C:\Python314\</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('C:\Python313\include\Python.h')">C:\Python313\</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('C:\Python312\include\Python.h')">C:\Python312\</PythonRoot>
@@ -31,6 +32,8 @@
 
     <!-- 4. Official installer InstallPath from the registry (HKCU then HKLM),
             newest first. The value already ends with a backslash. -->
+    <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.15\InstallPath@)include\Python.h')">$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.15\InstallPath@)</PythonRoot>
+    <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.15\InstallPath@)include\Python.h')">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.15\InstallPath@)</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.14\InstallPath@)include\Python.h')">$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.14\InstallPath@)</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.14\InstallPath@)include\Python.h')">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.14\InstallPath@)</PythonRoot>
     <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.13\InstallPath@)include\Python.h')">$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.13\InstallPath@)</PythonRoot>
