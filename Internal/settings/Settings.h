@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <ShlObj.h>
+#include <format>
 #include <fstream>
 #include <map>
 #include <Windows.h>
@@ -125,6 +126,32 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ProxyMode, {
 											{ProxyMode::Internal, "internal"},
 											{ProxyMode::Mitmproxy, "mitmproxy"},
 										})
+
+/// Human-readable name for a proxy mode (matches the persisted JSON strings above).
+inline const char* ToString(ProxyMode mode)
+{
+	switch (mode)
+	{
+	case ProxyMode::Manual:
+		return "manual";
+	case ProxyMode::Internal:
+		return "internal";
+	case ProxyMode::Mitmproxy:
+		return "mitmproxy";
+	}
+	return "unknown";
+}
+
+/// std::format support so `std::format("{}", proxyMode)` works (there's no default formatter
+/// for a scoped enum).
+template <>
+struct std::formatter<ProxyMode> : std::formatter<const char*>
+{
+	auto format(ProxyMode mode, std::format_context& ctx) const
+	{
+		return std::formatter<const char*>::format(ToString(mode), ctx);
+	}
+};
 
 /// Networking — backend redirection and HTTP logging (see the `network/` module and
 /// docs/backend-redirect.md). Configurable from the Network tab; read by the launcher too.
