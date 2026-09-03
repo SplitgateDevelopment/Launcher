@@ -14,7 +14,16 @@
 #include "../../utils/ExceptionHandler.h"
 #include "../../scripting/Events.h"
 
+#include <atomic>
+#include <thread>
 #include <unordered_map>
+
+/// Hook::UnHook lives in hook/Hook.h, which includes this file, so it can't be included here;
+/// forward-declare it for the shutdown teardown below.
+namespace Hook
+{
+	void UnHook();
+}
 
 /// @brief Hook and support code for UObject::ProcessEvent.
 namespace ProcessEvent
@@ -114,31 +123,44 @@ namespace ProcessEvent
 		if (Function == ReceiveShutdown)
 		{
 			Logger::Log("INFO", "Received shutdown");
-			ExceptionHandler::Disable();
-			Logger::DestroyConsole();
-			// Hook::UnHook();
+
+			// Forward the shutdown to the game, then tear our hooks down. We can't unhook from
+			// inside ProcessEvent (MH_Uninitialize would free the very trampoline we'd return
+			// through), so defer it to a detached thread and return without falling through to
+			// the bottom Original() call. The guard avoids a double teardown if the event
+			// fires twice.
+			// NOTE: UnHook also destroys the GUI, which can race the PostRender/render thread;
+			// acceptable during shutdown (the render loop is winding down) but wants in-game
+			// verification.
+			Original(Class, Function, Params);
+
+			static std::atomic<bool> unhooking = false;
+			if (!unhooking.exchange(true)) std::thread(&Hook::UnHook).detach();
+			return;
 		};
 
-		/*
-		TODO: Intercept and modify widget IsInputActionEnabled function
-		static UObject* IsInputActionEnabled = ObjObjects->FindObject("Function PortalWars.PortalWarsUserWidget.IsInputActionEnabled");
-		//Pointer comparison is faster
-		if (Function == IsInputActionEnabled) {
-			Logger::Log("INFO", "IsInputActionEnabled intercepted");
+		// Force-enable UI input actions (e.g. a greyed-out Play button). The widget calls
+		// IsInputActionEnabled(FGameplayTag ActionTag, bool& InIsEnabled) as an out-param
+		// (returns void). We let the game compute the value, then override the out-param to
+		// true. Gated on a setting because it enables *every* input action, not just Play.
+		if (Settings.EXPLOITS.EnableAllInput)
+		{
+			static UObject* IsInputActionEnabled = ObjObjects->FindObject("Function PortalWars.PortalWarsUserWidget.IsInputActionEnabled");
 
-			struct IsInputActionEnabledStruct {
-				struct FGameplayTag& ActionTag;
-				bool& InIsEnabled;
-			} *IsInputActionEnabledParams;
-			IsInputActionEnabledParams = reinterpret_cast<IsInputActionEnabledStruct*>(Params);
+			if (Function == IsInputActionEnabled)
+			{
+				// Params in declaration order: FGameplayTag (8 bytes) then the bool out-param.
+				struct IsInputActionEnabledParams
+				{
+					FGameplayTag ActionTag;
+					bool InIsEnabled;
+				};
 
-			std::cout << IsInputActionEnabledParams << std::endl;
-
-			IsInputActionEnabledParams->InIsEnabled = true;
-
-			Logger::Log("INFO", "IsInputActionEnabled modified");
-			return;
-		}*/
+				Original(Class, Function, Params); // compute the real value first
+				reinterpret_cast<IsInputActionEnabledParams*>(Params)->InIsEnabled = true;
+				return;
+			}
+		}
 
 		// Rich kill event: decode BroadcastDeath_Multicast's params (killer / victim /
 		// headshot) into the payload so handlers get context, not just the caller. Gated on
