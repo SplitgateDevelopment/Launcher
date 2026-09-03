@@ -58,21 +58,20 @@ multiple SDKs.
 
 ## Proposed shape (client side)
 
-Config lives in the settings JSON — e.g. a new section defaulted to the known host:
+Config lives in the settings JSON under a `NETWORK` section. As shipped (see
+[Implementation](#implementation) for the final shape) it's a `ProxyMode` plus a redirect map:
 
 ```cpp
 struct NetworkSettings {
-    bool RedirectEnabled = false;                          // off by default
-    std::string OfficialHost = "splitgate.accelbyte.io";   // what to match
-    std::string PrivateHost = "127.0.0.1:5005";            // where to send it
+    ProxyMode Proxy = ProxyMode::Manual;                // Manual / Internal / Mitmproxy
+    std::map<std::string, std::string> Redirects;       // original host -> "host[:port]"
+    // ... HTTP-logging flags
 };
 ```
 
-A feature (call it `BackendRedirect`) would, when `RedirectEnabled`, hook the request-URL entry
-point and rewrite `OfficialHost` → `PrivateHost` before each request goes out — plus the
-matching WebSocket URL for the lobby. It fits the existing `Feature` framework and the
-`SettingsChanged` event (toggle on/off live). The **rewrite is host-only**; paths, headers, and
-bodies are untouched, so the emulator answers the same AccelByte API surface — exactly what the
+In `Internal` mode the redirect hooks the request-URL entry point and rewrites the matched host
+before each request goes out. The **rewrite is host-only**; paths, headers, and bodies are
+untouched, so the emulator answers the same AccelByte API surface — exactly what the
 Fiddler/mitmproxy rule does today, just in-process.
 
 ## What this study does NOT solve

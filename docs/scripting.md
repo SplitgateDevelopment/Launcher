@@ -79,6 +79,18 @@ Events are an enum (`Events::Type`), exposed to Python as `SplitgateInternal.Eve
 (top-level code), not inside `main()`. A throwing handler is caught and logged,
 so it can't crash the game.
 
+A handler may take **no arguments**, or **one argument** to receive the event's `Payload`
+(its arity is detected once at registration, so both styles keep working):
+
+```python
+def on_kill(payload):
+    # payload.source / payload.target are raw game-object addresses (ints);
+    # payload.value is event-specific (1.0 for a headshot on PlayerKilled).
+    SplitgateInternal.Logger.Log("INFO", "headshot!" if payload.value else "kill")
+
+SplitgateInternal.Events.on(SplitgateInternal.Events.PlayerKilled, on_kill)
+```
+
 ### Available events
 
 | Event             | Fired from             | When                                  |
@@ -89,22 +101,32 @@ so it can't crash the game.
 | `SettingsChanged` | Menu                   | A setting changed (also on Reload/Reset). |
 | `MenuOpened`      | Menu                   | GUI shown (Ins).                      |
 | `MenuClosed`      | Menu                   | GUI hidden (Ins).                     |
+| `PlayerDeath`     | ProcessEvent           | A character died (`payload.source` = the character). |
+| `HealthChanged`   | ProcessEvent           | A character's health replicated.      |
+| `DamageTaken`     | ProcessEvent           | Local player took damage.             |
+| `RoundEnded`      | ProcessEvent           | A round ended.                        |
+| `MatchEnded`      | ProcessEvent           | The match ended.                      |
+| `PlayerKilled`    | ProcessEvent           | A kill happened — `payload` carries killer (`source`), victim (`target`), headshot (`value`). |
 
-More game events (player death, spawn, kills, ...) are wired through a table in
-[`hook/functions/ProcessEvent.h`](../Internal/hook/functions/ProcessEvent.h)
-that maps an `Events::Type` value to a **UFunction full name**. To add one:
+The game events are wired through a table in
+[`hook/functions/ProcessEvent.h`](../Internal/hook/functions/ProcessEvent.h) that maps an
+`Events::Type` value to a **UFunction full name** (the names come from the
+[Dumpspace dump](game-dump.md)). For the generic ones the payload's `source` is the calling
+UObject; a richer event like `PlayerKilled` has a dedicated block that decodes the call's
+params into the payload. To add another:
 
 1. Add a value to `Events::Type` in
    [`scripting/Events.h`](../Internal/scripting/Events.h) (and to the pybind enum
    in `modules/Events.h`).
-2. Enable `LogProcessEvent` (Debug section), trigger the action in-game, and note
-   the `Function [...]` name printed for it.
+2. Find the `Function [...]` name — search the dump, or enable `LogProcessEvent`
+   (Debug section), trigger the action in-game, and read it off.
 3. Add a row to the `gameEvents` table, e.g.
-   `{ Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" }`.
+   `{ Events::Type::PlayerSpawn, "Function PortalWars.PortalWarsCharacter.OnSpawn" }`.
 
-The table is resolved to function pointers once and matched with a single map
-lookup per call, skipped entirely when scripting is off or nothing is
-subscribed, so it stays cheap on the very hot ProcessEvent path.
+The table is resolved to function pointers once and matched with a single map lookup per call,
+**skipped entirely when nothing is subscribed**, so it stays cheap on the very hot
+ProcessEvent path. (Dispatch is no longer gated on `UserScriptsEnabled`, so C++ subscribers —
+features, the shutdown teardown — receive game events too.)
 
 ### How it works
 

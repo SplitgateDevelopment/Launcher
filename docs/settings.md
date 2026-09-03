@@ -6,8 +6,7 @@ Persistent configuration for `Internal.dll`, defined in
 
 ## Layout
 
-A single global `Settings` object (`extern SETTINGS Settings;`) groups four
-sections:
+A single global `Settings` object (`extern SETTINGS Settings;`) groups the sections:
 
 | Section    | Purpose                                   |
 | ---------- | ----------------------------------------- |
@@ -15,6 +14,8 @@ sections:
 | `EXPLOITS` | Gameplay feature toggles and values       |
 | `MISC`     | Player name, Discord RPC, user scripts    |
 | `DEBUG`    | Logging and debug windows                 |
+| `VISUALS`  | ESP elements + colors, radar toggle       |
+| `NETWORK`  | Backend proxy mode, redirect map, HTTP logging (also read by the launcher) |
 
 Each section is a plain struct with default-initialized members, e.g.:
 
@@ -36,9 +37,8 @@ field falling back to its default instead of failing the whole load.
 
 **Not every declared field is persisted.** Only the fields listed in a struct's
 `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(...)` are written and read.
-Fields left out of that list (e.g. `MenuSettings::Watermark`,
-`MiscSettings::LoadIntoMap`/`DiscordAppID`/`SteamAppId`) are intentionally
-runtime/constant values that cannot be changed through the file.
+Fields left out of that list (e.g. `MiscSettings::DiscordAppID`/`SteamAppId`) are
+intentionally runtime/constant values that cannot be changed through the file.
 
 ### File location
 
@@ -61,6 +61,15 @@ created on first save.
 | `void Delete()`          | Remove the settings file.                                         |
 | `fs::path GetAppPath(std::string filename = "")` | Path inside the `SplitgateInternal` app folder. |
 | `std::string GetSettingsFilePath()` | Full path to the settings file.                       |
+
+`SettingsHelper` is a thin facade: the actual load/save is done by a generic
+**`Shared::SettingsFile<T>`** ([`shared/Settings.h`](../shared/Settings.h)) bound to the global
+`Settings`, and `Shared::AppDataPath` resolves the folder. The template opens/closes the file
+per call (no lingering handle), so the same file can be read by another process — the
+**launcher** reuses `SettingsFile<T>` with a narrow view to read the `NETWORK` section (proxy
+mode / redirects) without the game-only sections. See
+[`Launcher/utils/ProxyConfig.h`](../Launcher/utils/ProxyConfig.h) and
+[backend-redirect.md](backend-redirect.md).
 
 ## Exposed to user scripts
 
