@@ -21,14 +21,6 @@ int main()
 	const auto network = Launcher::ReadNetworkSettings();
 	logger.info(std::format("Network proxy mode: {}", network.Proxy));
 
-	if (network.Proxy == ProxyMode::Mitmproxy)
-	{
-		if (Launcher::Mitmproxy::Spawn(network.Redirects))
-			logger.success("Spawned mitmproxy");
-		else
-			logger.error("Failed to spawn mitmproxy (is mitmdump on PATH?)");
-	}
-
 	Launcher::UniqueHandle initEvent(Ipc::Create(Ipc::Event::Initialized));
 	if (!initEvent)
 	{
@@ -62,7 +54,7 @@ int main()
 	}
 	logger.success("Got game window!");
 
-	DWORD ProcessID = 0, threadId = GetWindowThreadProcessId(GameWindow, &ProcessID);
+	DWORD processId = 0, threadId = GetWindowThreadProcessId(GameWindow, &processId);
 	if (!threadId)
 	{
 		logger.error("Failed to get thread id!");
@@ -71,7 +63,15 @@ int main()
 		return logger.stop(-1);
 	}
 	logger.success(std::format("Thread id: {}", threadId));
-	logger.success(std::format("Process id: {}", ProcessID));
+	logger.success(std::format("Process id: {}", processId));
+	
+	if (network.Proxy == ProxyMode::Mitmproxy)
+	{
+		if (Launcher::Mitmproxy::Spawn(network.Redirects, processId, &logger))
+			logger.success("Spawned mitmproxy");
+		else
+			logger.error("Failed to spawn mitmproxy (is mitmdump on PATH?)");
+	}
 
 	Launcher::UniqueHook hook(SetWindowsHookExW(WH_GETMESSAGE, proc, lib.get(), threadId));
 	if (!hook)
