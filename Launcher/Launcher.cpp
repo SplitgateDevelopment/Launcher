@@ -2,13 +2,16 @@
 #include <thread>
 #include <chrono>
 
-int main() {
+int main()
+{
 	SetConsoleTitleA("Splitgate Launcher");
+
 	Logger* logger = new Logger();
 	logger->info("Loading...");
 
 	HMODULE lib = LoadLibraryA("internal.dll");
-	if (!lib) {
+	if (!lib)
+	{
 		logger->error("Failed to load target module!");
 		logger->errorBox(TEXT("LoadLibraryA"));
 		return logger->stop(-1);
@@ -16,7 +19,8 @@ int main() {
 	logger->success("Loaded target module!");
 
 	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib, "?SplitgateCallBack@@YA_JH_K_J@Z"));
-	if (!proc) {
+	if (!proc)
+	{
 		logger->error("Failed to get exported function address!");
 		logger->errorBox(TEXT("HOOKPROC"));
 		return logger->stop(-1);
@@ -24,14 +28,16 @@ int main() {
 	logger->success("Got exported function address!");
 
 	HWND GameWindow = FindWindowA(0, "PortalWars  ");
-	if (!GameWindow) {
+	if (!GameWindow)
+	{
 		logger->error("Failed to get game window!");
 		return logger->stop(-1);
 	}
 	logger->success("Got game window!");
 
 	DWORD ProcessID = 0, ThreadID = GetWindowThreadProcessId(GameWindow, &ProcessID);
-	if (!ThreadID) {
+	if (!ThreadID)
+	{
 		logger->error("Failed to get thread id!");
 		logger->errorBox(TEXT("GetWindowThreadProcessId"));
 		return logger->stop(-1);
@@ -40,14 +46,17 @@ int main() {
 	logger->success(std::format("Process id: {}", ProcessID));
 
 	HHOOK hook = SetWindowsHookExW(WH_GETMESSAGE, proc, lib, ThreadID);
-	if (!hook) {
+	if (!hook)
+	{
 		logger->error("Failed to place hook");
 		logger->errorBox(TEXT("SetWindowsHookExW"));
 		return logger->stop(-1);
 	};
 	logger->success("Placed hook!");
 
-	if (!PostThreadMessageW(ThreadID, HCBT_CREATEWND, 0, reinterpret_cast<LPARAM>(hook))) {
+	constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
+	if (!PostThreadMessageW(ThreadID, WM_SPLITGATE_INIT, 0, reinterpret_cast<LPARAM>(hook)))
+	{
 		logger->error("Failed to post thread message!");
 		logger->errorBox(TEXT("PostThreadMessageW"));
 		return logger->stop(-1);
