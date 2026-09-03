@@ -19,6 +19,11 @@ namespace Shared
 	{
 	public:
 		Logger() = default;
+		~Logger() { if (logFile) fclose(logFile); }
+
+		// Owns C stdio handles — not copyable.
+		Logger(const Logger&) = delete;
+		Logger& operator=(const Logger&) = delete;
 
 		// Launcher path: use the process's existing console and mirror to logPath.
 		void attachConsole(const std::string& logPath)
