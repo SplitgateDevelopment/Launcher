@@ -171,20 +171,36 @@ TEST_F(SettingsFileTest, ResetRestoresDefaults) {
     EXPECT_EQ("SplitgateDevelopment", Settings.MISC.PlayerName);
 }
 
-// Documents current behaviour: these fields are declared on the settings structs
-// but omitted from their NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE lists, so they are
-// never written to disk and revert to defaults on load. If persistence for them
-// is added later, this test should be updated to assert they survive instead.
-TEST_F(SettingsFileTest, UnlistedFieldsAreNotPersisted) {
+// ShowConsole was declared but missing from the MiscSettings macro, so it never
+// persisted. It is now included and must round-trip through save/load.
+TEST_F(SettingsFileTest, ShowConsolePersists) {
+    ASSERT_TRUE(Settings.MISC.ShowConsole);   // default
+    Settings.MISC.ShowConsole = false;
+
+    SettingsHelper::Save();
+    SettingsHelper::Reset();
+    ASSERT_TRUE(Settings.MISC.ShowConsole);    // reset back to default
+    ASSERT_TRUE(SettingsHelper::Load());
+
+    EXPECT_FALSE(Settings.MISC.ShowConsole);
+}
+
+// These fields are deliberately not exposed through the settings file: they are
+// runtime/constant values, so they are intentionally left out of the NLOHMANN
+// macros. Editing the json must not be able to change them, and they never get
+// written — they always keep their defaults across a save/load.
+TEST_F(SettingsFileTest, RuntimeOnlyFieldsAreNotPersisted) {
     Settings.MENU.Watermark = "custom-watermark";
-    Settings.MISC.SteamAppId = "999999";
     Settings.MISC.LoadIntoMap = true;
+    Settings.MISC.DiscordAppID = "111222333";
+    Settings.MISC.SteamAppId = "999999";
 
     SettingsHelper::Save();
     SettingsHelper::Reset();
     ASSERT_TRUE(SettingsHelper::Load());
 
     EXPECT_EQ("github.com/SplitgateDevelopment/Launcher", Settings.MENU.Watermark);
-    EXPECT_EQ("677620", Settings.MISC.SteamAppId);
     EXPECT_FALSE(Settings.MISC.LoadIntoMap);
+    EXPECT_EQ("1078744504066117703", Settings.MISC.DiscordAppID);
+    EXPECT_EQ("677620", Settings.MISC.SteamAppId);
 }

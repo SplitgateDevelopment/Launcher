@@ -44,7 +44,7 @@ struct MiscSettings {
     bool UserScriptsEnabled = false;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, PlayerName, UserScriptsEnabled, DiscordRPCEnabled)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, ShowConsole, PlayerName, DiscordRPCEnabled, UserScriptsEnabled)
 
 struct DebugSettings {
     bool LogProcessEvent = false;
