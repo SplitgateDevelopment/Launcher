@@ -5,14 +5,16 @@
 #include "../../utils/Globals.h"
 #include "../../features/Features.h"
 
-namespace PostRender {
+namespace PostRender
+{
 	void** VTable;
-	void(*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
+	void (*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr;
 	int Index = 100;
 
 	void HookedPostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 	{
-		do {
+		do
+		{
 			UWorld* World = UWorld::GetWorld();
 			if (!World) break;
 
@@ -27,7 +29,6 @@ namespace PostRender {
 			APlayerController* PlayerController = LocalPlayer->PlayerController;
 			if (!PlayerController) break;
 
-
 			Globals::World = World;
 			Globals::Canvas = Canvas;
 			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
@@ -37,4 +38,4 @@ namespace PostRender {
 
 		return Original(UGameViewportClient, Canvas);
 	}
-}
+} // namespace PostRender

@@ -14,7 +14,8 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-namespace Window {
+namespace Window
+{
 	HWND WindowHandle{};
 	static UINT ResizeWidth = 0, ResizeHeight = 0;
 
@@ -23,9 +24,10 @@ namespace Window {
 	static IDXGISwapChain* SwapChain = nullptr;
 	static ID3D11RenderTargetView* RenderTargetView{};
 
-	WNDPROC			OldWindowProcess{};
+	WNDPROC OldWindowProcess{};
 
-	namespace {
+	namespace
+	{
 		WNDCLASSEX WindowClass;
 		static uint64_t* MethodsTable = NULL;
 
@@ -57,7 +59,7 @@ namespace Window {
 
 			return (WindowHandle != NULL);
 		}
-	}
+	} // namespace
 
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
@@ -119,7 +121,8 @@ namespace Window {
 	{
 		assert(Index >= 0 && Original != NULL && Function != NULL);
 		void* target = (void*)MethodsTable[Index];
-		if (MH_CreateHook(target, Function, Original) != MH_OK || MH_EnableHook(target) != MH_OK) {
+		if (MH_CreateHook(target, Function, Original) != MH_OK || MH_EnableHook(target) != MH_OK)
+		{
 			return FALSE;
 		}
 		return TRUE;
@@ -133,7 +136,7 @@ namespace Window {
 		HMODULE D3D11Module = GetModuleHandleA("d3d11.dll");
 
 		D3D_FEATURE_LEVEL FeatureLevel;
-		const D3D_FEATURE_LEVEL FeatureLevels[] = { D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_11_0 };
+		const D3D_FEATURE_LEVEL FeatureLevels[] = {D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_11_0};
 
 		DXGI_RATIONAL RefreshRate;
 		RefreshRate.Numerator = 60;
@@ -162,9 +165,8 @@ namespace Window {
 		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	
 		UINT createDeviceFlags = 0;
-		//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+		// createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
 		HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, FeatureLevels, 2, D3D11_SDK_VERSION, &SwapChainDesc, &SwapChain, &Device, &FeatureLevel, &DeviceContext);
 		if (res == DXGI_ERROR_UNSUPPORTED) // Try high-performance WARP software driver if hardware is not available.
@@ -199,7 +201,8 @@ namespace Window {
 		return TRUE;
 	}
 
-	void Destroy() {
+	void Destroy()
+	{
 		CleanupRenderTarget();
 
 		SwapChain->Release();
@@ -209,4 +212,4 @@ namespace Window {
 		DeviceContext->Release();
 		DeviceContext = NULL;
 	}
-}
+} // namespace Window

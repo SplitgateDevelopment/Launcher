@@ -24,10 +24,10 @@
 //               enabled -> disabled while still valid.
 class Feature
 {
-public:
-	bool Enabled = false;      // toggled from settings via UpdateEnabled()
+  public:
+	bool Enabled = false; // toggled from settings via UpdateEnabled()
 	bool Initialized = false;
-	bool OneTime = false;      // Run() fires once per enable instead of every frame
+	bool OneTime = false; // Run() fires once per enable instead of every frame
 
 	std::string Name = "BaseFeature";
 	// Which event drives this feature. Render runs every frame (the fast loop in
@@ -36,8 +36,8 @@ public:
 	Events::Type Event = Events::Type::Render;
 
 	// Bookkeeping owned by Features::Execute; subclasses should not touch these.
-	bool applied = false;      // Run() has been applied and not yet reverted by Destroy()
-	bool hasRun = false;       // a OneTime feature has already run this enable cycle
+	bool applied = false; // Run() has been applied and not yet reverted by Destroy()
+	bool hasRun = false;  // a OneTime feature has already run this enable cycle
 
 	Feature() {};
 

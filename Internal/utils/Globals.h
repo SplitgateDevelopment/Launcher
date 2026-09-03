@@ -2,7 +2,8 @@
 
 #include "../ue/Engine.h"
 
-namespace Globals {
+namespace Globals
+{
 	UEngine* Engine = 0;
 	UWorld* World = 0;
 	APortalWarsPlayerController* PlayerController = 0;
@@ -11,11 +12,12 @@ namespace Globals {
 	UKismetTextLibrary* KismetTextLibrary = 0;
 	UCanvas* Canvas = 0;
 
-	void Init() {
+	void Init()
+	{
 		Engine = UEngine::GetEngine();
 		World = UWorld::GetWorld();
 		GameplayStatics = reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
 		KismetStringLibrary = reinterpret_cast<UKismetStringLibrary*>(UKismetStringLibrary::StaticClass());
 		KismetTextLibrary = reinterpret_cast<UKismetTextLibrary*>(UKismetTextLibrary::StaticClass());
 	}
-}
+} // namespace Globals

@@ -5,13 +5,14 @@
 
 class InfiniteJetpack : public Feature
 {
-private:
+  private:
 	APortalWarsCharacter* Player = 0;
 
 	float OriginalThrusterRechargeDelay;
 	float OriginalThrusterCurrentTime;
 	float OriginalThrusterLoudnessForBots;
-public:
+
+  public:
 	InfiniteJetpack()
 	{
 		Name = "InfiniteJetpack";

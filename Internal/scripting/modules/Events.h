@@ -6,8 +6,10 @@
 
 namespace py = pybind11;
 
-namespace Scripts {
-	namespace Modules {
+namespace Scripts
+{
+	namespace Modules
+	{
 		// Exposes SplitgateInternal.Events to user scripts:
 		//
 		//   import SplitgateInternal
@@ -19,7 +21,8 @@ namespace Scripts {
 		//
 		// The Python callable is wrapped so a failing handler is logged (and the
 		// GIL is held while it runs) instead of escaping into the engine.
-		void Events(py::module_& m) {
+		void Events(py::module_& m)
+		{
 			auto events = m.def_submodule("Events");
 
 			py::enum_<::Events::Type>(events, "Type")
@@ -31,17 +34,16 @@ namespace Scripts {
 				.value("MenuClosed", ::Events::Type::MenuClosed)
 				.export_values();
 
-			events.def("on", [](::Events::Type event, py::function callback) {
-				::Events::Register(event, [callback]() {
+			events.def("on", [](::Events::Type event, py::function callback)
+					   { ::Events::Register(event, [callback]()
+											{
 					try {
 						py::gil_scoped_acquire gil;
 						callback();
 					}
 					catch (py::error_already_set& e) {
 						Logger::Log("ERROR", e.what());
-					}
-				});
-			});
+					} }); });
 		}
-	}
-}
+	} // namespace Modules
+} // namespace Scripts

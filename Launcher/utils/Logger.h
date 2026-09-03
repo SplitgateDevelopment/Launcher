@@ -7,6 +7,6 @@
 // internal.log). All the actual logging lives in shared/Logger.h.
 class Logger : public Shared::Logger
 {
-public:
+  public:
 	Logger() { attachConsole("launcher.log"); }
 };

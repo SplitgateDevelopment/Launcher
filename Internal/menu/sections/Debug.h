@@ -4,9 +4,12 @@
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 
-namespace Menu {
-	namespace Sections {
-		void DebugTab() {
+namespace Menu
+{
+	namespace Sections
+	{
+		void DebugTab()
+		{
 			bool changed = false;
 
 			ImGui::SeparatorText("Logging");
@@ -41,7 +44,8 @@ namespace Menu {
 				fs::path filePath = dumpsDir / "GObjects.txt";
 
 				std::ofstream file(filePath, std::ios::out | std::ios::trunc);
-				if (!file.is_open()) {
+				if (!file.is_open())
+				{
 					char errorMsg[256];
 					strerror_s(errorMsg, sizeof(errorMsg), errno);
 
@@ -76,5 +80,5 @@ namespace Menu {
 				ImGui::TreePop();
 			}
 		}
-	}
-}
+	} // namespace Sections
+} // namespace Menu

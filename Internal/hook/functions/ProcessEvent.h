@@ -7,14 +7,15 @@
 
 #include <unordered_map>
 
-namespace ProcessEvent {
+namespace ProcessEvent
+{
 	// Game events surfaced to user scripts (see scripting docs / Events.h).
 	// Map an Events::Type to the UFunction full name exactly as printed by
 	// LogProcessEvent. Add a value to Events::Type and a row here for each event
 	// you want to expose; scripts then subscribe with:
 	//   SplitgateInternal.Events.on(SplitgateInternal.Events.PlayerDeath, handler)
 	static const std::pair<Events::Type, const char*> gameEvents[] = {
-		{ Events::Type::Shutdown, "Function Engine.GameInstance.ReceiveShutdown" },
+		{Events::Type::Shutdown, "Function Engine.GameInstance.ReceiveShutdown"},
 		// { Events::Type::PlayerDeath, "Function PortalWars.PortalWarsCharacter.OnDeath" },
 	};
 
@@ -22,8 +23,7 @@ namespace ProcessEvent {
 	void (*Original)(UObject*, UFunction*, void*) = nullptr;
 	int Index = 68;
 
-	static std::vector<std::string> filteredWords
-	{
+	static std::vector<std::string> filteredWords{
 		"SetName",
 		"ServerChangeName",
 		"FOV",
@@ -64,26 +64,29 @@ namespace ProcessEvent {
 		std::string functionName = Function->GetFullName();
 
 		if (className == "DebugCanvasObject") return;
-		for (const auto& word : filteredWords) {
+		for (const auto& word : filteredWords)
+		{
 			if (functionName.find(word) != std::string::npos) return;
 		}
 
 		Logger::Log("INFO", std::format("Caller [{}] Function [{}]", className, functionName));
 	}
 
-	void HookedProcessEvent(UObject* Class, UFunction* Function, void* Params) {
+	void HookedProcessEvent(UObject* Class, UFunction* Function, void* Params)
+	{
 		if (Settings.DEBUG.LogProcessEvent) LogProcessEvent(Class, Function);
 
 		static UObject* ReceiveShutdown = ObjObjects->FindObject("Function Engine.GameInstance.ReceiveShutdown");
 
-		if (Function == ReceiveShutdown) {
+		if (Function == ReceiveShutdown)
+		{
 			Logger::Log("INFO", "Received shutdown");
 			ExceptionHandler::Disable();
 			Logger::DestroyConsole();
-			//Hook::UnHook();
+			// Hook::UnHook();
 		};
 
-		/* 
+		/*
 		TODO: Intercept and modify widget IsInputActionEnabled function
 		static UObject* IsInputActionEnabled = ObjObjects->FindObject("Function PortalWars.PortalWarsUserWidget.IsInputActionEnabled");
 		//Pointer comparison is faster
@@ -97,7 +100,7 @@ namespace ProcessEvent {
 			IsInputActionEnabledParams = reinterpret_cast<IsInputActionEnabledStruct*>(Params);
 
 			std::cout << IsInputActionEnabledParams << std::endl;
-			
+
 			IsInputActionEnabledParams->InIsEnabled = true;
 
 			Logger::Log("INFO", "IsInputActionEnabled modified");
@@ -105,21 +108,24 @@ namespace ProcessEvent {
 		}*/
 
 		// Dispatch registered game events to user scripts. Resolve the
-			// name->UFunction table once, then a single map lookup per call;
-			// skipped entirely when scripting is off or nothing is subscribed.
-			if (Settings.MISC.UserScriptsEnabled && !Events::Empty()) {
-				static const std::unordered_map<UObject*, Events::Type> gameEventByFn = [] {
-					std::unordered_map<UObject*, Events::Type> map;
-					for (const auto& [event, name] : gameEvents) {
-						if (UObject* obj = ObjObjects->FindObject(name)) map[obj] = event;
-					}
-					return map;
-				}();
+		// name->UFunction table once, then a single map lookup per call;
+		// skipped entirely when scripting is off or nothing is subscribed.
+		if (Settings.MISC.UserScriptsEnabled && !Events::Empty())
+		{
+			static const std::unordered_map<UObject*, Events::Type> gameEventByFn = []
+			{
+				std::unordered_map<UObject*, Events::Type> map;
+				for (const auto& [event, name] : gameEvents)
+				{
+					if (UObject* obj = ObjObjects->FindObject(name)) map[obj] = event;
+				}
+				return map;
+			}();
 
-				auto it = gameEventByFn.find(Function);
-				if (it != gameEventByFn.end()) Events::Dispatch(it->second, { Class });
-			}
+			auto it = gameEventByFn.find(Function);
+			if (it != gameEventByFn.end()) Events::Dispatch(it->second, {Class});
+		}
 
-			return Original(Class, Function, Params);
+		return Original(Class, Function, Params);
 	};
-}
+} // namespace ProcessEvent

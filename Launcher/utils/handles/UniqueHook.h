@@ -10,7 +10,7 @@ namespace Launcher
 	// the DLL owns teardown, and unhooking here could unload the injected module.
 	class UniqueHook
 	{
-	public:
+	  public:
 		explicit UniqueHook(HHOOK handle = nullptr) : handle(handle) {}
 		~UniqueHook() { reset(); }
 
@@ -38,7 +38,7 @@ namespace Launcher
 			handle = newHandle;
 		}
 
-	private:
+	  private:
 		HHOOK handle;
 	};
-};
+}; // namespace Launcher

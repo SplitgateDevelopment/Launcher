@@ -1,9 +1,12 @@
 #pragma once
 #include "imgui.h"
 
-namespace GUI {
-	namespace Styles {
-		void Init() {
+namespace GUI
+{
+	namespace Styles
+	{
+		void Init()
+		{
 			ImGuiStyle* style = &ImGui::GetStyle();
 
 			style->WindowPadding = ImVec2(15, 15);
@@ -74,5 +77,5 @@ namespace GUI {
 			colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 			colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 		}
-	}
-};
+	} // namespace Styles
+}; // namespace GUI

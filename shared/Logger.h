@@ -17,9 +17,12 @@ namespace Shared
 {
 	class Logger
 	{
-	public:
+	  public:
 		Logger() = default;
-		~Logger() { if (logFile) fclose(logFile); }
+		~Logger()
+		{
+			if (logFile) fclose(logFile);
+		}
 
 		// Owns C stdio handles — not copyable.
 		Logger(const Logger&) = delete;
@@ -98,8 +101,8 @@ namespace Shared
 
 			FormatMessage(
 				FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_IGNORE_INSERTS,
+					FORMAT_MESSAGE_FROM_SYSTEM |
+					FORMAT_MESSAGE_IGNORE_INSERTS,
 				NULL,
 				dw,
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -107,11 +110,11 @@ namespace Shared
 				0, NULL);
 
 			lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-				(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+											  (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
 			StringCchPrintf((LPTSTR)lpDisplayBuf,
-				LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-				TEXT("%s failed with error %d: %s"),
-				lpszFunction, dw, lpMsgBuf);
+							LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+							TEXT("%s failed with error %d: %s"),
+							lpszFunction, dw, lpMsgBuf);
 			MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
 			LocalFree(lpMsgBuf);
@@ -125,7 +128,7 @@ namespace Shared
 			return code;
 		}
 
-	private:
+	  private:
 		HANDLE consoleHandle = nullptr;
 		HWND consoleWindow = nullptr;
 		FILE* consoleStream = nullptr;
@@ -138,7 +141,7 @@ namespace Shared
 
 		std::string timestamp() const
 		{
-			const auto now = std::chrono::zoned_time{ std::chrono::current_zone(), std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()) };
+			const auto now = std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now())};
 			return std::format("[{:%H:%M:%S}]", now);
 		}
 
@@ -158,4 +161,4 @@ namespace Shared
 			return SetConsoleTextAttribute(consoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 	};
-};
+}; // namespace Shared

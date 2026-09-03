@@ -25,8 +25,8 @@ namespace Shared::ExceptionHandler
 
 	enum class ExitMode
 	{
-		Silent = EXCEPTION_EXECUTE_HANDLER,   // swallow the exception and continue
-		Crash = EXCEPTION_CONTINUE_SEARCH,    // let the crash propagate
+		Silent = EXCEPTION_EXECUTE_HANDLER, // swallow the exception and continue
+		Crash = EXCEPTION_CONTINUE_SEARCH,	// let the crash propagate
 	};
 
 	using LogFn = std::function<void(const std::string& level, const std::string& message)>;
@@ -34,10 +34,10 @@ namespace Shared::ExceptionHandler
 
 	struct Config
 	{
-		fs::path crashDir;                 // reports go under crashDir / <timestamp> /
+		fs::path crashDir; // reports go under crashDir / <timestamp> /
 		ExitMode exitMode = ExitMode::Silent;
-		LogFn log;                         // optional progress sink
-		CrashFn onCrash;                   // optional recovery action, run after the report
+		LogFn log;		 // optional progress sink
+		CrashFn onCrash; // optional recovery action, run after the report
 	};
 
 	// Local time formatted for a folder name, e.g. 2026-09-03-16-42-05.
@@ -168,4 +168,4 @@ namespace Shared::ExceptionHandler
 	{
 		SetUnhandledExceptionFilter(NULL);
 	}
-};
+}; // namespace Shared::ExceptionHandler

@@ -9,7 +9,7 @@ namespace Launcher
 	// mapping does not unload the copy the hook injects into the target process.
 	class UniqueLibrary
 	{
-	public:
+	  public:
 		explicit UniqueLibrary(HMODULE handle = nullptr) : handle(handle) {}
 		~UniqueLibrary() { reset(); }
 
@@ -37,7 +37,7 @@ namespace Launcher
 			handle = newHandle;
 		}
 
-	private:
+	  private:
 		HMODULE handle;
 	};
-};
+}; // namespace Launcher

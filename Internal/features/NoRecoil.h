@@ -5,11 +5,11 @@
 
 class NoRecoil : public Feature
 {
-private:
+  private:
 	FRecoilData OriginalData;
 	AGun* Gun = 0;
 
-	void ApplyRecoil(FRecoilData &outRecoilConfig, FRecoilData inRecoilConfig)
+	void ApplyRecoil(FRecoilData& outRecoilConfig, FRecoilData inRecoilConfig)
 	{
 		outRecoilConfig.horizontalRecoilAmount = inRecoilConfig.horizontalRecoilAmount;
 		outRecoilConfig.verticalRecoilAmount = inRecoilConfig.verticalRecoilAmount;
@@ -18,7 +18,8 @@ private:
 		outRecoilConfig.recoilRiseTime = inRecoilConfig.recoilRiseTime;
 		outRecoilConfig.recoilTotalTime = inRecoilConfig.recoilTotalTime;
 	};
-public:
+
+  public:
 	NoRecoil()
 	{
 		Name = "NoRecoil";

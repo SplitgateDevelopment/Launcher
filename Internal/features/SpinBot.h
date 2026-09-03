@@ -5,13 +5,14 @@
 
 class SpinBot : public Feature
 {
-private:
+  private:
 	APortalWarsCharacter* Player = 0;
 	float CurrentSpinYaw = 0.f;
 
 	FHitResult resultPlayer;
 	FHitResult resultWeapon;
-public:
+
+  public:
 	SpinBot()
 	{
 		Name = "SpinBot";
@@ -52,7 +53,6 @@ public:
 	void Destroy()
 	{
 		if (CurrentSpinYaw == 0.f) return;
-
 
 		auto PlayerMesh = Player->Mesh1P;
 		auto WeaponMesh = Player->CurrentWeapon->Mesh1P;

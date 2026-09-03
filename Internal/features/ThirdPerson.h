@@ -13,7 +13,7 @@
 // try the built-in modes) and adjust if third person does not engage.
 class ThirdPerson : public Feature
 {
-private:
+  private:
 	FName thirdPersonMode{};
 	FName firstPersonMode{};
 
@@ -25,7 +25,7 @@ private:
 			->Conv_StringToName(FString(text));
 	}
 
-public:
+  public:
 	ThirdPerson()
 	{
 		Name = "ThirdPerson";

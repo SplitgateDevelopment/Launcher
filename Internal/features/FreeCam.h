@@ -11,7 +11,7 @@
 // in-game (LogProcessEvent watching ClientSetCameraMode) and adjust if needed.
 class FreeCam : public Feature
 {
-private:
+  private:
 	FName freeCamMode{};
 	FName firstPersonMode{};
 
@@ -21,7 +21,7 @@ private:
 			->Conv_StringToName(FString(text));
 	}
 
-public:
+  public:
 	FreeCam()
 	{
 		Name = "FreeCam";

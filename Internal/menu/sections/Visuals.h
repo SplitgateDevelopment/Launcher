@@ -3,9 +3,12 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 
-namespace Menu {
-	namespace Sections {
-		void VisualsTab() {
+namespace Menu
+{
+	namespace Sections
+	{
+		void VisualsTab()
+		{
 			bool changed = false;
 			auto& v = Settings.VISUALS;
 
@@ -32,5 +35,5 @@ namespace Menu {
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}
-	}
-}
+	} // namespace Sections
+} // namespace Menu

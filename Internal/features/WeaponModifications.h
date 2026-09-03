@@ -4,7 +4,7 @@
 
 class WeaponModifications : public Feature
 {
-private:
+  private:
 	AGun* Weapon = 0;
 
 	uint16_t OriginalTotalAmmos = 0;
@@ -12,7 +12,7 @@ private:
 	float OriginalTimeBetweenMelee = 0.f;
 	float OriginalMeleeDamage = 0.f;
 
-public:
+  public:
 	WeaponModifications()
 	{
 		Name = "WeaponModifications";
@@ -67,8 +67,7 @@ public:
 		Log("Initialized");
 	};
 
-	void Destroy()
-	{
+	void Destroy() {
 	};
 
 	void Run()

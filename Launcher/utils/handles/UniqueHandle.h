@@ -10,7 +10,7 @@ namespace Launcher
 	// APIs that fail with INVALID_HANDLE_VALUE would need a different empty sentinel.
 	class UniqueHandle
 	{
-	public:
+	  public:
 		explicit UniqueHandle(HANDLE handle = nullptr) : handle(handle) {}
 		~UniqueHandle() { reset(); }
 
@@ -38,7 +38,7 @@ namespace Launcher
 			handle = newHandle;
 		}
 
-	private:
+	  private:
 		HANDLE handle;
 	};
-};
+}; // namespace Launcher

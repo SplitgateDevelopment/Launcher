@@ -6,7 +6,7 @@
 
 class UserScripts : public Feature
 {
-public:
+  public:
 	UserScripts()
 	{
 		Name = "UserScripts";
@@ -31,8 +31,7 @@ public:
 		Log("Initialized");
 	};
 
-	void Destroy()
-	{
+	void Destroy() {
 	};
 
 	void Run()

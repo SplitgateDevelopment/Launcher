@@ -18,13 +18,13 @@ namespace Events
 	// ProcessEvent's table mapping it to a UFunction name.
 	enum class Type
 	{
-		Render,          // every rendered frame
-		Shutdown,        // game instance is shutting down
-		LoadIntoMap,     // "Load into map" button pressed
+		Render,			 // every rendered frame
+		Shutdown,		 // game instance is shutting down
+		LoadIntoMap,	 // "Load into map" button pressed
 		SettingsChanged, // a setting was changed in the menu
-		MenuOpened,      // the GUI was shown
-		MenuClosed,      // the GUI was hidden
-		// PlayerDeath, PlayerSpawn, ... (wire in ProcessEvent)
+		MenuOpened,		 // the GUI was shown
+		MenuClosed,		 // the GUI was hidden
+						 // PlayerDeath, PlayerSpawn, ... (wire in ProcessEvent)
 	};
 
 	// Optional data an event can carry. Most events dispatch with a default
@@ -32,9 +32,9 @@ namespace Events
 	// (e.g. source = the pawn that died). Handlers that don't care ignore it.
 	struct Payload
 	{
-		void* source = nullptr;  // primary object involved
-		void* target = nullptr;  // secondary object (e.g. the instigator)
-		float value = 0.f;       // a scalar (e.g. damage)
+		void* source = nullptr; // primary object involved
+		void* target = nullptr; // secondary object (e.g. the instigator)
+		float value = 0.f;		// a scalar (e.g. damage)
 	};
 
 	inline std::unordered_map<Type, std::vector<std::function<void(const Payload&)>>> handlers;
@@ -48,7 +48,8 @@ namespace Events
 	// Convenience overload for handlers that don't need the payload.
 	inline void Register(Type event, std::function<void()> handler)
 	{
-		handlers[event].push_back([h = std::move(handler)](const Payload&) { h(); });
+		handlers[event].push_back([h = std::move(handler)](const Payload&)
+								  { h(); });
 	}
 
 	inline bool HasHandlers(Type event)
@@ -72,8 +73,13 @@ namespace Events
 
 		for (auto& handler : it->second)
 		{
-			try { handler(payload); }
-			catch (...) {}
+			try
+			{
+				handler(payload);
+			}
+			catch (...)
+			{
+			}
 		}
 	}
 
@@ -81,4 +87,4 @@ namespace Events
 	{
 		handlers.clear();
 	}
-};
+}; // namespace Events

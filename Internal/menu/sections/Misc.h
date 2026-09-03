@@ -4,9 +4,12 @@
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
 
-namespace Menu {
-	namespace Sections {
-		void MiscTab() {
+namespace Menu
+{
+	namespace Sections
+	{
+		void MiscTab()
+		{
 			bool isInGame = Globals::PlayerController->IsInGame();
 
 			ImGui::SeparatorText("Player");
@@ -25,19 +28,19 @@ namespace Menu {
 			};
 			if (isInGame) ImGui::EndDisabled();
 
-
 			ImGui::SeparatorText("User Scripts");
 			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))
 				Events::Dispatch(Events::Type::SettingsChanged);
 
 			if (ImGui::TreeNode("Loaded Scripts"))
 			{
-				for (const auto& script : Scripts::scriptList) {
+				for (const auto& script : Scripts::scriptList)
+				{
 					ImGui::BulletText(script.c_str());
 				}
 
 				ImGui::TreePop();
 			}
 		}
-	}
-}
+	} // namespace Sections
+} // namespace Menu

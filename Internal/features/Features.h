@@ -35,10 +35,11 @@ namespace Features
 		// Seed Enabled from current settings, then keep it in sync reactively:
 		// the menu dispatches SettingsChanged on every change, so features no
 		// longer poll their setting every frame.
-		for (auto& feature : Features) feature->UpdateEnabled();
-		Events::Register(Events::Type::SettingsChanged, [] {
-			for (auto& feature : Features) feature->UpdateEnabled();
-		});
+		for (auto& feature : Features)
+			feature->UpdateEnabled();
+		Events::Register(Events::Type::SettingsChanged, []
+						 {
+			for (auto& feature : Features) feature->UpdateEnabled(); });
 
 		// Subscribe event-driven features (Event != "render") to the event bus;
 		// render features run from Features::Execute each frame instead.
@@ -46,19 +47,20 @@ namespace Features
 		{
 			if (feature->Event != Events::Type::Render)
 			{
-				Events::Register(feature->Event, [ptr = feature.get()] { RunFeature(*ptr); });
+				Events::Register(feature->Event, [ptr = feature.get()]
+								 { RunFeature(*ptr); });
 			}
 		}
 
 		// One-shot action, triggered from the "Load into map" button. Replaces
 		// the old LoadIntoMap feature + Settings.MISC.LoadIntoMap flag.
-		Events::Register(Events::Type::LoadIntoMap, [] {
+		Events::Register(Events::Type::LoadIntoMap, []
+						 {
 			auto* controller = Globals::PlayerController;
 			if (controller && !controller->IsInGame())
 			{
 				Logger::Log("INFO", "Loading into map");
 				controller->SwitchLevel(L"Simulation_Alpha");
-			}
-		});
+			} });
 	};
-};
+}; // namespace Features

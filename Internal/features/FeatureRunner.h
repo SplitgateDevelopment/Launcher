@@ -81,4 +81,4 @@ namespace Features
 			}
 		}
 	}
-};
+}; // namespace Features

@@ -5,11 +5,14 @@
 
 namespace py = pybind11;
 
-namespace Scripts {
-	namespace Modules {
-		void Logger(py::module_& m) {
+namespace Scripts
+{
+	namespace Modules
+	{
+		void Logger(py::module_& m)
+		{
 			auto logger = m.def_submodule("Logger");
 			logger.def("Log", &Logger::Log);
 		}
-	}
-}
+	} // namespace Modules
+} // namespace Scripts

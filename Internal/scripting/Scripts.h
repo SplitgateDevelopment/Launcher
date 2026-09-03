@@ -18,7 +18,8 @@
 namespace py = pybind11;
 namespace fs = std::filesystem;
 
-PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m) {
+PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m)
+{
 
 	m.doc() = "Splitgate Internal plugin";
 
@@ -27,7 +28,8 @@ PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m) {
 	Scripts::Modules::Events(m);
 }
 
-namespace Scripts {
+namespace Scripts
+{
 
 	std::vector<std::string> scriptList{};
 	std::vector<pybind11::module_> loadedScripts{};
@@ -41,7 +43,8 @@ namespace Scripts {
 
 		Logger::Log("INFO", std::format("Loading scripts from {}", scriptsPath.string()));
 
-		if (!fs::exists(scriptsPath) || !fs::is_directory(scriptsPath)) {
+		if (!fs::exists(scriptsPath) || !fs::is_directory(scriptsPath))
+		{
 			Logger::Log("ERROR", "UserScripts directory does not exist or is not a valid directory.");
 			fs::create_directories(scriptsPath);
 			return;
@@ -49,10 +52,12 @@ namespace Scripts {
 
 		try
 		{
-			for (const auto& entry : fs::directory_iterator(scriptsPath)) {
+			for (const auto& entry : fs::directory_iterator(scriptsPath))
+			{
 				fs::path filename = entry.path().filename();
 
-				if (filename.string() != "__init__.py" && filename.string().find(".py") != std::string::npos) {
+				if (filename.string() != "__init__.py" && filename.string().find(".py") != std::string::npos)
+				{
 					scriptList.push_back(filename.string());
 				}
 			}
@@ -64,7 +69,8 @@ namespace Scripts {
 
 		for (int i = 0; i < scriptList.size(); i++)
 		{
-			try {
+			try
+			{
 				std::string filename = scriptList.at(i);
 				std::size_t ext = filename.find(".py");
 
@@ -79,7 +85,8 @@ namespace Scripts {
 				loadedScripts.push_back(scriptModule);
 				Logger::Log("INFO", std::format("UserScript {} loaded", filename));
 			}
-			catch (py::error_already_set& e) {
+			catch (py::error_already_set& e)
+			{
 				Logger::Log("ERROR", e.what());
 			}
 		}
@@ -97,14 +104,16 @@ namespace Scripts {
 			auto function = script.attr("main");
 			function();
 		}
-		catch (py::error_already_set& e) {
+		catch (py::error_already_set& e)
+		{
 			Logger::Log("ERROR", e.what());
 		}
 	};
-		
+
 	void ExecuteUnloaded(std::string filename)
 	{
-		try {
+		try
+		{
 			std::size_t ext = filename.find(".py");
 
 			std::string scriptName = std::string(filename);
@@ -122,8 +131,9 @@ namespace Scripts {
 
 			return;
 		}
-		catch (py::error_already_set& e) {
+		catch (py::error_already_set& e)
+		{
 			Logger::Log("ERROR", e.what());
 		}
 	}
-}
+} // namespace Scripts

@@ -11,32 +11,34 @@
 
 #include <imgui.h>
 
-namespace Menu {
-    static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
+namespace Menu
+{
+	static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
 	static int tab = 0;
-    static ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
+	static ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton;
 
 	void Draw()
 	{
-        Menu::Sections::Watermark();
-        
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
+		Menu::Sections::Watermark();
 
-        if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
-        {
-            Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
-            Events::Dispatch(Settings.MENU.ShowMenu ? Events::Type::MenuOpened : Events::Type::MenuClosed);
-        }
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+
+		if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
+		{
+			Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
+			Events::Dispatch(Settings.MENU.ShowMenu ? Events::Type::MenuOpened : Events::Type::MenuClosed);
+		}
 		if (!Settings.MENU.ShowMenu) return;
 
-        if (Settings.DEBUG.ShowDemoWindow)
-        {
-            ImGui::ShowDemoWindow(&Settings.DEBUG.ShowDemoWindow);
-        }
-        if (Settings.DEBUG.ShowStyleEditor)
-        {
-            ImGui::ShowStyleEditor();
-        }
+		if (Settings.DEBUG.ShowDemoWindow)
+		{
+			ImGui::ShowDemoWindow(&Settings.DEBUG.ShowDemoWindow);
+		}
+		if (Settings.DEBUG.ShowStyleEditor)
+		{
+			ImGui::ShowStyleEditor();
+		}
 
 		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu, windowFlags))
 		{
@@ -44,43 +46,43 @@ namespace Menu {
 			return;
 		};
 
-        if (!ImGui::BeginTabBar("MainTabBar", tabFlags))
-        {
-            ImGui::End();
-            return;
-        };
+		if (!ImGui::BeginTabBar("MainTabBar", tabFlags))
+		{
+			ImGui::End();
+			return;
+		};
 
-        if (ImGui::BeginTabItem("Misc"))
-        {
-            Menu::Sections::MiscTab();
-            ImGui::EndTabItem();
-        }
+		if (ImGui::BeginTabItem("Misc"))
+		{
+			Menu::Sections::MiscTab();
+			ImGui::EndTabItem();
+		}
 
-        if (ImGui::BeginTabItem("Exploits"))
-        {
-            Menu::Sections::ExploitsTab();
-            ImGui::EndTabItem();
-        }
+		if (ImGui::BeginTabItem("Exploits"))
+		{
+			Menu::Sections::ExploitsTab();
+			ImGui::EndTabItem();
+		}
 
-        if (ImGui::BeginTabItem("Visuals"))
-        {
-            Menu::Sections::VisualsTab();
-            ImGui::EndTabItem();
-        }
+		if (ImGui::BeginTabItem("Visuals"))
+		{
+			Menu::Sections::VisualsTab();
+			ImGui::EndTabItem();
+		}
 
-        if (ImGui::BeginTabItem("Settings"))
-        {
-            Menu::Sections::SettingsTab();
-            ImGui::EndTabItem();
-        }
+		if (ImGui::BeginTabItem("Settings"))
+		{
+			Menu::Sections::SettingsTab();
+			ImGui::EndTabItem();
+		}
 
-        if (ImGui::BeginTabItem("Debug"))
-        {
-            Menu::Sections::DebugTab();
-            ImGui::EndTabItem();
-        }
+		if (ImGui::BeginTabItem("Debug"))
+		{
+			Menu::Sections::DebugTab();
+			ImGui::EndTabItem();
+		}
 
-        ImGui::EndTabBar();
+		ImGui::EndTabBar();
 		ImGui::End();
 	};
-};
+}; // namespace Menu

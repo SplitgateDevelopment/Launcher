@@ -7,7 +7,8 @@
 
 #pragma comment(lib, "discord-rpc.lib")
 
-namespace DiscordRPC {
+namespace DiscordRPC
+{
 	DiscordRichPresence discordPresence;
 	int64_t StartTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
@@ -17,7 +18,8 @@ namespace DiscordRPC {
 		Logger::Log("RPC", "Shut down RPC");
 	};
 
-	void InitPresence() {
+	void InitPresence()
+	{
 		if (!Settings.MISC.DiscordRPCEnabled) return;
 
 		memset(&discordPresence, 0, sizeof(discordPresence));
@@ -48,12 +50,14 @@ namespace DiscordRPC {
 		InitPresence();
 	}
 
-	const char* GetState() {
+	const char* GetState()
+	{
 		if (!Settings.MISC.DiscordRPCEnabled) return "";
 		return discordPresence.state;
 	}
 
-	void UpdateState(const char* state) {
+	void UpdateState(const char* state)
+	{
 		if (!Settings.MISC.DiscordRPCEnabled) return;
 		if (GetState() == state) return;
 
@@ -70,4 +74,4 @@ namespace DiscordRPC {
 		Discord_UpdatePresence(&discordPresence);
 		Logger::Log("RPC", "Updated presence");
 	};
-};
+}; // namespace DiscordRPC

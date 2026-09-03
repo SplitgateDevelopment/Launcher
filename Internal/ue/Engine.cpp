@@ -5,8 +5,11 @@
 
 std::string FNameEntry::String()
 {
-	if (bIsWide) { return std::string(); }
-	return { AnsiName, Len };
+	if (bIsWide)
+	{
+		return std::string();
+	}
+	return {AnsiName, Len};
 }
 
 FNameEntry* FNamePool::GetEntry(FNameEntryHandle handle) const
@@ -38,14 +41,23 @@ std::string UObject::GetName()
 std::string UObject::GetFullName()
 {
 	std::string name;
-	for (auto outer = OuterPrivate; outer; outer = outer->OuterPrivate) { name = outer->GetName() + "." + name; }
+	for (auto outer = OuterPrivate; outer; outer = outer->OuterPrivate)
+	{
+		name = outer->GetName() + "." + name;
+	}
 	name = ClassPrivate->GetName() + " " + name + this->GetName();
 	return name;
 }
 
 bool UObject::IsA(void* cmp)
 {
-	for (auto super = ClassPrivate; super; super = static_cast<UClass*>(super->SuperStruct)) { if (super == cmp) { return true; } }
+	for (auto super = ClassPrivate; super; super = static_cast<UClass*>(super->SuperStruct))
+	{
+		if (super == cmp)
+		{
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -71,7 +83,10 @@ UObject* TUObjectArray::FindObject(const char* name) const
 	for (auto i = 0u; i < NumElements; i++)
 	{
 		auto object = GetObjectPtr(i);
-		if (object && object->GetFullName() == name) { return object; }
+		if (object && object->GetFullName() == name)
+		{
+			return object;
+		}
 	}
 	return nullptr;
 }
@@ -79,7 +94,7 @@ UObject* TUObjectArray::FindObject(const char* name) const
 void UObject::ProcessEvent(void* UFunction, void* Params)
 {
 	auto vtable = *reinterpret_cast<void***>(this);
-	reinterpret_cast<void(*)(void*, void*, void*)>(vtable[68])(this, UFunction, Params);
+	reinterpret_cast<void (*)(void*, void*, void*)>(vtable[68])(this, UFunction, Params);
 }
 
 struct UClass* UObject::StaticClass()
@@ -110,7 +125,8 @@ uintptr_t GetBoneMatrixF;
 
 void APlayerController::SwitchLevel(FString URL)
 {
-	struct {
+	struct
+	{
 		FString URL;
 	} Parameters;
 	Parameters.URL = URL;
@@ -120,7 +136,8 @@ void APlayerController::SwitchLevel(FString URL)
 
 void APlayerController::FOV(float NewFOV)
 {
-	struct {
+	struct
+	{
 		float NewFOV;
 	} Parameters;
 	Parameters.NewFOV = NewFOV;
@@ -130,7 +147,8 @@ void APlayerController::FOV(float NewFOV)
 
 void APlayerController::SetName(FString S)
 {
-	struct {
+	struct
+	{
 		FString S;
 	} Parameters;
 	Parameters.S = S;
@@ -140,7 +158,8 @@ void APlayerController::SetName(FString S)
 
 void UCanvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FLOAT Thickness, FLinearColor Color)
 {
-	struct {
+	struct
+	{
 		FVector2D ScreenPositionA;
 		FVector2D ScreenPositionB;
 		FLOAT Thickness;
@@ -157,7 +176,8 @@ void UCanvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, 
 
 void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, struct FVector2D ScreenPosition, struct FVector2D Scale, struct FLinearColor RenderColor, float Kerning, struct FLinearColor ShadowColor, struct FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, struct FLinearColor OutlineColor)
 {
-	struct {
+	struct
+	{
 		struct UFont* RenderFont;
 		FString RenderText;
 		FVector2D ScreenPosition;
@@ -187,8 +207,10 @@ void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, s
 	ProcessEvent(UObjects::K2_DrawTextUFunc, &Parameters);
 };
 
-UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame() {
-	struct {
+UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame()
+{
+	struct
+	{
 		UPortalWarsSaveGame* ReturnValue;
 	} Parameters;
 
@@ -198,7 +220,8 @@ UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame() {
 
 void USceneComponent::K2_SetRelativeRotation(struct FRotator NewRotation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport)
 {
-	struct {
+	struct
+	{
 		FRotator NewRotation;
 		bool bSweep;
 		FHitResult SweepHitResult;
@@ -212,8 +235,10 @@ void USceneComponent::K2_SetRelativeRotation(struct FRotator NewRotation, bool b
 	ProcessEvent(UObjects::K2_SetRelativeRotationUFunc, &Parameters);
 }
 
-bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRotation) {
-	struct {
+bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRotation)
+{
+	struct
+	{
 		FVector DestLocation;
 		FRotator DestRotation;
 		bool ReturnValue;
@@ -225,8 +250,10 @@ bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRota
 	return Parameters.ReturnValue;
 };
 
-FVector AActor::K2_GetActorLocation() {
-	struct {
+FVector AActor::K2_GetActorLocation()
+{
+	struct
+	{
 		FVector ReturnValue;
 	} Parameters;
 
@@ -234,8 +261,10 @@ FVector AActor::K2_GetActorLocation() {
 	return Parameters.ReturnValue;
 };
 
-FRotator AActor::K2_GetActorRotation() {
-	struct {
+FRotator AActor::K2_GetActorRotation()
+{
+	struct
+	{
 		FRotator ReturnValue;
 	} Parameters;
 
@@ -243,8 +272,10 @@ FRotator AActor::K2_GetActorRotation() {
 	return Parameters.ReturnValue;
 };
 
-void AActor::SetActorEnableCollision(bool bNewActorEnableCollision) {
-	struct {
+void AActor::SetActorEnableCollision(bool bNewActorEnableCollision)
+{
+	struct
+	{
 		bool bNewActorEnableCollision;
 	} Parameters;
 	Parameters.bNewActorEnableCollision = bNewActorEnableCollision;
@@ -252,8 +283,10 @@ void AActor::SetActorEnableCollision(bool bNewActorEnableCollision) {
 	ProcessEvent(UObjects::SetActorEnableCollision, &Parameters);
 };
 
-bool AActor::GetActorEnableCollision() {
-	struct {
+bool AActor::GetActorEnableCollision()
+{
+	struct
+	{
 		bool ReturnValue;
 	} Parameters;
 
@@ -263,7 +296,8 @@ bool AActor::GetActorEnableCollision() {
 
 bool AActor::K2_SetActorLocation(struct FVector NewLocation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport)
 {
-	struct {
+	struct
+	{
 		FVector NewLocation;
 		bool bSweep;
 		FHitResult SweepHitResult;
@@ -354,10 +388,10 @@ struct UInputSettings* UInputSettings::GetInputSettings()
 {
 	auto Func = ObjObjects->FindObject("Function Engine.InputSettings.GetInputSettings");
 
-	struct {
+	struct
+	{
 		struct UInputSettings* ReturnValue;
 	} Parms;
-
 
 	UObject::ProcessEvent(Func, &Parms);
 
@@ -383,7 +417,8 @@ struct FName UKismetStringLibrary::Conv_StringToName(struct FString InString)
 {
 	auto Func = ObjObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToName");
 
-	struct {
+	struct
+	{
 		struct FString InString;
 		struct FName ReturnValue;
 	} Parms;
@@ -399,7 +434,8 @@ void APlayerController::ConsoleKey(struct FKey Key)
 {
 	auto Func = ObjObjects->FindObject("Function Engine.PlayerController.ConsoleKey");
 
-	struct {
+	struct
+	{
 		struct FKey Key;
 	} Parms;
 
@@ -427,7 +463,8 @@ void UPortalWarsNotificationManager::OpenNoticeDialog(FErrorInfo& ErrorInfo)
 {
 	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenNoticeDialog");
 
-	struct {
+	struct
+	{
 		FErrorInfo ErrorInfo;
 	} Params;
 	Params.ErrorInfo = ErrorInfo;
@@ -439,7 +476,8 @@ void UPortalWarsNotificationManager::OpenErrorDialog(FErrorInfo& ErrorInfo)
 {
 	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenErrorDialog");
 
-	struct {
+	struct
+	{
 		FErrorInfo ErrorInfo;
 	} Params;
 	Params.ErrorInfo = ErrorInfo;
@@ -451,7 +489,8 @@ void APortalWarsPlayerController::ClientUpdateChat(struct FTextChatData InData)
 {
 	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
 
-	struct {
+	struct
+	{
 		struct FTextChatData InData;
 	} Params;
 	Params.InData = InData;
@@ -468,7 +507,8 @@ struct FText UKismetTextLibrary::Conv_StringToText(struct FString InString)
 {
 	auto Func = ObjObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToText");
 
-	struct {
+	struct
+	{
 		struct FString InString;
 		struct FText ReturnValue;
 	} Parms;
@@ -484,7 +524,8 @@ void APlayerController::ClientSetCameraMode(struct FName NewCameraMode)
 {
 	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
 
-	struct {
+	struct
+	{
 		struct FName NewCameraMode;
 	} Params;
 	Params.NewCameraMode = NewCameraMode;
@@ -496,7 +537,8 @@ void APlayerController::SendToConsole(FString Command)
 {
 	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
 
-	struct {
+	struct
+	{
 		FString Command;
 	} Params;
 	Params.Command = Command;
@@ -529,7 +571,8 @@ void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origi
 {
 	auto Function = ObjObjects->FindObject("Function Engine.Actor.GetActorBounds");
 
-	struct {
+	struct
+	{
 		bool bOnlyCollidingComponents;
 		struct FVector Origin;
 		struct FVector BoxExtent;
@@ -547,7 +590,8 @@ bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVec
 {
 	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
 
-	struct {
+	struct
+	{
 		FVector WorldLocation;
 		FVector2D ScreenLocation;
 		bool bPlayerViewportRelative;
@@ -585,17 +629,19 @@ struct UClass* ACullableActor::StaticClass()
 	return (UClass*)ObjObjects->FindObject("Class PortalWars.CullableActor");
 };
 
-FVector USkeletalMeshComponent::GetBoneMatrix(int index) {
+FVector USkeletalMeshComponent::GetBoneMatrix(int index)
+{
 
-	auto GetBoneMatrix = reinterpret_cast<FMatrix * (*)(USkeletalMeshComponent*, FMatrix*, int)>(GetBoneMatrixF);
+	auto GetBoneMatrix = reinterpret_cast<FMatrix* (*)(USkeletalMeshComponent*, FMatrix*, int)>(GetBoneMatrixF);
 
 	FMatrix matrix;
 	GetBoneMatrix(this, &matrix, index);
 
-	return FVector({ matrix.M[3][0], matrix.M[3][1], matrix.M[3][2] });
+	return FVector({matrix.M[3][0], matrix.M[3][1], matrix.M[3][2]});
 }
 
-FVector2D USkeletalMeshComponent::GetBone(int index, APlayerController* PlayerController) {
+FVector2D USkeletalMeshComponent::GetBone(int index, APlayerController* PlayerController)
+{
 
 	FVector WorldLocation = this->GetBoneMatrix(index);
 
@@ -603,13 +649,14 @@ FVector2D USkeletalMeshComponent::GetBone(int index, APlayerController* PlayerCo
 
 	if (PlayerController->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation, false)) return ScreenLocation;
 
-	return { 0,0 };
+	return {0, 0};
 }
 
 struct FName USkinnedMeshComponent::GetBoneName(int32_t BoneIndex)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.SkinnedMeshComponent.GetBoneName");
-	struct {
+	struct
+	{
 		int32_t BoneIndex;
 		FName ReturnValue;
 	} Parameters;
@@ -625,21 +672,22 @@ bool EngineInit()
 {
 	auto main = GetModuleHandleA(nullptr);
 
-	static byte objSig[] = { 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1, 0xEB };
+	static byte objSig[] = {0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1, 0xEB};
 	ObjObjects = reinterpret_cast<decltype(ObjObjects)>(FindPointer(main, objSig, sizeof(objSig), 0));
 	if (!ObjObjects) return false;
 
-	static byte poolSig[] = { 0x48, 0x8D, 0x0D, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x05, 0x00, 0x00, 0x00, 0x00, 0x01, 0x0F, 0x10, 0x03, 0x4C, 0x8D, 0x44, 0x24, 0x20, 0x48, 0x8B, 0xC8 };
+	static byte poolSig[] = {0x48, 0x8D, 0x0D, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x05, 0x00, 0x00, 0x00, 0x00, 0x01, 0x0F, 0x10, 0x03, 0x4C, 0x8D, 0x44, 0x24, 0x20, 0x48, 0x8B, 0xC8};
 	NamePoolData = reinterpret_cast<decltype(NamePoolData)>(FindPointer(main, poolSig, sizeof(poolSig), 0));
 	if (!NamePoolData) return false;
 
-	static byte worldSig[] = { 0x48, 0x8B, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0xDB, 0x74, 0x3B, 0x41, 0xB0, 0x01, 0x33, 0xD2, 0x48, 0x8B, 0xCB, 0xE8 };
+	static byte worldSig[] = {0x48, 0x8B, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0xDB, 0x74, 0x3B, 0x41, 0xB0, 0x01, 0x33, 0xD2, 0x48, 0x8B, 0xCB, 0xE8};
 	WRLD = reinterpret_cast<decltype(WRLD)>(FindPointer(main, worldSig, sizeof(worldSig), 0));
 	if (!WRLD) return false;
 
-	static byte GetBoneMatrixSig[] = { 0x48, 0x8B, 0xC4, 0x55, 0x53, 0x56, 0x57, 0x41, 0x54, 0x41, 0x56, 0x41, 0x57, 0x48, 0x8D, 0x68, 0xA1, 0x48, 0x81, 0xEC, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x29, 0x78, 0xB8, 0x33, 0xF6, 0x44, 0x0F, 0x29, 0x40 };
+	static byte GetBoneMatrixSig[] = {0x48, 0x8B, 0xC4, 0x55, 0x53, 0x56, 0x57, 0x41, 0x54, 0x41, 0x56, 0x41, 0x57, 0x48, 0x8D, 0x68, 0xA1, 0x48, 0x81, 0xEC, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x29, 0x78, 0xB8, 0x33, 0xF6, 0x44, 0x0F, 0x29, 0x40};
 	MODULEINFO info;
-	if (K32GetModuleInformation(GetCurrentProcess(), main, &info, sizeof(MODULEINFO))) {
+	if (K32GetModuleInformation(GetCurrentProcess(), main, &info, sizeof(MODULEINFO)))
+	{
 		auto base = static_cast<byte*>(info.lpBaseOfDll);
 		GetBoneMatrixF = reinterpret_cast<decltype(GetBoneMatrixF)>(FindSignature(base, base + info.SizeOfImage - 1, GetBoneMatrixSig, sizeof(GetBoneMatrixSig)));
 		if (!GetBoneMatrixF) return false;

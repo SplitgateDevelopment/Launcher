@@ -5,12 +5,15 @@
 
 namespace py = pybind11;
 
-namespace Scripts {
-	namespace Modules {
-		void Settings(py::module_& m) {
+namespace Scripts
+{
+	namespace Modules
+	{
+		void Settings(py::module_& m)
+		{
 			auto settings = m.def_submodule("Settings");
 			settings.def("Reset", &SettingsHelper::Reset);
 			settings.def("Save", &SettingsHelper::Save);
 		}
-	}
-}
+	} // namespace Modules
+} // namespace Scripts

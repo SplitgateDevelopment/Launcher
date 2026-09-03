@@ -15,10 +15,10 @@
 // the bone pairs and the 3D-box mode may need adjustment; verify on a live game.
 class Esp : public Feature
 {
-private:
+  private:
 	UObject* CharacterClass = 0;
 
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{ c.R, c.G, c.B, c.A }; }
+	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
 
 	static bool OffScreen(const FVector2D& p) { return !p.X && !p.Y; }
 
@@ -33,8 +33,8 @@ private:
 		const float left = centerX - width * 0.5f;
 		const float right = centerX + width * 0.5f;
 
-		const FVector2D tl{ left, head.Y }, tr{ right, head.Y };
-		const FVector2D bl{ left, feet.Y }, br{ right, feet.Y };
+		const FVector2D tl{left, head.Y}, tr{right, head.Y};
+		const FVector2D bl{left, feet.Y}, br{right, feet.Y};
 
 		Globals::Canvas->K2_DrawLine(tl, tr, 1.f, color);
 		Globals::Canvas->K2_DrawLine(tr, br, 1.f, color);
@@ -55,36 +55,36 @@ private:
 		const float width = height * 0.5f;
 		const float barX = (head.X + feet.X) * 0.5f - width * 0.5f - 5.f;
 
-		const FLinearColor color{ 1.f - pct, pct, 0.f, 1.f };
-		Globals::Canvas->K2_DrawLine({ barX, feet.Y }, { barX, feet.Y - height * pct }, 3.f, color);
+		const FLinearColor color{1.f - pct, pct, 0.f, 1.f};
+		Globals::Canvas->K2_DrawLine({barX, feet.Y}, {barX, feet.Y - height * pct}, 3.f, color);
 	}
 
 	static float Distance(const FVector& a, const FVector& b)
 	{
 		const float dx = a.X - b.X, dy = a.Y - b.Y, dz = a.Z - b.Z;
-		return sqrtf(dx * dx + dy * dy + dz * dz) / 100.f;  // cm -> m
+		return sqrtf(dx * dx + dy * dy + dz * dz) / 100.f; // cm -> m
 	}
 
 	template <typename Mesh>
 	void DrawSkeleton(Mesh mesh, APlayerController* controller, const FLinearColor& color)
 	{
 		static constexpr int pairs[][2] = {
-			{ BoneFNames::head, BoneFNames::neck_01 },
-			{ BoneFNames::neck_01, BoneFNames::spine_03 },
-			{ BoneFNames::spine_03, BoneFNames::spine_01 },
-			{ BoneFNames::spine_01, BoneFNames::pelvis },
-			{ BoneFNames::spine_03, BoneFNames::upperarm_l },
-			{ BoneFNames::upperarm_l, BoneFNames::lowerarm_l },
-			{ BoneFNames::lowerarm_l, BoneFNames::hand_l },
-			{ BoneFNames::spine_03, BoneFNames::upperarm_r },
-			{ BoneFNames::upperarm_r, BoneFNames::lowerarm_r },
-			{ BoneFNames::lowerarm_r, BoneFNames::hand_r },
-			{ BoneFNames::pelvis, BoneFNames::thigh_l },
-			{ BoneFNames::thigh_l, BoneFNames::calf_l },
-			{ BoneFNames::calf_l, BoneFNames::foot_l },
-			{ BoneFNames::pelvis, BoneFNames::thigh_r },
-			{ BoneFNames::thigh_r, BoneFNames::calf_r },
-			{ BoneFNames::calf_r, BoneFNames::foot_r },
+			{BoneFNames::head, BoneFNames::neck_01},
+			{BoneFNames::neck_01, BoneFNames::spine_03},
+			{BoneFNames::spine_03, BoneFNames::spine_01},
+			{BoneFNames::spine_01, BoneFNames::pelvis},
+			{BoneFNames::spine_03, BoneFNames::upperarm_l},
+			{BoneFNames::upperarm_l, BoneFNames::lowerarm_l},
+			{BoneFNames::lowerarm_l, BoneFNames::hand_l},
+			{BoneFNames::spine_03, BoneFNames::upperarm_r},
+			{BoneFNames::upperarm_r, BoneFNames::lowerarm_r},
+			{BoneFNames::lowerarm_r, BoneFNames::hand_r},
+			{BoneFNames::pelvis, BoneFNames::thigh_l},
+			{BoneFNames::thigh_l, BoneFNames::calf_l},
+			{BoneFNames::calf_l, BoneFNames::foot_l},
+			{BoneFNames::pelvis, BoneFNames::thigh_r},
+			{BoneFNames::thigh_r, BoneFNames::calf_r},
+			{BoneFNames::calf_r, BoneFNames::foot_r},
 		};
 
 		for (const auto& pair : pairs)
@@ -97,7 +97,7 @@ private:
 		}
 	}
 
-public:
+  public:
 	Esp()
 	{
 		Name = "Esp";
@@ -130,8 +130,7 @@ public:
 		Log("Initialized");
 	};
 
-	void Destroy()
-	{
+	void Destroy() {
 	};
 
 	void Run()
@@ -149,14 +148,16 @@ public:
 		if (hasPlayer) playerPos = localPawn->K2_GetActorLocation();
 
 		auto& Levels = Globals::World->Levels;
-		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++) {
+		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
+		{
 			if (!Levels.IsValidIndex(l)) continue;
 
 			ULevel* Level = Levels[l];
 			if (!Level) continue;
 
 			auto& Actors = Level->Actors;
-			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++) {
+			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++)
+			{
 				if (!Actors.IsValidIndex(a)) continue;
 
 				auto Actor = Actors[a];
@@ -174,7 +175,7 @@ public:
 				if (OffScreen(feet)) continue;
 
 				if (visuals.Snaplines)
-					Globals::Canvas->K2_DrawLine({ Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY }, feet, 1.f, snaplineColor);
+					Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snaplineColor);
 
 				if (visuals.Box && !OffScreen(head))
 					DrawBox(head, feet, boxColor);
@@ -186,12 +187,12 @@ public:
 					DrawSkeleton(Mesh, controller, bonesColor);
 
 				if (visuals.Name)
-					Globals::Canvas->K2_DrawText(0, Actor->GetName(), feet, { 1.f, 1.f }, nameColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, true, false, true, { 0.f, 0.f, 0.f, 1.f });
+					Globals::Canvas->K2_DrawText(0, Actor->GetName(), feet, {1.f, 1.f}, nameColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 
 				if (visuals.Distance && hasPlayer)
 				{
 					std::string text = std::to_string((int)Distance(playerPos, Actor->K2_GetActorLocation())) + "m";
-					Globals::Canvas->K2_DrawText(0, FString(text), { feet.X, feet.Y + 14.f }, { 1.f, 1.f }, nameColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, true, false, true, { 0.f, 0.f, 0.f, 1.f });
+					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {1.f, 1.f}, nameColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 				}
 			}
 		}

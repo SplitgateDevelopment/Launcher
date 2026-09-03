@@ -9,7 +9,8 @@
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
 
-namespace GUI {
+namespace GUI
+{
 	bool initialized = false;
 
 	typedef HRESULT(APIENTRY* IDXGISwapChainPresent)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
@@ -22,11 +23,11 @@ namespace GUI {
 	{
 		Window::WindowHandle = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
 
-		if (!SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device))) {
+		if (!SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device)))
+		{
 			initialized = false;
 			return false;
 		}
-
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -53,7 +54,6 @@ namespace GUI {
 			initialized = false;
 			return false;
 		}
-
 
 		ImGui_ImplWin32_Init(Window::WindowHandle);
 		ImGui_ImplDX11_Init(Window::Device, Window::DeviceContext);
@@ -96,12 +96,13 @@ namespace GUI {
 		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
 		io.MouseDrawCursor = Settings.MENU.ShowMenu;
 		io.WantCaptureMouse = Settings.MENU.ShowMenu;
 		io.WantTextInput = Settings.MENU.ShowMenu;
 		io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
-		
+
 		Menu::Draw();
 
 		ImGui::EndFrame();
@@ -117,7 +118,10 @@ namespace GUI {
 		return oIDXGISwapChainPresent(pSwapChain, SyncInterval, Flags);
 	}
 
-	void APIENTRY MJDrawIndexed(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation) { return; }
+	void APIENTRY MJDrawIndexed(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+	{
+		return;
+	}
 
 	bool Init()
 	{
@@ -136,4 +140,4 @@ namespace GUI {
 		ImGui::DestroyContext();
 		Window::Destroy();
 	};
-}
+} // namespace GUI

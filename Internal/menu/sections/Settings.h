@@ -4,24 +4,30 @@
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 
-namespace Menu {
-	namespace Sections {
-		void SettingsTab() {
+namespace Menu
+{
+	namespace Sections
+	{
+		void SettingsTab()
+		{
 			ImGui::SeparatorText("Config");
-			if (ImGui::Button("Save")) {
+			if (ImGui::Button("Save"))
+			{
 				SettingsHelper::Save();
 			};
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reload")) {
+			if (ImGui::Button("Reload"))
+			{
 				SettingsHelper::Load();
-				Events::Dispatch(Events::Type::SettingsChanged);  // features re-read Enabled
+				Events::Dispatch(Events::Type::SettingsChanged); // features re-read Enabled
 			};
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reset defaults")) {
+			if (ImGui::Button("Reset defaults"))
+			{
 				SettingsHelper::Reset();
 				Events::Dispatch(Events::Type::SettingsChanged);
 			};
@@ -31,7 +37,8 @@ namespace Menu {
 			ImGui::ToggleButton("Watermark", &Settings.MENU.ShowWatermark);
 
 			ImGui::SeparatorText("Program");
-			if (ImGui::Button("Toggle Console")) {
+			if (ImGui::Button("Toggle Console"))
+			{
 				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
 				Logger::SetConsoleVisibility(Settings.MISC.ShowConsole);
 			};
@@ -39,10 +46,11 @@ namespace Menu {
 			ImGui::SameLine();
 
 			ImGui::BeginDisabled();
-			if (ImGui::Button("Unload")) {
-				//Hook::UnHook(); TODO add unhooking feature
+			if (ImGui::Button("Unload"))
+			{
+				// Hook::UnHook(); TODO add unhooking feature
 			}
 			ImGui::EndDisabled();
 		}
-	}
-}
+	} // namespace Sections
+} // namespace Menu

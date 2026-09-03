@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../shared/ExceptionHandler.h"
-#include "Logger.h"                 // Logger::Log
-#include "../settings/Settings.h"   // SettingsHelper
+#include "Logger.h"				  // Logger::Log
+#include "../settings/Settings.h" // SettingsHelper
 
 // Internal-side wiring of the shared crash handler: reports go under the game's app folder,
 // progress is logged through the in-game logger, and on a crash the settings file is deleted
@@ -16,7 +16,8 @@ namespace ExceptionHandler
 		Shared::ExceptionHandler::Config config;
 		config.crashDir = SettingsHelper::GetAppPath() / "Crashes";
 		config.exitMode = exitMode;
-		config.log = [](const std::string& level, const std::string& message) { Logger::Log(level, message); };
+		config.log = [](const std::string& level, const std::string& message)
+		{ Logger::Log(level, message); };
 		config.onCrash = []()
 		{
 			if (!Settings.DEBUG.DeleteSettingsOnCrash) return;
@@ -32,4 +33,4 @@ namespace ExceptionHandler
 	{
 		Shared::ExceptionHandler::Uninstall();
 	}
-};
+}; // namespace ExceptionHandler

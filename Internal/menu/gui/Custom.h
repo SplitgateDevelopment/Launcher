@@ -47,12 +47,21 @@ namespace ImGui
 		int result = 0;
 		switch (virtualKey)
 		{
-		case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN:
-		case VK_RCONTROL: case VK_RMENU:
-		case VK_LWIN: case VK_RWIN: case VK_APPS:
-		case VK_PRIOR: case VK_NEXT:
-		case VK_END: case VK_HOME:
-		case VK_INSERT: case VK_DELETE:
+		case VK_LEFT:
+		case VK_UP:
+		case VK_RIGHT:
+		case VK_DOWN:
+		case VK_RCONTROL:
+		case VK_RMENU:
+		case VK_LWIN:
+		case VK_RWIN:
+		case VK_APPS:
+		case VK_PRIOR:
+		case VK_NEXT:
+		case VK_END:
+		case VK_HOME:
+		case VK_INSERT:
+		case VK_DELETE:
 		case VK_DIVIDE:
 		case VK_NUMLOCK:
 			scanCode |= KF_EXTENDED;
@@ -66,9 +75,8 @@ namespace ImGui
 	void HotKeyEx(int* key, const ImVec2& size_arg = ImVec2(0, 0))
 	{
 		static const std::vector<int> ignoredKeys =
-		{
-			VK_LBUTTON, VK_RBUTTON, VK_MBUTTON
-		};
+			{
+				VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
 
 		static std::string keyName = VirtualKeyCodeToString(*key);
 		static bool isPressed = false;
@@ -81,8 +89,10 @@ namespace ImGui
 		if (isPressed)
 		{
 			bool ignore = false;
-			for (auto ignoredKey : ignoredKeys) {
-				if (GetAsyncKeyState(ignoredKey) & 0x8000) {
+			for (auto ignoredKey : ignoredKeys)
+			{
+				if (GetAsyncKeyState(ignoredKey) & 0x8000)
+				{
 					ignore = true;
 					break;
 				}
@@ -92,7 +102,8 @@ namespace ImGui
 			{
 				for (int code = 0; code < 255; code++)
 				{
-					if (GetAsyncKeyState(code) & 0x8000) {
+					if (GetAsyncKeyState(code) & 0x8000)
+					{
 						*key = code;
 						isPressed = false;
 					}
@@ -137,7 +148,7 @@ namespace ImGui
 		const ImGuiID id = window->GetID(label);
 		const ImVec2 label_size = CalcTextSize(label, NULL, true);
 
-		//float height = ImGui::GetFrameHeight( );
+		// float height = ImGui::GetFrameHeight( );
 		float height = ImGui::GetFontSize();
 		const ImVec2 pos = window->DC.CursorPos;
 
@@ -146,7 +157,7 @@ namespace ImGui
 
 		const ImRect total_bb(pos, ImVec2(pos.x + width + (label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f), pos.y + label_size.y /*+ style.FramePadding.y * 2.0f*/));
 
-		ItemSize(total_bb/*, style.FramePadding.y*/);
+		ItemSize(total_bb /*, style.FramePadding.y*/);
 		if (!ItemAdd(total_bb, id))
 			return false;
 
@@ -172,7 +183,9 @@ namespace ImGui
 			t = *v ? (t_anim) : (1.0f - t_anim);
 		}
 
-		ImU32 col_bg = GetColorU32((held && hovered) ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgActive : hovered ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgHovered : *v ? ImGuiCol_SliderGrab : ImGuiCol_FrameBg);
+		ImU32 col_bg = GetColorU32((held && hovered) ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgActive : hovered ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgHovered
+																											 : *v		 ? ImGuiCol_SliderGrab
+																														 : ImGuiCol_FrameBg);
 
 		const ImRect frame_bb(pos, ImVec2(pos.x + width, pos.y + height));
 
@@ -196,4 +209,4 @@ namespace ImGui
 		std::string str2 = label;
 		return ToggleButtonEx((str1 + str2).c_str(), v);
 	}
-}
+} // namespace ImGui

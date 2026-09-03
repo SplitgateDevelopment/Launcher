@@ -5,10 +5,11 @@
 
 class GodMode : public Feature
 {
-private:
-		float OriginalHealth = 0;
-		APortalWarsCharacter* Player = 0;
-public:
+  private:
+	float OriginalHealth = 0;
+	APortalWarsCharacter* Player = 0;
+
+  public:
 	GodMode()
 	{
 		Name = "GodMode";
@@ -70,6 +71,6 @@ public:
 		if (Player->MaxHealth != health) Player->MaxHealth = health;
 		if (Player->Health != health) Player->Health = health;
 
-		//Instigator->healthRechargeDelay = 0.1f;
+		// Instigator->healthRechargeDelay = 0.1f;
 	};
 };

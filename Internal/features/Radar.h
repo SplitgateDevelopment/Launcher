@@ -13,20 +13,20 @@
 // live game.
 class Radar : public Feature
 {
-private:
+  private:
 	UObject* CharacterClass = 0;
 
-	static constexpr float Size = 200.f;    // radar panel size, px
-	static constexpr float Margin = 20.f;   // distance from the screen edge, px
-	static constexpr float Range = 6000.f;  // world units mapped to the radar radius
+	static constexpr float Size = 200.f;   // radar panel size, px
+	static constexpr float Margin = 20.f;  // distance from the screen edge, px
+	static constexpr float Range = 6000.f; // world units mapped to the radar radius
 
 	void Cross(float x, float y, float half, float thickness, const FLinearColor& color)
 	{
-		Globals::Canvas->K2_DrawLine({ x - half, y }, { x + half, y }, thickness, color);
-		Globals::Canvas->K2_DrawLine({ x, y - half }, { x, y + half }, thickness, color);
+		Globals::Canvas->K2_DrawLine({x - half, y}, {x + half, y}, thickness, color);
+		Globals::Canvas->K2_DrawLine({x, y - half}, {x, y + half}, thickness, color);
 	}
 
-public:
+  public:
 	Radar()
 	{
 		Name = "Radar";
@@ -59,8 +59,7 @@ public:
 		Log("Initialized");
 	};
 
-	void Destroy()
-	{
+	void Destroy() {
 	};
 
 	void Run()
@@ -78,12 +77,12 @@ public:
 		const float cx = Globals::Canvas->ClipX - Margin - radius;
 		const float cy = Margin + radius;
 
-		const FLinearColor border{ 1.f, 1.f, 1.f, 1.f };
-		const FLinearColor dot{ 1.f, 0.f, 0.f, 1.f };
+		const FLinearColor border{1.f, 1.f, 1.f, 1.f};
+		const FLinearColor dot{1.f, 0.f, 0.f, 1.f};
 
 		// Panel border + player marker at the centre.
-		const FVector2D tl{ cx - radius, cy - radius }, tr{ cx + radius, cy - radius };
-		const FVector2D bl{ cx - radius, cy + radius }, br{ cx + radius, cy + radius };
+		const FVector2D tl{cx - radius, cy - radius}, tr{cx + radius, cy - radius};
+		const FVector2D bl{cx - radius, cy + radius}, br{cx + radius, cy + radius};
 		Globals::Canvas->K2_DrawLine(tl, tr, 1.f, border);
 		Globals::Canvas->K2_DrawLine(tr, br, 1.f, border);
 		Globals::Canvas->K2_DrawLine(br, bl, 1.f, border);
@@ -91,14 +90,16 @@ public:
 		Cross(cx, cy, 3.f, 1.f, border);
 
 		auto& Levels = Globals::World->Levels;
-		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++) {
+		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
+		{
 			if (!Levels.IsValidIndex(l)) continue;
 
 			ULevel* Level = Levels[l];
 			if (!Level) continue;
 
 			auto& Actors = Level->Actors;
-			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++) {
+			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++)
+			{
 				if (!Actors.IsValidIndex(a)) continue;
 
 				auto Actor = Actors[a];
@@ -115,7 +116,7 @@ public:
 				const float right = -dx * sinYaw + dy * cosYaw;
 
 				const float px = cx + (right / Range) * radius;
-				const float py = cy - (forward / Range) * radius;  // forward = up
+				const float py = cy - (forward / Range) * radius; // forward = up
 
 				if (px < cx - radius || px > cx + radius || py < cy - radius || py > cy + radius) continue;
 

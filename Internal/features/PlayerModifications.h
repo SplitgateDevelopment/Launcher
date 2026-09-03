@@ -6,12 +6,12 @@
 
 class PlayerModifications : public Feature
 {
-private:
+  private:
 	bool bSentWelcomeMessage = false;
 	std::string OriginalPlayerName = "";
 	bool bActorCollision = false;
 
-public:
+  public:
 	PlayerModifications()
 	{
 		Name = "PlayerModifications";
@@ -49,8 +49,7 @@ public:
 		Log("Initialized");
 	};
 
-	void Destroy()
-	{
+	void Destroy() {
 	};
 
 	void Run()
@@ -77,8 +76,10 @@ public:
 		bActorCollision = false;
 		if (GetAsyncKeyState(Settings.EXPLOITS.NoClip)) bActorCollision = !bActorCollision;
 
-		if (bActorCollision && Player->GetActorEnableCollision()) Player->SetActorEnableCollision(false);
-		else if (!bActorCollision && !Player->GetActorEnableCollision()) Player->SetActorEnableCollision(true);
+		if (bActorCollision && Player->GetActorEnableCollision())
+			Player->SetActorEnableCollision(false);
+		else if (!bActorCollision && !Player->GetActorEnableCollision())
+			Player->SetActorEnableCollision(true);
 
 		if (!bSentWelcomeMessage)
 		{

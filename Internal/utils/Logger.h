@@ -39,4 +39,4 @@ namespace Logger
 	{
 		Instance().setConsoleVisibility(show);
 	}
-};
+}; // namespace Logger

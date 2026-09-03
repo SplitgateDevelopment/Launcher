@@ -54,4 +54,4 @@ namespace Ipc
 	{
 		return WaitForSingleObject(handle, timeoutMs) == WAIT_OBJECT_0;
 	}
-};
+}; // namespace Ipc

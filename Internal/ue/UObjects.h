@@ -1,7 +1,8 @@
 #pragma once
 #include "Engine.h"
 
-namespace UObjects {
+namespace UObjects
+{
 	UObject* SwitchLevelUFunc = 0;
 	UObject* FOVUFunc = 0;
 	UObject* SetNameUFunc = 0;
@@ -18,7 +19,8 @@ namespace UObjects {
 	UObject* GetActorEnableCollision = 0;
 	UObject* K2_SetActorLocation = 0;
 
-	void Init() {
+	void Init()
+	{
 		SwitchLevelUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
 		FOVUFunc = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
 		SetNameUFunc = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
@@ -35,4 +37,4 @@ namespace UObjects {
 		GetActorEnableCollision = ObjObjects->FindObject("Function Engine.Actor.GetActorEnableCollision");
 		K2_SetActorLocation = ObjObjects->FindObject("Function Engine.Actor.K2_SetActorLocation");
 	}
-}
+} // namespace UObjects
