@@ -27,8 +27,6 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
@@ -42,8 +40,7 @@ public:
 		if (!Player->CurrentWeapon) return false;
 		if (!Player->CurrentWeapon->Mesh1P) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return true;
 	};
 
 	void Init()

@@ -15,7 +15,6 @@ private:
 		outRecoilConfig.verticalRecoilAmount = inRecoilConfig.verticalRecoilAmount;
 		outRecoilConfig.recoilKick = inRecoilConfig.recoilKick;
 		outRecoilConfig.visualRecoil = inRecoilConfig.visualRecoil;
-		outRecoilConfig.recoilKick = inRecoilConfig.recoilKick;
 		outRecoilConfig.recoilRiseTime = inRecoilConfig.recoilRiseTime;
 		outRecoilConfig.recoilTotalTime = inRecoilConfig.recoilTotalTime;
 	};
@@ -35,8 +34,6 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
@@ -48,8 +45,7 @@ public:
 		Gun = Player->CurrentWeapon;
 		if (!Gun) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return true;
 	};
 
 	void Init()
@@ -84,7 +80,6 @@ public:
 		noRecoilConfig.verticalRecoilAmount = 0.f;
 		noRecoilConfig.recoilKick = 0.f;
 		noRecoilConfig.visualRecoil = 0.f;
-		noRecoilConfig.recoilKick = 0.f;
 		noRecoilConfig.recoilRiseTime = 0.f;
 		noRecoilConfig.recoilTotalTime = 0.f;
 

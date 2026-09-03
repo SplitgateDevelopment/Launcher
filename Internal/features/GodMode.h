@@ -24,8 +24,6 @@ public:
 
 	bool Check()
 	{
-		UpdateEnabled();
-
 		if (!Initialized) return false;
 
 		if (!Globals::PlayerController) return false;
@@ -36,8 +34,7 @@ public:
 		if (!Player) return false;
 		if (!Player->Health) return false;
 
-		Log(Enabled ? "Enabled" : "Not Enabled");
-		return Enabled;
+		return true;
 	};
 
 	void Init()
