@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for the feature framework (Feature base class + Features::Execute).
+
 // Unit tests for the feature framework (Feature base class + Features::Execute).
 //
 // The concrete, game-specific features live behind the UE SDK and cannot be
@@ -16,7 +19,7 @@
 namespace
 {
 
-	// A Feature stand-in that records how the framework drove it.
+	/// A Feature stand-in that records how the framework drove it.
 	struct FakeFeature : public Feature
 	{
 		int initCount = 0;
@@ -48,6 +51,7 @@ namespace
 		}
 	};
 
+	/// Registers a new FakeFeature in the global registry and returns a non-owning pointer to it.
 	FakeFeature* add(std::string name = "Fake")
 	{
 		auto feature = std::make_unique<FakeFeature>(name);
@@ -56,6 +60,7 @@ namespace
 		return raw;
 	}
 
+	/// Fixture that clears the feature registry and event bus around every test.
 	class FeaturesTest : public ::testing::Test
 	{
 	  protected:

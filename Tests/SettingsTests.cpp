@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for Internal/settings — save/load/serialization exercised in isolation.
+
 // Unit tests for Internal/settings — scoped to save/load/serialization.
 //
 // Settings.cpp is compiled directly into this test target (see Tests.vcxproj);
@@ -43,6 +46,7 @@ TEST(SettingsSerialization, JsonRoundTripPreservesPersistedFields)
 // and resets the in-memory Settings to defaults around each test so cases stay
 // independent of one another.
 // ---------------------------------------------------------------------------
+/// Fixture that isolates disk-backed settings: backs up any real file, resets to defaults, restores after.
 class SettingsFileTest : public ::testing::Test
 {
   protected:

@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for the shared crash handler (shared/ExceptionHandler.h) via WriteCrashLog.
+
 // Unit tests for the shared crash handler (shared/ExceptionHandler.h). We can't unit test an
 // actual unhandled exception (it would terminate the runner), so we drive the testable core:
 // WriteCrashLog with a real context from RtlCaptureContext, pointed at a temp folder.
@@ -16,6 +19,7 @@ namespace
 	namespace fs = std::filesystem;
 	namespace EH = Shared::ExceptionHandler;
 
+	/// Fixture providing a clean temp crash directory, removed before and after each test.
 	class ExceptionHandlerTest : public ::testing::Test
 	{
 	  protected:

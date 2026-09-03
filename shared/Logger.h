@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Console-aware, file-mirroring logger shared by the launcher and the injected DLL.
+
 #include <Windows.h>
 #include <strsafe.h>
 #include <iostream>
@@ -13,12 +16,15 @@
 // one (AllocConsole + stdio redirect + show/hide). Output is colored per level and mirrored
 // to a log file with a local-time [HH:MM:SS] prefix. Levels are free strings
 // ("INFO"/"SUCCESS"/"ERROR"/"RPC", ...), so callers can add their own.
+/// Namespace for code shared between the launcher and the injected DLL.
 namespace Shared
 {
+	/// Colored console logger that mirrors every line to a log file; owns its stdio/file handles.
 	class Logger
 	{
 	  public:
 		Logger() = default;
+		/// Closes the log file if one was opened.
 		~Logger()
 		{
 			if (logFile) fclose(logFile);
@@ -28,14 +34,14 @@ namespace Shared
 		Logger(const Logger&) = delete;
 		Logger& operator=(const Logger&) = delete;
 
-		// Launcher path: use the process's existing console and mirror to logPath.
+		/// Launcher path: use the process's existing console and mirror to logPath.
 		void attachConsole(const std::string& logPath)
 		{
 			consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 			openLogFile(logPath);
 		}
 
-		// DLL path: allocate a fresh console (redirecting stdio) and mirror to logPath.
+		/// DLL path: allocate a fresh console (redirecting stdio) and mirror to logPath.
 		void createConsole(const std::string& title, const std::string& logPath)
 		{
 			if (!AllocConsole()) return;
@@ -53,6 +59,7 @@ namespace Shared
 			setConsoleVisibility(true);
 		}
 
+		/// DLL path: hide and tear down the console spawned by createConsole and close the log file.
 		void destroyConsole()
 		{
 			log("INFO", "Destroying console");
@@ -68,12 +75,14 @@ namespace Shared
 			consoleWindow = nullptr;
 		}
 
+		/// Shows or hides the spawned console window; no-op when there is no owned window.
 		void setConsoleVisibility(bool show)
 		{
 			if (!consoleWindow) return;
 			ShowWindow(consoleWindow, show ? SW_SHOW : SW_HIDE);
 		}
 
+		/// Writes one colored, timestamped `[level] message` line to the console and log file.
 		void log(const std::string& level, const std::string& message)
 		{
 			const std::string time = timestamp();
@@ -87,12 +96,15 @@ namespace Shared
 			fflush(logFile);
 		}
 
+		/// Logs `message` at the ERROR level.
 		void error(const std::string& message) { log("ERROR", message); }
+		/// Logs `message` at the SUCCESS level.
 		void success(const std::string& message) { log("SUCCESS", message); }
+		/// Logs `message` at the INFO level.
 		void info(const std::string& message) { log("INFO", message); }
 
-		// Pops a Win32 MessageBox with the GetLastError() text for the named function.
-		// https://learn.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
+		/// Pops a Win32 MessageBox with the GetLastError() text for the named function.
+		/// https://learn.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
 		void errorBox(LPCTSTR lpszFunction)
 		{
 			LPVOID lpMsgBuf;
@@ -121,6 +133,7 @@ namespace Shared
 			LocalFree(lpDisplayBuf);
 		}
 
+		/// Blocks for a keypress ("press any key to exit") and returns `code` unchanged.
 		int stop(int code)
 		{
 			info("Press any key to exit...");
@@ -129,28 +142,32 @@ namespace Shared
 		}
 
 	  private:
-		HANDLE consoleHandle = nullptr;
-		HWND consoleWindow = nullptr;
-		FILE* consoleStream = nullptr;
-		FILE* logFile = nullptr;
+		HANDLE consoleHandle = nullptr; ///< STD_OUTPUT_HANDLE used for coloring; not owned.
+		HWND consoleWindow = nullptr;	///< Only set in the DLL (spawned) path; owned there.
+		FILE* consoleStream = nullptr;	///< Redirected stdio stream from the spawned console.
+		FILE* logFile = nullptr;		///< Mirror file; null when no console was attached/created.
 
+		/// Opens (truncating) the mirror log file at logPath.
 		void openLogFile(const std::string& logPath)
 		{
 			fopen_s(&logFile, logPath.c_str(), "w");
 		}
 
+		/// Returns the current local time as a "[HH:MM:SS]" prefix.
 		std::string timestamp() const
 		{
 			const auto now = std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now())};
 			return std::format("[{:%H:%M:%S}]", now);
 		}
 
+		/// Restores the default (white) console color; no-op without a console handle.
 		BOOL resetColor()
 		{
 			if (!consoleHandle) return FALSE;
 			return SetConsoleTextAttribute(consoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 
+		/// Selects the console color for the given level; no-op without a console handle.
 		BOOL setColor(const std::string& level)
 		{
 			if (!consoleHandle) return FALSE;

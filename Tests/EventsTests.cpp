@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for the Python-free event registry (scripting/Events.h).
+
 // Unit tests for the Python-free event registry (scripting/Events.h). The
 // pybind11 bridge (modules/Events.h) and the game-side dispatch (ProcessEvent)
 // need the game and are not unit tested; the registry logic is.
@@ -12,6 +15,7 @@ namespace
 
 	using Events::Type;
 
+	/// Fixture that clears the global event registry around every test for isolation.
 	class EventsTest : public ::testing::Test
 	{
 	  protected:

@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Named-event IPC primitive shared by the launcher and the injected DLL.
+
 #include <Windows.h>
 
 // Lightweight inter-process signaling between the launcher and the injected DLL, built on
@@ -11,13 +14,16 @@
 // Usage:
 //   Launcher: HANDLE e = Ipc::Create(Ipc::Event::Initialized);   // then Ipc::Wait(e, ms)
 //   DLL:      Ipc::Signal(Ipc::Event::Initialized);              // once init succeeds
+/// Cross-process signaling helpers over named Win32 events (Local\ session namespace).
 namespace Ipc
 {
+	/// Distinct signals that can cross the launcher/DLL boundary; each maps to one named event.
 	enum class Event
 	{
 		Initialized, // the DLL finished Hook::Init(); the launcher may stop waiting
 	};
 
+	/// Maps an Event to its stable "Local\" event name (a fallback name for unknown values).
 	inline const wchar_t* Name(Event event)
 	{
 		switch (event)
@@ -29,8 +35,8 @@ namespace Ipc
 		return L"Local\\SplitgateUnknown";
 	}
 
-	// DLL side: signal that the event occurred. Returns false if nobody is listening (no
-	// launcher created the event) or the signal failed.
+	/// DLL side: signal that the event occurred. Returns false if nobody is listening (no
+	/// launcher created the event) or the signal failed.
 	inline bool Signal(Event event)
 	{
 		HANDLE handle = OpenEventW(EVENT_MODIFY_STATE, FALSE, Name(event));
@@ -41,15 +47,15 @@ namespace Ipc
 		return ok;
 	}
 
-	// Launcher side: create the manual-reset event to wait on. Returns a raw HANDLE the
-	// caller owns — wrap it in Launcher::UniqueHandle. Created before the DLL is triggered so
-	// the DLL can open it.
+	/// Launcher side: create the manual-reset event to wait on. Returns a raw HANDLE the
+	/// caller owns — wrap it in Launcher::UniqueHandle. Created before the DLL is triggered so
+	/// the DLL can open it.
 	inline HANDLE Create(Event event)
 	{
 		return CreateEventW(nullptr, TRUE, FALSE, Name(event));
 	}
 
-	// Launcher side: wait up to timeoutMs for the event to be signaled.
+	/// Launcher side: wait up to timeoutMs for the event to be signaled.
 	inline bool Wait(HANDLE handle, DWORD timeoutMs)
 	{
 		return WaitForSingleObject(handle, timeoutMs) == WAIT_OBJECT_0;

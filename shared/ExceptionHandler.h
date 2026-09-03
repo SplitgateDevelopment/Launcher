@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file
+/// @brief Reusable last-chance crash handler: symbolized stack-trace reports plus a recovery hook.
+
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <filesystem>
@@ -19,28 +22,31 @@
 // Everything project-specific is injected through Config callbacks: `log` receives progress
 // lines, and `onCrash` runs an app-specific recovery action (the DLL deletes its settings;
 // the launcher passes nothing). x64 only.
+/// Reusable SetUnhandledExceptionFilter-based crash handler shared by the launcher and DLL.
 namespace Shared::ExceptionHandler
 {
 	namespace fs = std::filesystem;
 
+	/// What the exception filter returns to the OS after writing the report.
 	enum class ExitMode
 	{
 		Silent = EXCEPTION_EXECUTE_HANDLER, // swallow the exception and continue
 		Crash = EXCEPTION_CONTINUE_SEARCH,	// let the crash propagate
 	};
 
-	using LogFn = std::function<void(const std::string& level, const std::string& message)>;
-	using CrashFn = std::function<void()>;
+	using LogFn = std::function<void(const std::string& level, const std::string& message)>; ///< Progress-line sink.
+	using CrashFn = std::function<void()>;													 ///< App-specific recovery action.
 
+	/// Injected, project-specific configuration for the otherwise generic handler.
 	struct Config
 	{
-		fs::path crashDir; // reports go under crashDir / <timestamp> /
-		ExitMode exitMode = ExitMode::Silent;
-		LogFn log;		 // optional progress sink
-		CrashFn onCrash; // optional recovery action, run after the report
+		fs::path crashDir;					  // reports go under crashDir / <timestamp> /
+		ExitMode exitMode = ExitMode::Silent; ///< Filter return code after a crash.
+		LogFn log;							  // optional progress sink
+		CrashFn onCrash;					  // optional recovery action, run after the report
 	};
 
-	// Local time formatted for a folder name, e.g. 2026-09-03-16-42-05.
+	/// Local time formatted for a folder name, e.g. 2026-09-03-16-42-05.
 	inline std::string CrashTimestamp()
 	{
 		const std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -52,8 +58,8 @@ namespace Shared::ExceptionHandler
 		return ss.str();
 	}
 
-	// Walks the stack for `context` and writes one line per frame to `out`
-	// (module!symbol [file:line], or a raw offset when symbols are unavailable).
+	/// Walks the stack for `context` and writes one line per frame to `out`
+	/// (module!symbol [file:line], or a raw offset when symbols are unavailable).
 	inline void WriteStackTrace(CONTEXT* context, std::ostream& out)
 	{
 		if (!context) return;
@@ -112,9 +118,17 @@ namespace Shared::ExceptionHandler
 		SymCleanup(process);
 	}
 
-	// Writes a crash report for `context` under `config.crashDir/<timestamp>/StackTrace.log`
-	// and then runs `config.onCrash`. Returns the filter code for `config.exitMode`. Pure
-	// enough to call directly (e.g. from a test with an RtlCaptureContext context).
+	/**
+	 * @brief Writes a crash report and runs the recovery hook — the testable core of the handler.
+	 *
+	 * Writes to `config.crashDir/<timestamp>/StackTrace.log`, then runs `config.onCrash`
+	 * (which runs even if the report could not be written). Pure enough to call directly
+	 * (e.g. from a test with an RtlCaptureContext context).
+	 * @param config        Destination folder, exit mode, and optional log/recovery callbacks.
+	 * @param exceptionCode The Win32 exception code, recorded in the report.
+	 * @param context       Thread context to unwind; may be null (then no stack is walked).
+	 * @return The exception-filter code corresponding to `config.exitMode`.
+	 */
 	inline LONG WriteCrashLog(const Config& config, DWORD exceptionCode, CONTEXT* context)
 	{
 		const auto logLine = [&](const std::string& level, const std::string& message)
@@ -151,19 +165,22 @@ namespace Shared::ExceptionHandler
 		return static_cast<LONG>(config.exitMode);
 	}
 
-	inline Config g_config;
+	inline Config g_config; ///< Config captured by Install(), read by the installed Filter.
 
+	/// SetUnhandledExceptionFilter callback: forwards the crash to WriteCrashLog using g_config.
 	inline LONG WINAPI Filter(EXCEPTION_POINTERS* info)
 	{
 		return WriteCrashLog(g_config, info->ExceptionRecord->ExceptionCode, info->ContextRecord);
 	}
 
+	/// Stores `config` and installs Filter as the process's last-chance exception filter.
 	inline void Install(const Config& config)
 	{
 		g_config = config;
 		SetUnhandledExceptionFilter(Filter);
 	}
 
+	/// Removes the installed filter (restores the OS default).
 	inline void Uninstall()
 	{
 		SetUnhandledExceptionFilter(NULL);

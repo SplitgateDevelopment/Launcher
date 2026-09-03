@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for the shared console logger (shared/Logger.h), covering file mirroring.
+
 // Unit tests for the shared console logger (shared/Logger.h). The console/color side needs a
 // real console, so these cover the file-mirroring behavior: level tagging and the timestamp
 // prefix. The logger is scoped so its destructor closes the file before it is read back.
@@ -15,6 +18,7 @@ namespace
 
 	namespace fs = std::filesystem;
 
+	/// Reads and returns the entire contents of the file at `path` as a string.
 	std::string ReadAll(const fs::path& path)
 	{
 		std::ifstream in(path);
@@ -23,6 +27,7 @@ namespace
 		return ss.str();
 	}
 
+	/// Fixture providing a fresh temp log path, removed before and after each test.
 	class LoggerTest : public ::testing::Test
 	{
 	  protected:

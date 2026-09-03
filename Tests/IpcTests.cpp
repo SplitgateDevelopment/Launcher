@@ -1,3 +1,6 @@
+/// @file
+/// @brief Unit tests for the launcher/DLL IPC signaling helper (shared/Ipc.h).
+
 // Unit tests for the launcher/DLL IPC signaling helper (shared/Ipc.h). The named event is
 // created, signaled and waited on within this single test process — no game required.
 #include <gtest/gtest.h>
