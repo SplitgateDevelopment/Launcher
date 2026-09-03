@@ -4,6 +4,11 @@ Custom launcher and in-game DLL for the Unreal Engine game **Splitgate**, writte
 The DLL is injected/loaded alongside the game and renders an in-game menu that drives a set
 of gameplay features; the launcher is the companion executable used to start it.
 
+> [!IMPORTANT]
+> **Do not read these files** — `Internal/hook/Hook.h`, `Internal/dllmain.cpp`,
+> `Launcher/Launcher.cpp`. If you need something from one of them, ask and it will be
+> provided to you.
+
 ## Repository layout
 
 The Visual Studio solution (`.sln` at the repo root) contains two projects:
