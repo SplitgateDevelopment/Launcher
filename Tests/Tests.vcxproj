@@ -34,7 +34,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <!-- Compile the settings/feature modules in place; they have no game dependencies. -->
-    <IncludePath>$(ProjectDir)..\Internal\features;$(ProjectDir)..\Internal\settings;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\Internal\features;$(ProjectDir)..\Internal\settings;$(ProjectDir)..\Internal\scripting;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -64,6 +64,7 @@
     <ClCompile Include="..\Internal\settings\Settings.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="FeaturesTests.cpp" />
+    <ClCompile Include="EventsTests.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
