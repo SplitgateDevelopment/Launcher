@@ -43,6 +43,9 @@
     <ClInclude Include="..\shared\Ipc.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\Logger.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc">

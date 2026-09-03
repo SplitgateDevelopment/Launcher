@@ -63,6 +63,7 @@
     <ClInclude Include="utils/handles/UniqueLibrary.h" />
     <ClInclude Include="utils/handles/UniqueHook.h" />
     <ClInclude Include="..\shared\Ipc.h" />
+    <ClInclude Include="..\shared\Logger.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
