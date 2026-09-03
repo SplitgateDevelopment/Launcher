@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Resolves the Python root used to compile/link the embedded interpreter
+    (pybind11 + <Python.h>). Any CPython 3.x works; the newest one found wins.
+
+    Resolution order:
+      1. /p:PythonRoot=<dir>            (explicit MSBuild property)
+      2. %SPLITGATE_PYTHON_DIR%          (environment variable override)
+      3. Well-known install locations, newest version first:
+           C:\Python3XY
+           %LOCALAPPDATA%\Programs\Python\Python3XY   (per-user installer)
+           %ProgramFiles%\Python3XY                   (all-users installer)
+
+    To support a version not listed below, just add a <PythonCandidate> line.
+  -->
+
+  <ItemGroup>
+    <!-- 1/2. Explicit override (env var or /p:SPLITGATE_PYTHON_DIR) wins. -->
+    <PythonCandidate Include="$(SPLITGATE_PYTHON_DIR)\" Condition="'$(SPLITGATE_PYTHON_DIR)' != ''" />
+
+    <!-- 3. Well-known locations, newest first. Each line = one version, 3 tiers. -->
+    <PythonCandidate Include="C:\Python314\;$(LOCALAPPDATA)\Programs\Python\Python314\;$(ProgramW6432)\Python314\" />
+    <PythonCandidate Include="C:\Python313\;$(LOCALAPPDATA)\Programs\Python\Python313\;$(ProgramW6432)\Python313\" />
+    <PythonCandidate Include="C:\Python312\;$(LOCALAPPDATA)\Programs\Python\Python312\;$(ProgramW6432)\Python312\" />
+    <PythonCandidate Include="C:\Python311\;$(LOCALAPPDATA)\Programs\Python\Python311\;$(ProgramW6432)\Python311\" />
+    <PythonCandidate Include="C:\Python310\;$(LOCALAPPDATA)\Programs\Python\Python310\;$(ProgramW6432)\Python310\" />
+    <PythonCandidate Include="C:\Python39\;$(LOCALAPPDATA)\Programs\Python\Python39\;$(ProgramW6432)\Python39\" />
+    <PythonCandidate Include="C:\Python38\;$(LOCALAPPDATA)\Programs\Python\Python38\;$(ProgramW6432)\Python38\" />
+    <PythonCandidate Include="C:\Python37\;$(LOCALAPPDATA)\Programs\Python\Python37\;$(ProgramW6432)\Python37\" />
+    <PythonCandidate Include="C:\Python36\;$(LOCALAPPDATA)\Programs\Python\Python36\;$(ProgramW6432)\Python36\" />
+
+    <!-- 4. Fallback: read the path the official installer records in the registry
+         (catches non-standard install folders). Per version: HKCU, native HKLM,
+         and WOW6432Node HKLM so a 32-bit Python is found from a 64-bit MSBuild.
+         Missing keys expand to empty segments and are dropped. -->
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.14\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.14\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.14\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.13\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.13\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.13\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.12\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.12\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.12\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.11\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.11\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.11\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.10\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.10\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.10\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.9\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.9\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.9\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.8\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.8\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.8\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.7\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.7\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.7\InstallPath@)" />
+    <PythonCandidate Include="$(registry:HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\3.6\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\3.6\InstallPath@);$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.6\InstallPath@)" />
+  </ItemGroup>
+
+  <Target Name="ResolvePython" BeforeTargets="ClCompile;Link">
+    <!-- Honor an explicit /p:PythonRoot=... ; just normalize the trailing slash. -->
+    <PropertyGroup Condition="'$(PythonRoot)' != '' and !HasTrailingSlash('$(PythonRoot)')">
+      <PythonRoot>$(PythonRoot)\</PythonRoot>
+    </PropertyGroup>
+
+    <!-- First candidate that actually contains Python.h wins (batched, empty-guarded). -->
+    <PropertyGroup>
+      <PythonRoot Condition="'$(PythonRoot)' == '' and Exists('%(PythonCandidate.Identity)include\Python.h')">%(PythonCandidate.Identity)</PythonRoot>
+    </PropertyGroup>
+
+    <Error Condition="'$(PythonRoot)' == ''"
+           Text="No CPython 3.x installation found. Install Python (official installer) or set the SPLITGATE_PYTHON_DIR environment variable to your Python root (the folder containing include\ and libs\)." />
+
+    <Message Importance="high" Text="Splitgate: using Python at $(PythonRoot)" />
+
+    <ItemGroup>
+      <ClCompile>
+        <AdditionalIncludeDirectories>$(PythonRoot)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      </ClCompile>
+      <Link>
+        <AdditionalLibraryDirectories>$(PythonRoot)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      </Link>
+    </ItemGroup>
+  </Target>
+</Project>
