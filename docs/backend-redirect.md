@@ -149,39 +149,20 @@ because every request's URL flows through `curl_easy_setopt`.
 
 Enable the toggle in the Network tab with the console open. On a redirect you'll see
 `[Network] curl https://splitgate.accelbyte.io/… -> http://127.0.0.1:5005/…` (or the WinHTTP
-variant). With HTTP logging on, every call is printed (and optionally written to `http.log`) —
-which also confirms which stack the game uses.
+variant). With HTTP logging on, every call is printed (and optionally written to `http.log`, or
+watched live in the Network tab's **Request flow** section) — which also confirms which stack
+the game uses.
 
 ### Known limitations
 
 - **libcurl signature.** The one piece needing your RE — an empty AOB until you fill it. WinHTTP
   works offset-free in the meantime.
-- **Timing** — see the launcher note below; the in-process hook only covers calls made *after*
-  injection.
+- **Timing** — the in-process hook only covers calls made *after* injection, so the earliest
+  backend call (login) can escape it. This has its own design note:
+  [early-injection.md](early-injection.md) (recommended fix: suspended-launch + early injection
+  in the launcher; not implemented).
 - **Live map edits** race the network threads that read the map; fine for occasional edits
   (the map is normally set in the JSON before launch), but not lock-protected yet.
-- Not built/tested against the game here (DLL needs the VS toolchain); the pure redirect logic
-  and settings round-trip are covered by the test suite (`Tests/NetworkTests.cpp`).
-
-## Timing: covering the calls made before injection (design only — not implemented)
-
-The in-process hook installs after the DLL is injected, so any backend call the game makes
-*before* that (early login) isn't redirected. The external Fiddler/mitmproxy avoids this by
-being active before launch. Options to close the gap, in the launcher:
-
-1. **Launch suspended, inject, then resume.** The launcher already owns process start; instead
-   of letting the game run and injecting via the window hook, `CreateProcess` with
-   `CREATE_SUSPENDED`, inject the DLL (or set up the hook) while the process is frozen, then
-   `ResumeThread`. The DLL's hooks are then live *before any game code runs*, so no call
-   escapes. This is the clean fix and keeps everything in-process. (It also changes the
-   injection method from the `WH_GETMESSAGE` window hook to early injection.)
-2. **Launcher sets a temporary redirect at the OS level**, then removes it — e.g. a `hosts`
-   entry (`splitgate.accelbyte.io → 127.0.0.1`, needs the server on 443 with a trusted cert) or
-   a temporary system proxy pointed at the private server. This is essentially the current
-   external approach, just automated by the launcher; it reintroduces the TLS/cert problem the
-   in-process hook avoids.
-3. **Accept the gap.** If the game retries or the pre-injection calls are non-critical, the
-   post-injection hook may be enough in practice — cheapest, but unreliable for login.
-
-Recommendation (for later): **option 1** (suspended launch + early injection) is the robust,
-self-contained answer and belongs in the launcher; it's out of scope here and not implemented.
+- Not built/tested against the game here (DLL needs the VS toolchain); the pure redirect logic,
+  the HTTP-log buffer, and the settings round-trip are covered by the test suite
+  (`Tests/NetworkTests.cpp`).

@@ -36,6 +36,7 @@ If Python is installed somewhere custom that isn't picked up, set the `SPLITGATE
 - [Hooking](docs/hooking.md) — injection and how the game's functions are hooked
 - [Debugging](docs/debugging.md) — reading logs, the in-game console, and crash stack traces
 - [Game dump](docs/game-dump.md) — the Dumpspace SDK dump for Splitgate (offsets, JSON schema)
+- [Backend redirect](docs/backend-redirect.md) — routing the game to a private server (+ [early injection](docs/early-injection.md))
 - [Scripting](docs/scripting.md) — embedding Python and writing user scripts
 - [Testing](docs/testing.md) — the gtest project and how to run it
 - [Style & linting](docs/style.md) — clang-format / clang-tidy setup

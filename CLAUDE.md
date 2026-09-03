@@ -43,9 +43,11 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
 - [docs/game-dump.md](docs/game-dump.md) — the Dumpspace SDK dump for Splitgate (hash
   `d2a5bd8c`): the JSON files/schema, the GNames/GObjects/GWorld offsets, and how the reference
   `DSAPI` wrapper consumes them.
-- [docs/backend-redirect.md](docs/backend-redirect.md) — feasibility study for redirecting the
-  game to a self-hosted backend (private server), target configurable via settings JSON;
-  architecture only, with scope/legal caveats.
+- [docs/backend-redirect.md](docs/backend-redirect.md) — redirecting the game to a self-hosted
+  backend (the `network/` module: redirect map, HTTP logger, WinHTTP + libcurl hooks), target
+  configurable via settings JSON; with scope/legal caveats.
+- [docs/early-injection.md](docs/early-injection.md) — design note on covering the backend calls
+  the game makes before the DLL is injected (suspended-launch + early injection; not built).
 - [docs/scripting.md](docs/scripting.md) — embedding Python and writing user scripts.
 - [docs/testing.md](docs/testing.md) — the gtest project and how to run it.
 - [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
