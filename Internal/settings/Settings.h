@@ -52,9 +52,10 @@ struct DebugSettings {
     bool FeaturesLogging = false;
     bool ShowDemoWindow = false;
     bool ShowStyleEditor = false;
+    bool DeleteSettingsOnCrash = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash)
 
 // Plain RGBA color kept out of the UE SDK so settings stay game-independent
 // (and unit-testable). Laid out as four contiguous floats for ImGui::ColorEdit4;

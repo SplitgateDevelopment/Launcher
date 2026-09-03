@@ -19,6 +19,8 @@ namespace ExceptionHandler
 		config.log = [](const std::string& level, const std::string& message) { Logger::Log(level, message); };
 		config.onCrash = []()
 		{
+			if (!Settings.DEBUG.DeleteSettingsOnCrash) return;
+
 			Logger::Log("INFO", "Deleted settings to prevent further errors");
 			SettingsHelper::Delete();
 		};

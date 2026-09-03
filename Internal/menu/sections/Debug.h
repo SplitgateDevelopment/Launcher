@@ -17,6 +17,9 @@ namespace Menu {
 			changed |= ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
 			changed |= ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
+			ImGui::SeparatorText("Crash");
+			changed |= ImGui::ToggleButton("Delete settings on crash", &Settings.DEBUG.DeleteSettingsOnCrash);
+
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
 			if (ImGui::Button("Summon Bot"))
