@@ -40,6 +40,9 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
   `ProcessEvent`).
 - [docs/debugging.md](docs/debugging.md) — reading logs (`launcher.log` / `internal.log`), the
   in-game console, crash stack traces, and the Debug-tab switches.
+- [docs/game-dump.md](docs/game-dump.md) — the Dumpspace SDK dump for Splitgate (hash
+  `d2a5bd8c`): the JSON files/schema, the GNames/GObjects/GWorld offsets, and how the reference
+  `DSAPI` wrapper consumes them.
 - [docs/scripting.md](docs/scripting.md) — embedding Python and writing user scripts.
 - [docs/testing.md](docs/testing.md) — the gtest project and how to run it.
 - [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
