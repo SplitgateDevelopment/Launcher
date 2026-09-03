@@ -3,6 +3,7 @@
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Globals.h"
+#include "../Features.h"
 
 namespace PostRender {
 	void** VTable;
@@ -31,25 +32,7 @@ namespace PostRender {
 			Globals::Canvas = Canvas;
 			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
 
-			try {
-				for (const auto& Feature : Features::Features)
-				{
-					if (!Feature->Initialized)
-					{
-						Feature->Init();
-					};
-
-					if (!Feature->Check())
-					{
-						continue;
-					};
-
-					Feature->Enabled ? Feature->Run() : Feature->Destroy();
-				}
-			}
-			catch (char* e) {
-				Logger::Log("ERROR", "Failed to execute feature: " + std::string(e));
-			}
+			Features::Execute();
 		} while (false);
 
 		return Original(UGameViewportClient, Canvas);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Feature.h"
+#include "FeatureRunner.h"
 
 #include "features/GodMode.h"
 #include "features/PlayerModifications.h"
@@ -14,8 +14,6 @@
 
 namespace Features
 {
-	inline std::vector<std::unique_ptr<Feature>> Features;
-
 	void Init()
 	{
 		Features.push_back(std::make_unique<GodMode>());

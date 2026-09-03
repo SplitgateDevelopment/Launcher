@@ -93,6 +93,7 @@
     <ClInclude Include="ue\Engine.h" />
     <ClInclude Include="hook\Hook.h" />
     <ClInclude Include="hook\Features.h" />
+    <ClInclude Include="hook\FeatureRunner.h" />
     <ClInclude Include="discord\handlers.h" />
     <ClInclude Include="discord\rpc.h" />
     <ClInclude Include="hook\functions\PostRender.h" />
