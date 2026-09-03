@@ -7,12 +7,15 @@
 #include "utils/handles/UniqueLibrary.h"
 #include "utils/ProxyConfig.h"
 #include "utils/Mitmproxy.h"
+#include "utils/ExceptionHandler.h"
 
 int main()
 {
 	SetConsoleTitleA("Splitgate Launcher");
 
 	Logger logger;
+	Launcher::ExceptionHandler::Init(logger);
+
 	logger.info("Loading...");
 
 	const auto network = Launcher::ReadNetworkSettings();
@@ -104,6 +107,7 @@ int main()
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 	hook.release();
+	Launcher::ExceptionHandler::Disable();
 
 	return 0;
 }
