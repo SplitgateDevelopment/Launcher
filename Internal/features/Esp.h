@@ -3,6 +3,9 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 
+#include <cmath>
+#include <string>
+
 // Player ESP: draws names, boxes and/or bone skeletons for enemy characters,
 // configured in the Visuals menu tab (Settings.VISUALS). Filters to
 // PortalWarsCharacter actors, so non-players are never drawn. Iterates the
@@ -37,6 +40,29 @@ private:
 		Globals::Canvas->K2_DrawLine(tr, br, 1.f, color);
 		Globals::Canvas->K2_DrawLine(br, bl, 1.f, color);
 		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, color);
+	}
+
+	// Vertical health bar just left of the box; green (full) to red (empty).
+	void DrawHealth(const FVector2D& head, const FVector2D& feet, float health, float maxHealth)
+	{
+		if (maxHealth <= 0.f) return;
+
+		float pct = health / maxHealth;
+		if (pct < 0.f) pct = 0.f;
+		if (pct > 1.f) pct = 1.f;
+
+		const float height = feet.Y - head.Y;
+		const float width = height * 0.5f;
+		const float barX = (head.X + feet.X) * 0.5f - width * 0.5f - 5.f;
+
+		const FLinearColor color{ 1.f - pct, pct, 0.f, 1.f };
+		Globals::Canvas->K2_DrawLine({ barX, feet.Y }, { barX, feet.Y - height * pct }, 3.f, color);
+	}
+
+	static float Distance(const FVector& a, const FVector& b)
+	{
+		const float dx = a.X - b.X, dy = a.Y - b.Y, dz = a.Z - b.Z;
+		return sqrtf(dx * dx + dy * dy + dz * dz) / 100.f;  // cm -> m
 	}
 
 	template <typename Mesh>
@@ -114,9 +140,13 @@ public:
 		const FLinearColor nameColor = ToColor(visuals.NameColor);
 		const FLinearColor boxColor = ToColor(visuals.BoxColor);
 		const FLinearColor bonesColor = ToColor(visuals.BonesColor);
+		const FLinearColor snaplineColor = ToColor(visuals.SnaplineColor);
 
 		auto* controller = Globals::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
+		const bool hasPlayer = localPawn != nullptr;
+		FVector playerPos{};
+		if (hasPlayer) playerPos = localPawn->K2_GetActorLocation();
 
 		auto& Levels = Globals::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++) {
@@ -143,14 +173,26 @@ public:
 				FVector2D feet = Mesh->GetBone(BoneFNames::Root, controller);
 				if (OffScreen(feet)) continue;
 
-				if (visuals.Name)
-					Globals::Canvas->K2_DrawText(0, Actor->GetName(), feet, { 1.f, 1.f }, nameColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, true, false, true, { 0.f, 0.f, 0.f, 1.f });
+				if (visuals.Snaplines)
+					Globals::Canvas->K2_DrawLine({ Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY }, feet, 1.f, snaplineColor);
 
 				if (visuals.Box && !OffScreen(head))
 					DrawBox(head, feet, boxColor);
 
+				if (visuals.Health && !OffScreen(head))
+					DrawHealth(head, feet, Character->Health, Character->MaxHealth);
+
 				if (visuals.Bones)
 					DrawSkeleton(Mesh, controller, bonesColor);
+
+				if (visuals.Name)
+					Globals::Canvas->K2_DrawText(0, Actor->GetName(), feet, { 1.f, 1.f }, nameColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, true, false, true, { 0.f, 0.f, 0.f, 1.f });
+
+				if (visuals.Distance && hasPlayer)
+				{
+					std::string text = std::to_string((int)Distance(playerPos, Actor->K2_GetActorLocation())) + "m";
+					Globals::Canvas->K2_DrawText(0, FString(text), { feet.X, feet.Y + 14.f }, { 1.f, 1.f }, nameColor, 1.f, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f }, true, false, true, { 0.f, 0.f, 0.f, 1.f });
+				}
 			}
 		}
 	};
