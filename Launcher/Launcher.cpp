@@ -1,10 +1,12 @@
+#include <thread>
+#include <chrono>
+#include "../shared/Ipc.h"
 #include "utils/Logger.h"
 #include "utils/handles/UniqueHandle.h"
 #include "utils/handles/UniqueHook.h"
 #include "utils/handles/UniqueLibrary.h"
-#include "../shared/Ipc.h"
-#include <thread>
-#include <chrono>
+#include "utils/ProxyConfig.h"
+#include "utils/Mitmproxy.h"
 
 int main()
 {
@@ -12,6 +14,15 @@ int main()
 
 	Logger logger;
 	logger.info("Loading...");
+
+	const auto network = Launcher::ReadNetworkSettings();
+	if (network.Proxy == ProxyMode::Mitmproxy)
+	{
+		if (Launcher::Mitmproxy::Spawn(network.Redirects))
+			logger.success("Spawned mitmproxy");
+		else
+			logger.error("Failed to spawn mitmproxy (is mitmdump on PATH?)");
+	}
 
 	Launcher::UniqueHandle initEvent(Ipc::Create(Ipc::Event::Initialized));
 	if (!initEvent)
