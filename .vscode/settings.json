@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "format": "cpp",
+        "chrono": "cpp"
+    },
+    "search.exclude": {
+        "**/Internal/external/pybind11/**": true,
+        "**/vcpkg_installed/**": true,
+        "**/x64/**": true
+    },
+    "files.watcherExclude": {
+        "**/Internal/external/pybind11/**": true,
+        "**/vcpkg_installed/**": true,
+        "**/x64/**": true
+    }
+}
