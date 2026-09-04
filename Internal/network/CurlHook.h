@@ -18,8 +18,9 @@
  * @brief libcurl hook — Splitgate's UE HTTP goes through libcurl (`FCurlHttpRequest`), which
  * is **statically linked**, so its symbols aren't exported and can't be resolved with
  * GetProcAddress. Instead `curl_easy_setopt` is located by an AOB signature (below) and hooked;
- * on `CURLOPT_URL` the URL is logged and rewritten. Fill @ref signature once from a RE pass
- * (the exact bytes are build-specific); until then this no-ops and WinHTTP is the fallback.
+ * on `CURLOPT_URL` the URL is logged and rewritten. @ref signature holds the prologue bytes
+ * (build-specific — for the current libcurl 7.55.1 build); if empty or not found this no-ops and
+ * WinHTTP is the fallback.
  *
  * curl copies the string during setopt, so passing a rewritten temporary is safe. On x64 the
  * single vararg of `curl_easy_setopt(CURL*, CURLoption, ...)` lands in one register, so the
@@ -34,11 +35,30 @@ namespace Network::Curl
 	inline bool installed = false;
 
 	/**
-	 * AOB signature for `curl_easy_setopt`'s prologue in the game module. **Empty by default**
-	 * — fill it after a one-time RE pass (IDA/Ghidra/x64dbg on the game exe). `0x00` bytes are
-	 * wildcards for Util's FindSignature. While empty, the libcurl hook stays inert.
+	 * AOB signature for `curl_easy_setopt`'s prologue in the game module. `0x00` bytes are
+	 * wildcards for Util's FindSignature; while empty, the libcurl hook stays inert.
+	 *
+	 * Derived for the shipping build's statically-linked **libcurl 7.55.1** (Sep 2026). The
+	 * function was located by its call sites — the only target reached by dozens of
+	 * `mov edx, <CURLOPT>; call` sites (URL/WRITEDATA/HTTPHEADER/WRITEFUNCTION/...) — and its
+	 * prologue is the canonical wrapper: home edx/r8/r9, `test rcx,rcx` (if(!data)), return 43
+	 * via `lea eax,[rcx+0x2b]`, else `call Curl_vsetopt`. These 36 bytes are unique in .text (no
+	 * wildcards needed); re-derive if the game updates curl or is recompiled.
+	 *
+	 *   mov  [rsp+0x10], edx      89 54 24 10
+	 *   mov  [rsp+0x18], r8       4C 89 44 24 18
+	 *   mov  [rsp+0x20], r9       4C 89 4C 24 20
+	 *   sub  rsp, 0x28            48 83 EC 28
+	 *   test rcx, rcx            48 85 C9
+	 *   jne  +8                   75 08
+	 *   lea  eax, [rcx+0x2b]      8D 41 2B
+	 *   add  rsp, 0x28 / ret      48 83 C4 28 C3
+	 *   lea  r8, [rsp+0x40]       4C 8D 44 24 40
 	 */
-	inline const std::vector<BYTE> signature = {};
+	inline const std::vector<BYTE> signature = {
+		0x89, 0x54, 0x24, 0x10, 0x4C, 0x89, 0x44, 0x24, 0x18, 0x4C, 0x89, 0x4C, 0x24, 0x20, 0x48, 0x83,
+		0xEC, 0x28, 0x48, 0x85, 0xC9, 0x75, 0x08, 0x8D, 0x41, 0x2B, 0x48, 0x83, 0xC4, 0x28, 0xC3, 0x4C,
+		0x8D, 0x44, 0x24, 0x40};
 
 	inline int __cdecl HookedSetOpt(void* handle, int option, void* param)
 	{
