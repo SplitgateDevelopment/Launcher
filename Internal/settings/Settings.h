@@ -95,9 +95,10 @@ struct DebugSettings
 
 	bool NativeWorldToScreen = true; ///< project overlays with math; off falls back to the ProjectWorldLocationToScreen UFunction
 	bool NativeBones = true;		 ///< project the ESP skeleton via native GetBoneMatrix + math; off uses the game's bone projection
+	bool NativeActorLocation = true; ///< read actor location from RootComponent->RelativeLocation (no ProcessEvent); off uses K2_GetActorLocation
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones, NativeActorLocation)
 
 /// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
 /// ImGui/DX11 (near-free). Switchable live from the Visuals tab.

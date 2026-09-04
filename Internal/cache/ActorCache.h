@@ -14,6 +14,7 @@
 
 #include "../ue/Engine.h"
 #include "../utils/Globals.h"
+#include "../utils/ActorLocation.h"
 
 /// Shared, once-per-frame view of the world's actors.
 namespace ActorCache
@@ -74,7 +75,7 @@ namespace ActorCache
 				if (!actor->IsA(characterClass)) continue;
 
 				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
-				players.push_back({character, character->K2_GetActorLocation(), character->GetTeamNum(), character->Health});
+				players.push_back({character, ActorLocation(reinterpret_cast<AActor*>(character)), character->GetTeamNum(), character->Health});
 			}
 		}
 	}

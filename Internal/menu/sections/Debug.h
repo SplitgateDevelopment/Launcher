@@ -34,6 +34,8 @@ namespace Menu
 			ImGui::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
 			changed |= ImGui::ToggleButton("Native bones", &Settings.DEBUG.NativeBones);
 			ImGui::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
+			changed |= ImGui::ToggleButton("Native actor location", &Settings.DEBUG.NativeActorLocation);
+			ImGui::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 

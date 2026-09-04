@@ -65,8 +65,10 @@ plain field reads, which the [ue4-cheatsheet.md](ue4-cheatsheet.md) collects —
 removes per-actor/per-bone call cost entirely.
 
 **Approach (incremental, confirm each offset against the dump first).**
-- **Location:** read `RootComponent->RelativeLocation` (or `ComponentToWorld` translation) instead of
-  `K2_GetActorLocation`. One field read per actor per frame vs a `ProcessEvent`.
+- **Location — DONE:** `utils/ActorLocation.h::ActorLocation()` reads
+  `RootComponent->RelativeLocation` (0x130 → 0x11c), used by `ActorCache`; falls back to
+  `K2_GetActorLocation` when the root component is missing or the **Native actor location** Debug
+  toggle is off.
 - **Bones:** read the bone array directly (`USkeletalMeshComponent->LODData - 0x4` on UE4; `- 0x8`
   and `double` `FMatrix` on UE5) rather than the AOB `GetBoneMatrix` — no signature to maintain and no
   call per bone. Keep the AOB path as a fallback (a Debug toggle, like the existing native/UFunction
