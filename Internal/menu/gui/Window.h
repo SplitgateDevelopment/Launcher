@@ -27,8 +27,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARA
 /// @brief Overlay windowing/D3D11 state and the hook plumbing that backs the GUI.
 namespace Window
 {
-	HWND WindowHandle{};						   ///< Target game window (or the temporary dummy window during init).
-	static UINT ResizeWidth = 0, ResizeHeight = 0; ///< Pending swap-chain resize queued from WM_SIZE (0 = none).
+	HWND WindowHandle{}; ///< Target game window (or the temporary dummy window during init).
 
 	static ID3D11Device* Device{};
 	static ID3D11DeviceContext* DeviceContext{};
@@ -86,15 +85,9 @@ namespace Window
 
 		switch (msg)
 		{
-		case WM_SIZE:
-			if (wParam == SIZE_MINIMIZED)
-				return 0;
-
-			// Queue resize
-			ResizeWidth = (UINT)LOWORD(lParam);
-			ResizeHeight = (UINT)HIWORD(lParam);
-
-			return 0;
+			// WM_SIZE is intentionally forwarded (via CallWindowProc below) so the game resizes its
+			// own viewport/swap chain — otherwise the view stayed zoomed. Our render target is
+			// released/recreated around the game's ResizeBuffers by GUI::HookResizeBuffers.
 
 		case WM_SYSCOMMAND:
 			// Disable ALT application menu

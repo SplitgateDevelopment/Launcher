@@ -23,12 +23,16 @@ namespace GUI
 	typedef void(APIENTRY* ID3D11DrawIndexed)(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation);
 	ID3D11DrawIndexed oID3D11DrawIndexed = NULL; ///< Trampoline to the original ID3D11DeviceContext::DrawIndexed.
 
+	typedef HRESULT(APIENTRY* IDXGISwapChainResizeBuffers)(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags);
+	IDXGISwapChainResizeBuffers oIDXGISwapChainResizeBuffers = NULL; ///< Trampoline to the original IDXGISwapChain::ResizeBuffers.
+
 	/// @brief Lazily initializes ImGui against the game's swap chain: finds the game window, grabs the D3D11
 	/// device/context and back buffer, creates the render target, wires the Win32/DX11 backends, and subclasses
 	/// the window procedure. @return True on success; sets @ref initialized accordingly.
 	bool InitializeImGui(IDXGISwapChain* swapChain)
 	{
 		Window::WindowHandle = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
+		Window::SwapChain = swapChain; // the real game swap chain, needed to recreate the RTV on resize
 
 		if (!SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device)))
 		{
@@ -84,21 +88,10 @@ namespace GUI
 		if (!initialized)
 			InitializeImGui(pSwapChain);
 
-		if (Window::ResizeWidth != 0 && Window::ResizeHeight != 0 && Window::SwapChain)
-		{
-			Window::CleanupRenderTarget();
-			HRESULT hr = Window::SwapChain->ResizeBuffers(0, Window::ResizeWidth, Window::ResizeHeight, DXGI_FORMAT_UNKNOWN, 0);
-			if (FAILED(hr))
-			{
-				Logger::Log("ERROR", "Resizing failed");
-				return;
-			}
-
-			Window::ResizeHeight = 0;
-			Window::ResizeWidth = 0;
-
+		// A window resize releases our render target in HookResizeBuffers (so the game's own
+		// ResizeBuffers can succeed); recreate it here once the swap chain has the new back buffer.
+		if (initialized && !Window::RenderTargetView)
 			Window::CreateRenderTarget();
-		}
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -131,6 +124,15 @@ namespace GUI
 		return oIDXGISwapChainPresent(pSwapChain, SyncInterval, Flags);
 	}
 
+	/// @brief Hooked IDXGISwapChain::ResizeBuffers: release our render target so the game's resize
+	/// can proceed (an outstanding back-buffer reference would make ResizeBuffers fail), forward to
+	/// the original, then let Overlay recreate the RTV from the new back buffer next frame.
+	HRESULT APIENTRY HookResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
+	{
+		Window::CleanupRenderTarget();
+		return oIDXGISwapChainResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+	}
+
 	/// @brief Hooked ID3D11DeviceContext::DrawIndexed; currently a no-op stub.
 	void APIENTRY MJDrawIndexed(ID3D11DeviceContext* pContext, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 	{
@@ -143,6 +145,7 @@ namespace GUI
 		if (!Window::Init()) return FALSE;
 
 		Window::CreateHook(8, (void**)&oIDXGISwapChainPresent, HookPresent);
+		Window::CreateHook(13, (void**)&oIDXGISwapChainResizeBuffers, HookResizeBuffers);
 		Window::CreateHook(12, (void**)&oID3D11DrawIndexed, MJDrawIndexed);
 
 		return TRUE;
