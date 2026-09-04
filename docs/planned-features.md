@@ -8,7 +8,10 @@ first: **1 → 2 → 3 → 5 → 4**.
 Legend for "forbidden files": `Internal/dllmain.cpp` and `Launcher/Launcher.cpp` can't be edited
 here; any change they need is captured in `TODO.md` instead.
 
-features 1-2 already done, skip 3 for now
+**Status:** 1 (minidumps) and 2 (streamproof) done. 3 (guard-hook) skipped for now. **4 (aimbot +
+Aim tab), 5 (profiles / share codes) and 6 (ImGui/canvas renderer) are now implemented** — kept
+below for reference. Remaining follow-ups: 3 (guard-hook), and streamproof rendered into a separate
+excluded overlay window (see the renderer note and [roadmap.md](roadmap.md)).
 
 
 ## 3. Guard-page hook (`Hook::GuardHook`) — prototype
