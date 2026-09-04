@@ -42,6 +42,9 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Draw all object names", &v.DrawAllNames);
 			ImGui::Tooltip("Draws the UObject name of every actor in the world (not just players).");
 
+			ImGui::SeparatorText("Text");
+			changed |= ImGui::SliderFloat("Font size", &v.FontScale, 0.5f, 3.f, "%.2f");
+
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);
 			ImGui::ColorEdit4("Box", &v.BoxColor.R);

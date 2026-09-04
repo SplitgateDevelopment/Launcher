@@ -226,13 +226,13 @@ class Esp : public Feature
 				{
 					auto* state = Character->PlayerState;
 					if (state)
-						Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {1.f, 1.f}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+						Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 				}
 
 				if (visuals.Distance && hasPlayer)
 				{
 					std::string text = std::to_string((int)Distance(playerPos, Actor->K2_GetActorLocation())) + "m";
-					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {1.f, 1.f}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 				}
 			}
 		}

@@ -109,6 +109,8 @@ struct VisualsSettings
 	bool ShowFriendly = false; ///< also draw teammates (ESP + radar), in FriendColor
 	bool DrawAllNames = false; ///< debug: draw the object name of every actor (not just players)
 
+	float FontScale = 1.f; ///< text size for ESP names/distance (and the debug names)
+
 	Color NameColor{1.f, 1.f, 1.f, 1.f};
 	Color BoxColor{1.f, 0.f, 0.f, 1.f};
 	Color BonesColor{0.f, 1.f, 0.f, 1.f};
@@ -116,7 +118,7 @@ struct VisualsSettings
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, DrawAllNames, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode

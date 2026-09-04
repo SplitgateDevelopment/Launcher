@@ -52,6 +52,7 @@ class DebugNames : public Feature
 	{
 		auto* controller = Globals::PlayerController;
 		const FLinearColor color{1.f, 1.f, 1.f, 1.f};
+		const FVector2D scale{Settings.VISUALS.FontScale, Settings.VISUALS.FontScale};
 
 		auto& Levels = Globals::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
@@ -73,7 +74,7 @@ class DebugNames : public Feature
 				if (!controller->ProjectWorldLocationToScreen(Actor->K2_GetActorLocation(), screen, false)) continue;
 				if (!screen.X && !screen.Y) continue;
 
-				Globals::Canvas->K2_DrawText(0, FString(Actor->GetName()), screen, {1.f, 1.f}, color, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+				Globals::Canvas->K2_DrawText(0, FString(Actor->GetName()), screen, scale, color, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 			}
 		}
 	};
