@@ -148,6 +148,45 @@ helper in `utils/`; docs in [`docs/settings.md`](settings.md).
 
 ---
 
+## 6. Switchable renderer: ImGui/DX11 vs UE Canvas (runtime toggle)
+
+**Would ImGui be faster? Yes, substantially.** Today the visual features draw through the UE
+canvas — `UCanvas::K2_DrawLine` / `K2_DrawText` — and **every** one of those is a `ProcessEvent`
+(UFunction) call. A skeleton alone is 16 lines = 16 `ProcessEvent`s per enemy per frame; boxes,
+names, health and snaplines add more. ImGui's `ImDrawList::AddLine` / `AddText` are essentially
+free (they append to a vertex buffer, no `ProcessEvent`), so an ImGui-drawn ESP would cut the
+per-primitive cost dramatically — the natural companion to the ActorCache and the cached
+projection.
+
+**Goal.** A `Settings.VISUALS.Renderer` enum (`Canvas` default, `ImGui`), switchable live from the
+Visuals tab, that chooses how the ESP/radar/debug overlays are drawn.
+
+**Approach.**
+- A thin `Render` abstraction (`menu/Render.h` or `cache/`-adjacent): `Render::Line(a, b, color,
+  thickness)`, `Render::Text(pos, text, color, scale)`, `Render::Box(...)`. Each dispatches on the
+  setting to either the canvas backend (`Globals::Canvas->K2_Draw*`) or the ImGui backend
+  (`ImGui::GetBackgroundDrawList()->Add*`). The features call `Render::*` instead of the canvas
+  directly, so they're backend-agnostic.
+- **The timing gotcha to design around:** canvas draws happen in **PostRender** (the UE hook);
+  ImGui draws must happen during the **ImGui frame in the Present hook** (between `NewFrame()` and
+  `Render()`), and its draw lists reset each frame. Two options: (a) in ImGui mode, run the visual
+  features from `GUI::Overlay` (inside the ImGui frame) instead of from `Features::Execute` in
+  PostRender; or (b) have the features, in PostRender, record draw commands into a per-frame buffer
+  that `GUI::Overlay` replays into the ImGui draw list. (a) is cleaner; (b) keeps one code path for
+  feature logic. Coordinates come from the cached `ProjectWorldLocationToScreen` in both modes.
+- **Color/coords** already exist as `FLinearColor` + `FVector2D`; the ImGui backend converts to
+  `ImU32` / `ImVec2`.
+- A **native WorldToScreen** (matrix math from the camera POV, no `ProcessEvent`) is a further,
+  independent optimization that would speed up *both* backends — worth noting but separable.
+
+**Touches.** `settings/Settings.h` (Renderer enum), a `Render` abstraction, `features/Esp.h`,
+`features/Radar.h`, `features/DebugNames.h` (call `Render::*`), `menu/gui/Gui.h` (drive features in
+ImGui mode), `menu/sections/Visuals.h` (the toggle).
+**Forbidden files.** None expected.
+**Size.** Large (touches every draw call + the render-loop timing).
+
+---
+
 ## Cross-cutting notes
 
 - **Settings growth.** Features 2/4/5 add persisted fields/sections; keep the
