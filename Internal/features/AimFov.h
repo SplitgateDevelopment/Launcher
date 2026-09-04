@@ -6,6 +6,7 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../utils/Rgb.h"
 #include "../render/Render.h"
 
 #include <cmath>
@@ -53,7 +54,8 @@ class AimFov : public Feature
 		const float cx = Globals::Canvas->ClipX * 0.5f;
 		const float cy = Globals::Canvas->ClipY * 0.5f;
 		const float radius = Settings.AIM.AimFov;
-		const FLinearColor color = ToColor(Settings.AIM.AimFovColor);
+		// RGB overrides the configured color with the cycling rainbow, like the ESP box/lines.
+		const FLinearColor color = ToColor(Settings.MENU.Rgb ? Rgb::Current() : Settings.AIM.AimFovColor);
 
 		// Approximate the circle with a fixed number of segments (drawn through Render so it
 		// follows whichever renderer is active).
