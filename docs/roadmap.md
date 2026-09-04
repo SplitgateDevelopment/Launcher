@@ -261,58 +261,62 @@ full second render pipeline. This is why it's planned, not done — it's not a s
 
 ## Aim
 
-### True (trace-redirect) silent aim
+### True (trace-redirect) silent aim — BLOCKED (needs the native fire/trace function)
 
 The current silent aim snaps the view on fire. A truly invisible one redirects the *shot*, not the
-view: **firing is not suppressed like the camera, so the fire UFunction shows up in ProcessEvent** —
-log it, then hook it (via the event bus or MinHook) and rewrite the trace start/direction (or the
-hit result) toward the selected target before the original runs, leaving `ControlRotation`
-untouched. **Size:** Medium; needs the fire function name (discoverable in-game).
+view: hook the fire/trace path and rewrite the trace start/direction (or the hit result) toward the
+selected target before the original runs, leaving `ControlRotation` untouched.
 
-### Phasing bullets (wallbang) toggle
+**Why it isn't built yet.** The SDK dump exposes no clean hook point: the shot's trace is computed in
+the `Gun`'s **native** fire code, and the plausible reflected sources (`APlayerController::StartFire`,
+`APawn::GetBaseAimRotation`) are called *natively*, so the `ProcessEvent` hook — which only sees
+reflected/Blueprint calls (as `EnableAllInput` does) — never observes them. Redirecting the shot
+therefore needs a **MinHook on the native function**, which can't be found/verified blind.
+
+**Next step (one in-game pass unblocks it).** Enable **Debug → Log ProcessEvent** and fire: if *any*
+reflected fire/hit event appears (e.g. a `Server*Fire` / `ProcessHit` / weapon-fire UFunction), hook
+it via the event bus / a `ProcessEvent` intercept and rewrite its trace params. If nothing reflected
+shows, RE the `Gun` native fire (an AOB like the `curl_easy_setopt` one in
+[ue4-cheatsheet.md](ue4-cheatsheet.md)) and MinHook it. Then a `bool TrueSilentAim` gates the rewrite.
+**Files.** the fire hook, `settings/Settings.h`, `menu/sections/Aim.h`. **Size:** Medium; **depends
+on:** identifying the fire/trace function in-game.
+
+### Phasing bullets (wallbang) toggle — BLOCKED (needs the native fire/trace function)
 
 **Goal.** Let the local player's shots register through world geometry, so a target behind cover
 can still be hit.
 
-**Approach.** Rides on the same fire path as the silent aim above — once the fire/trace UFunction is
-found, drop world collision from the shot: rewrite the trace's collision channel / query params to
-ignore `WorldStatic` (or extend the trace and force the hit result onto the target). Confirm whether
-the game trusts the client's hit (many titles server-validate line-of-sight, so this may be
-client-visual only or rejected) before scoping it. Guarded on a `bool PhasingBullets` in
-`AimSettings`, wired through the fire hook.
+**Approach.** Rides on the *same* native fire/trace hook as the trace-redirect silent aim above —
+there is no accessible collision-channel field or trace UFunction to flip from the DLL, so this can't
+be built until that hook exists. Once it does: drop world collision from the shot (rewrite the trace's
+collision channel / query params to ignore `WorldStatic`, or extend the trace and force the hit result
+onto the target). Confirm whether the game trusts the client's hit (many titles server-validate
+line-of-sight, so this may be client-visual only or rejected). Guarded on a `bool PhasingBullets`.
 **Files.** `settings/Settings.h` (AimSettings), the fire-hook feature, `menu/sections/Aim.h`.
-**Size.** Medium. **Depends on:** the fire function (shared with trace-redirect silent aim); in-game
-verification of server trust.
+**Size.** Medium. **Depends on:** the fire/trace function (shared with trace-redirect silent aim);
+in-game verification of server trust.
 
-### Aimbot visibility check toggle
+### Aimbot visibility check toggle — DONE
 
 **Goal.** Only lock onto targets in line of sight, so the aimbot ignores enemies behind walls.
 
-**Approach.** A `bool AimVisibleCheck` in `AimSettings`, skipping any candidate that isn't visible in
-the target-selection pass (reusable for the triggerbot). Two ways to test visibility:
-- **Render-flag (preferred, no ProcessEvent):** compare the mesh's `LastRenderTimeOnScreen` against
-  `LastSubmitTime` — if it rendered within a tick, it's visible. Both are neighbour-derived offsets
-  off `UPrimitiveComponent->BoundsScale` (see [ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour));
-  the `Projection::IsVisible(mesh)` helper is two field reads. Cheap enough to run every frame.
-- **Line trace (strict, optional):** `LineTraceSingle` from the camera to the target bone, skipping
-  the candidate if the first blocking hit isn't that character — stricter but costs a `ProcessEvent`.
-  Reuses the camera POV from the native WorldToScreen work. Good as a "strict" sub-mode.
-**Files.** `settings/Settings.h` (AimSettings), a visibility helper (`utils/` or `ue/`), the aimbot
-target selection, `menu/sections/Aim.h`.
-**Size.** Small–medium. **Depends on:** the render-flag offsets (from the dump) or a world line-trace
-helper in `ue/`.
+**Shipped.** A `bool AimVisibleCheck` (`AimSettings`, Aim tab) that skips any candidate the game
+reports as not recently rendered, in both the aimbot and triggerbot target passes. Uses the game's own
+`AActor::WasRecentlyRendered(0.1f)` (a wrapper added to `Engine.cpp`) — occlusion-aware and correct,
+one `ProcessEvent` per contended candidate while aiming. Preferred over the render-flag offset trick
+because the dump leaves `LastRenderTimeOnScreen`/`LastSubmitTime` in a padded region (uncertain
+offset); if a per-frame, ProcessEvent-free version is ever wanted, those offsets off
+`UPrimitiveComponent->BoundsScale` (0x284) are the path (see
+[ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour)).
 
-### Draw aim FOV circle
+### Draw aim FOV circle — DONE
 
 **Goal.** Optionally draw a circle at the crosshair with radius = `AimFov`, so the lock-on cone is
 visible while tuning.
 
-**Approach.** A `bool DrawAimFov` (+ its own `Color`). Each frame, draw a circle centered on the
-screen center (crosshair) with radius `AimSettings.AimFov` px through the `Render` abstraction (or the
-ImGui foreground draw list), so it follows whichever renderer is active. Optionally only while the aim
-key is held.
-**Files.** `settings/Settings.h`, the render/ESP draw pass, `menu/sections/Aim.h` (or Visuals).
-**Size.** Small.
+**Shipped.** A `bool DrawAimFov` + `Color AimFovColor` (`AimSettings`, Aim tab) and a small render
+feature (`features/AimFov.h`) that draws a 48-segment circle of radius `AimFov` px at screen centre
+through the `Render` abstraction, so it follows whichever renderer is active.
 
 ## Requested UI / QoL
 
@@ -325,6 +329,37 @@ the Shutdown event runs), so the DLL can be unloaded on demand. **Size:** Small.
 blocked `summon`. Confirm the bot's full class name from the GObjects dump (**Debug → Dump
 GObjects**) and fix the command (and/or use `SpawnObject`/`SpawnActor` with the resolved class).
 **Size:** Small (needs the class name).
+
+**Proper spawn via the deferred two-step (`UGameplayStatics`).** Instead of the console `summon`,
+spawn the actor directly through `UGameplayStatics` — the reliable pattern is
+`BeginDeferredActorSpawnFromClass` → set any pre-spawn state → `FinishSpawningActor`
+([SpawnActorDeferred](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Engine/UWorld/SpawnActorDeferred?application_version=4.27),
+[BeginDeferredActorSpawnFromClass](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Kismet/UGameplayStatics/BeginDeferredActorSpawnFromClass?application_version=4.27),
+[FinishSpawningActor](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Kismet/UGameplayStatics/FinishSpawningActor?application_version=4.27)).
+Both are `UGameplayStatics` UFunctions, so wrap them like the existing `Engine.cpp` `ProcessEvent`
+wrappers, called on the `UGameplayStatics` CDO (`Globals::GameplayStatics`, already resolved). Sketch:
+
+```cpp
+// on UGameplayStatics: STATIC_BeginDeferredActorSpawnFromClass / STATIC_FinishSpawningActor
+AActor* SpawnActor(UObject* worldContext, UClass* actorClass, FVector loc,
+                   ESpawnActorCollisionHandlingMethod collision, AActor* owner)
+{
+    FTransform t;
+    t.Translation = loc;
+    t.Scale3D = FVector{1, 1, 1};
+    t.Rotation = FQuat{0, 0, 0, 1};
+
+    AActor* deferred = GameplayStatics->BeginDeferredActorSpawnFromClass(worldContext, actorClass, t, collision, owner);
+    if (!deferred) return nullptr;
+    return GameplayStatics->FinishSpawningActor(deferred, t); // set pre-spawn state between the two if needed
+}
+```
+
+`worldContext` = the world/`PlayerController`; `actorClass` = the resolved bot `UClass` (from the
+GObjects dump); `collision` = e.g. `AdjustIfPossibleButAlwaysSpawn`. This avoids the console entirely
+and is the canonical way to spawn Blueprint actors. **Files.** `ue/Engine.*` (two wrappers +
+`FTransform`/`FQuat`/`ESpawnActorCollisionHandlingMethod` in the SDK), `menu/sections/Debug.h` (the
+button), a resolved bot class name. **Size:** Small–medium (needs the class name + the SDK types).
 
 ### RGB for everything colorable — PARTIAL (watermark, menu accent, radar self done)
 Two strands. **(1) Per-element pickers:** a `Color` (ImGui `ColorEdit4`) for every drawable element —
