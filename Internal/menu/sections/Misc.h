@@ -21,18 +21,26 @@ namespace Menu
 			bool isInGame = Globals::PlayerController->IsInGame();
 
 			ImGui::SeparatorText("Player");
-			ImGui::SliderFloat("Player FOV", &Settings.EXPLOITS.FOV, 80.0f, 160.0f);
 
-			if (!isInGame) ImGui::BeginDisabled();
-			ImGui::SliderFloat("Player Speed", &Settings.EXPLOITS.PlayerSpeed, 0.2f, 4.f);
-			if (!isInGame) ImGui::EndDisabled();
-
-			if (ImGui::Button("Reset FOV / Speed"))
+			ImGui::SetNextItemWidth(180.f);
+			ImGui::SliderFloat("##fov", &Settings.EXPLOITS.FOV, 80.0f, 160.0f, "FOV %.0f");
+			ImGui::SameLine();
+			if (ImGui::SmallButton("Reset##fov"))
 			{
 				Settings.EXPLOITS.FOV = ExploitsSettings{}.FOV;
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
+
+			if (!isInGame) ImGui::BeginDisabled();
+			ImGui::SetNextItemWidth(180.f);
+			ImGui::SliderFloat("##speed", &Settings.EXPLOITS.PlayerSpeed, 0.2f, 4.f, "Speed %.2f");
+			ImGui::SameLine();
+			if (ImGui::SmallButton("Reset##speed"))
+			{
 				Settings.EXPLOITS.PlayerSpeed = ExploitsSettings{}.PlayerSpeed;
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
+			if (!isInGame) ImGui::EndDisabled();
 
 			ImGui::SeparatorText("Game");
 
