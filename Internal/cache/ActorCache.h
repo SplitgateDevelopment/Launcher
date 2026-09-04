@@ -52,7 +52,10 @@ namespace ActorCache
 	{
 		players.clear();
 
-		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar) return;
+		// Rebuild only when something consumes the list: the visual features (ESP, radar) or the aim
+		// features (aimbot, triggerbot), which iterate it to pick a target. Without the aim checks the
+		// cache stayed empty when only an aim feature was on, so it silently found no targets.
+		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot) return;
 		if (!Globals::World) return;
 		if (!characterClass) characterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
