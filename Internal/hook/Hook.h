@@ -36,6 +36,8 @@ namespace Hook
 
 	// Defined below; forward-declared so Init can register it as the shutdown handler.
 	void UnHook();
+	// The world-dependent half of Init, run on a worker thread (defined below).
+	void InitWorld();
 
 	bool Init()
 	{
@@ -48,16 +50,26 @@ namespace Hook
 		};
 		Globals::Init();
 
-		// Injection can land before the world / local player exist (during a map load, or at a
-		// menu before the local player is set up), which used to make Init bail immediately and
-		// surface to the launcher as a "DLL failed to initialize (timed out)". Instead, poll the
-		// whole chain until it's ready — bounded to ~10s, under the launcher's 15s handshake
-		// timeout, so a genuine failure still eventually surfaces as a timeout.
+		// The world / local player may not exist yet (a map load, or a menu before the local player
+		// is set up). We must NOT wait for them here: this callback runs on the game's UI/message
+		// thread, so Sleeping would freeze the game — and the world would never advance while we're
+		// asleep. Hand the wait and the rest of init to a detached worker thread; the game thread
+		// keeps running, the world becomes ready, and the worker finishes init.
+		std::thread(&InitWorld).detach();
+
+		return TRUE;
+	}
+
+	// The world-dependent half of init, run on a worker thread (see Init). Polls off-thread for the
+	// world / local player, then installs the hooks, GUI and features. Logs and returns on failure.
+	void InitWorld()
+	{
 		UPortalWarsLocalPlayer* LocalPlayer = nullptr;
 		UGameViewportClient* ViewPortClient = nullptr;
 		void** ViewPortClientVTable = nullptr;
 
-		for (int attempt = 0; attempt < 100; ++attempt)
+		// Off-thread, so waiting generously (up to ~60s) stalls nothing.
+		for (int attempt = 0; attempt < 600; ++attempt)
 		{
 			Globals::Init(); // re-resolve the world (it changes across map loads)
 
@@ -89,7 +101,7 @@ namespace Hook
 		if (!ViewPortClientVTable)
 		{
 			Logger::Log("ERROR", "World / local player never became ready");
-			return FALSE;
+			return;
 		};
 
 		PostRender::VTable = ViewPortClientVTable;
@@ -119,7 +131,7 @@ namespace Hook
 		if (MH_Initialize() != MH_OK)
 		{
 			Logger::Log("ERROR", "MinHook not initialized");
-			return FALSE;
+			return;
 		}
 
 		const auto& ProccessEventTarget = reinterpret_cast<decltype(ProcessEvent::Original)>(ProcessEvent::VTable[ProcessEvent::Index]);
@@ -132,13 +144,13 @@ namespace Hook
 		if (!GUI::Init())
 		{
 			Logger::Log("ERROR", "Could not initialize GUI");
-			return FALSE;
+			return;
 		}
 
 		if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK)
 		{
 			Logger::Log("ERROR", "Could not enable MinHook hooks");
-			return FALSE;
+			return;
 		};
 
 		Logger::Log("SUCCESS", "Enabled MinHook hooks");
@@ -156,8 +168,6 @@ namespace Hook
 						 {
 			static std::atomic<bool> unhooking = false;
 			if (!unhooking.exchange(true)) std::thread(&UnHook).detach(); });
-
-		return TRUE;
 	}
 
 	void UnHook()
