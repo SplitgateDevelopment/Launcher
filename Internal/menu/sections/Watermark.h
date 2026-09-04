@@ -15,8 +15,8 @@ namespace Menu
 		{
 			if (!Settings.MENU.ShowWatermark) return;
 
-			ImGuiStyle* style = &ImGui::GetStyle();
-			ImU32 color = ImGui::ColorConvertFloat4ToU32(style->Colors[ImGuiCol_TitleBgActive]);
+			const auto& c = Settings.MENU.WatermarkColor;
+			ImU32 color = ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A));
 
 			ImGuiIO& io = ImGui::GetIO();
 			(void)io;

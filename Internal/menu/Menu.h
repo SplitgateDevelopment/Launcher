@@ -50,6 +50,17 @@ namespace Menu
 			ImGui::ShowStyleEditor();
 		}
 
+		// Apply the configurable accent color to the interactive style elements each frame.
+		{
+			const auto& a = Settings.MENU.AccentColor;
+			const ImVec4 accent(a.R, a.G, a.B, a.A);
+			ImVec4* colors = ImGui::GetStyle().Colors;
+			for (ImGuiCol c : {ImGuiCol_CheckMark, ImGuiCol_SliderGrab, ImGuiCol_SliderGrabActive,
+							   ImGuiCol_Header, ImGuiCol_HeaderHovered, ImGuiCol_HeaderActive,
+							   ImGuiCol_Tab, ImGuiCol_TabHovered, ImGuiCol_TabActive, ImGuiCol_TitleBgActive})
+				colors[c] = accent;
+		}
+
 		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu, windowFlags))
 		{
 			ImGui::End();

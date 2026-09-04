@@ -25,6 +25,16 @@ namespace fs = std::filesystem;
  * on-disk path and loads/saves/resets the global @ref Settings instance.
  */
 
+/// Plain RGBA color kept out of the UE SDK so settings stay game-independent (and
+/// unit-testable). Laid out as four contiguous floats for ImGui::ColorEdit4; the Esp feature
+/// converts it to an FLinearColor.
+struct Color
+{
+	float R = 1.f, G = 1.f, B = 1.f, A = 1.f;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Color, R, G, B, A)
+
 /// Menu appearance and the show/hide hotkey.
 struct MenuSettings
 {
@@ -33,9 +43,12 @@ struct MenuSettings
 	std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
 	int ShowHotkey = VK_INSERT; ///< virtual-key code toggling the GUI (default Insert)
 	bool Streamproof = false;	///< hide the overlay from screen capture (SetWindowDisplayAffinity)
+
+	Color WatermarkColor{1.f, 1.f, 1.f, 1.f};	 ///< watermark text color
+	Color AccentColor{0.26f, 0.59f, 0.98f, 1.f}; ///< menu accent (tabs / headers / sliders)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof, WatermarkColor, AccentColor)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 struct ExploitsSettings
@@ -84,16 +97,6 @@ struct DebugSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash)
 
-/// Plain RGBA color kept out of the UE SDK so settings stay game-independent (and
-/// unit-testable). Laid out as four contiguous floats for ImGui::ColorEdit4; the Esp feature
-/// converts it to an FLinearColor.
-struct Color
-{
-	float R = 1.f, G = 1.f, B = 1.f, A = 1.f;
-};
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Color, R, G, B, A)
-
 /// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
 /// ImGui/DX11 (near-free). Switchable live from the Visuals tab.
 enum class RendererMode
@@ -134,10 +137,11 @@ struct VisualsSettings
 	Color BoxColor{1.f, 0.f, 0.f, 1.f};
 	Color BonesColor{0.f, 1.f, 0.f, 1.f};
 	Color SnaplineColor{1.f, 1.f, 0.f, 1.f};
-	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
+	Color FriendColor{0.f, 0.f, 1.f, 1.f};	  ///< color for teammates when ShowFriendly is on (default blue)
+	Color RadarSelfColor{1.f, 1.f, 1.f, 1.f}; ///< radar panel border + your own marker
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, RadarSelfColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

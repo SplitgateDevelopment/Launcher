@@ -95,7 +95,8 @@ class Radar : public Feature
 		const float cx = Globals::Canvas->ClipX - Margin - radius;
 		const float cy = Margin + radius;
 
-		const FLinearColor border{1.f, 1.f, 1.f, 1.f};
+		const auto& self = Settings.VISUALS.RadarSelfColor;
+		const FLinearColor border{self.R, self.G, self.B, self.A};
 		const FLinearColor dot{1.f, 0.f, 0.f, 1.f};
 
 		// Panel border + player marker at the centre.
