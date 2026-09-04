@@ -14,6 +14,10 @@ Strategies
              always called with a recognizable tagged constant (e.g. curl options).
 - bytes    : find occurrences of a raw byte pattern ("48 89 .. ?? E8" - ".." / "??"
              are wildcards) and, for a unique match, emit a signature at that address.
+- stringref: find a string, then the `lea reg,[rip+disp]` in .text that references it,
+             then scan back to the function start and emit a signature there. This is how
+             Sinum/memcury locate functions that have no stable prologue (e.g. by a nearby
+             log/error string) - far more update-stable than a raw byte pattern.
 - emit     : emit a masked signature for a function at a known RVA/VA.
 
 Every strategy that emits a signature masks rel32 operands (E8/E9 calls/jmps) and
@@ -78,6 +82,18 @@ class PEImage:
                 break
             out.append(ins)
         return out
+
+    def find_bytes_in_image(self, needle: bytes):
+        """Find `needle` in any section's raw data; yield absolute VAs (e.g. a string in .rdata)."""
+        for s in self.pe.sections:
+            data = s.get_data()
+            start = 0
+            while True:
+                i = data.find(needle, start)
+                if i < 0:
+                    break
+                yield self.image_base + s.VirtualAddress + i
+                start = i + 1
 
 
 # --------------------------------------------------------------------------- #
@@ -216,6 +232,49 @@ def strat_bytes(pe: PEImage, pattern: str, sig_len: int):
         print_signature(pe, hits[0], sig_len)
 
 
+def find_function_start(pe: PEImage, off: int, max_back: int = 0x600):
+    """Scan backward from `off` for the int3/nop padding that precedes a function; return the
+    offset of the first byte after it (best-effort function entry), or None."""
+    data = pe.text
+    lo = max(0, off - max_back)
+    for i in range(off, lo, -1):
+        # a run of >= 2 int3 (CC) or the classic multi-byte nop padding marks a function boundary
+        if data[i - 1] == 0xCC and data[i - 2] == 0xCC:
+            return i
+    return None
+
+
+def strat_stringref(pe: PEImage, text: str, unicode: bool, sig_len: int):
+    """Find a string, the lea that references it, then the enclosing function's start."""
+    needle = (text.encode("utf-16-le") if unicode else text.encode("ascii")) + b"\x00"
+    string_vas = list(pe.find_bytes_in_image(needle))
+    if not string_vas:
+        sys.exit("String not found (try --unicode, or a shorter/exact substring).")
+    print(f"string found at: {', '.join(hex(v) for v in string_vas)}")
+
+    data = pe.text
+    refs = []
+    for i in range(0, len(data) - 7):
+        # lea r64, [rip+disp32]:  (48|4C) 8D  modrm(mod=00, rm=101)  disp32
+        if data[i] in (0x48, 0x4C) and data[i + 1] == 0x8D and (data[i + 2] & 0xC7) == 0x05:
+            disp = int.from_bytes(data[i + 3:i + 7], "little", signed=True)
+            target = pe.off_to_va(i) + 7 + disp
+            if target in string_vas:
+                refs.append(i)
+
+    if not refs:
+        sys.exit("No `lea reg,[rip+str]` reference found in .text (string may be used via a different form).")
+    print(f"references: {', '.join(hex(pe.off_to_va(r)) for r in refs)}")
+
+    for r in refs:
+        entry = find_function_start(pe, r)
+        if entry is None:
+            print(f"  (couldn't find the function start above 0x{pe.off_to_va(r):x} - emitting at the lea)")
+            entry = r
+        print()
+        print_signature(pe, entry, sig_len)
+
+
 def strat_emit(pe: PEImage, rva: int, va: int, sig_len: int):
     if va:
         off = pe.va_to_off(va)
@@ -247,6 +306,12 @@ def main():
     b.add_argument("--pattern", required=True, help="e.g. \"48 8B C4 ?? E8 ?? ?? ?? ??\"")
     b.add_argument("--len", type=int, default=40, dest="siglen")
 
+    s = sub.add_parser("stringref", help="find a function by a string it references")
+    s.add_argument("--exe", required=True)
+    s.add_argument("--string", required=True, help="the string to search for (exact substring)")
+    s.add_argument("--unicode", action="store_true", help="search for a UTF-16 (wide) string")
+    s.add_argument("--len", type=int, default=40, dest="siglen")
+
     e = sub.add_parser("emit", help="emit a signature for a function at a known RVA/VA")
     e.add_argument("--exe", required=True)
     e.add_argument("--rva", type=lambda x: int(x, 0), default=None)
@@ -262,6 +327,8 @@ def main():
         strat_callsite(pe, args.reg, parse_ranges(args.imm), args.window, args.siglen)
     elif args.cmd == "bytes":
         strat_bytes(pe, args.pattern, args.siglen)
+    elif args.cmd == "stringref":
+        strat_stringref(pe, args.string, args.unicode, args.siglen)
     elif args.cmd == "emit":
         strat_emit(pe, args.rva, args.va, args.siglen)
 
