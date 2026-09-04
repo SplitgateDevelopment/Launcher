@@ -68,6 +68,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cache\ActorCache.h" />
+    <ClInclude Include="render\Renderer.h" />
+    <ClInclude Include="render\CanvasRenderer.h" />
+    <ClInclude Include="render\ImGuiRenderer.h" />
+    <ClInclude Include="render\Render.h" />
     <ClInclude Include="features\Feature.h" />
     <ClInclude Include="network\Network.h" />
     <ClInclude Include="network\Redirect.h" />

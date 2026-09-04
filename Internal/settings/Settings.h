@@ -94,9 +94,24 @@ struct Color
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Color, R, G, B, A)
 
+/// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
+/// ImGui/DX11 (near-free). Switchable live from the Visuals tab.
+enum class RendererMode
+{
+	Canvas,
+	ImGui,
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
+											   {RendererMode::Canvas, "canvas"},
+											   {RendererMode::ImGui, "imgui"},
+										   })
+
 /// ESP element toggles and colors (the Visuals tab), plus the separate radar toggle.
 struct VisualsSettings
 {
+	RendererMode Renderer = RendererMode::Canvas; ///< how the overlays are drawn (canvas / imgui)
+
 	bool Esp = false; ///< master toggle for the ESP feature
 	bool Name = true;
 	bool Box = true;
@@ -120,7 +135,7 @@ struct VisualsSettings
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

@@ -12,6 +12,7 @@
 #include "../../settings/Settings.h"
 #include "../../utils/Globals.h"
 #include "../../cache/ActorCache.h"
+#include "../../render/Render.h"
 #include "../../features/Features.h"
 
 /// @brief Hook code for UGameViewportClient::PostRender.
@@ -48,6 +49,10 @@ namespace PostRender
 
 			// One shared actor pass per frame, consumed by the visual features below.
 			ActorCache::Update();
+
+			// Point the drawing backend at the selected renderer for this frame (features draw
+			// through Render::*). ImGui-recorded commands are replayed in the Present hook.
+			Render::Select(Settings.VISUALS.Renderer);
 
 			Features::Execute();
 		} while (false);

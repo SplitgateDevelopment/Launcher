@@ -8,6 +8,7 @@
 #include "Styles.h"
 #include "Custom.h"
 #include "../Menu.h"
+#include "../../render/Render.h"
 
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
@@ -99,6 +100,10 @@ namespace GUI
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+		// Replay the ESP/radar draw commands recorded this frame (ImGui renderer mode; no-op in
+		// canvas mode) into the background draw list.
+		Render::Flush();
 
 		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);

@@ -29,8 +29,8 @@ class Radar : public Feature
 	/// Draw a small plus sign centred at (x, y) with arm length @p half.
 	void Cross(float x, float y, float half, float thickness, const FLinearColor& color)
 	{
-		Globals::Canvas->K2_DrawLine({x - half, y}, {x + half, y}, thickness, color);
-		Globals::Canvas->K2_DrawLine({x, y - half}, {x, y + half}, thickness, color);
+		Render::Line({x - half, y}, {x + half, y}, thickness, color);
+		Render::Line({x, y - half}, {x, y + half}, thickness, color);
 	}
 
   public:
@@ -101,10 +101,10 @@ class Radar : public Feature
 		// Panel border + player marker at the centre.
 		const FVector2D tl{cx - radius, cy - radius}, tr{cx + radius, cy - radius};
 		const FVector2D bl{cx - radius, cy + radius}, br{cx + radius, cy + radius};
-		Globals::Canvas->K2_DrawLine(tl, tr, 1.f, border);
-		Globals::Canvas->K2_DrawLine(tr, br, 1.f, border);
-		Globals::Canvas->K2_DrawLine(br, bl, 1.f, border);
-		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, border);
+		Render::Line(tl, tr, 1.f, border);
+		Render::Line(tr, br, 1.f, border);
+		Render::Line(br, bl, 1.f, border);
+		Render::Line(bl, tl, 1.f, border);
 		Cross(cx, cy, 3.f, 1.f, border);
 
 		// Shared per-frame actor pass (ActorCache); location + team already resolved there.

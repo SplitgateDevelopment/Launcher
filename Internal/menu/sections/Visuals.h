@@ -19,6 +19,16 @@ namespace Menu
 			bool changed = false;
 			auto& v = Settings.VISUALS;
 
+			ImGui::SeparatorText("Renderer");
+			const char* renderers[] = {"UE Canvas", "ImGui (faster)"};
+			int renderer = static_cast<int>(v.Renderer);
+			if (ImGui::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
+			{
+				v.Renderer = static_cast<RendererMode>(renderer);
+				changed = true;
+			}
+			ImGui::Tooltip("ImGui draws the overlay without a ProcessEvent per line/text - much faster for a busy ESP.");
+
 			ImGui::SeparatorText("Player ESP");
 			changed |= ImGui::ToggleButton("Enable", &v.Esp);
 

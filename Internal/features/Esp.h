@@ -8,6 +8,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
+#include "../render/Render.h"
 
 #include <cmath>
 #include <string>
@@ -44,10 +45,10 @@ class Esp : public Feature
 		const FVector2D tl{left, head.Y}, tr{right, head.Y};
 		const FVector2D bl{left, feet.Y}, br{right, feet.Y};
 
-		Globals::Canvas->K2_DrawLine(tl, tr, 1.f, color);
-		Globals::Canvas->K2_DrawLine(tr, br, 1.f, color);
-		Globals::Canvas->K2_DrawLine(br, bl, 1.f, color);
-		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, color);
+		Render::Line(tl, tr, 1.f, color);
+		Render::Line(tr, br, 1.f, color);
+		Render::Line(br, bl, 1.f, color);
+		Render::Line(bl, tl, 1.f, color);
 	}
 
 	// A true 3D box: project the 8 corners of a world-space box centred on the actor and connect
@@ -86,7 +87,7 @@ class Esp : public Feature
 			{3, 7}, // verticals
 		};
 		for (const auto& e : edges)
-			Globals::Canvas->K2_DrawLine(screen[e[0]], screen[e[1]], 1.f, color);
+			Render::Line(screen[e[0]], screen[e[1]], 1.f, color);
 	}
 
 	// Vertical health bar just left of the box; green (full) to red (empty).
@@ -103,7 +104,7 @@ class Esp : public Feature
 		const float barX = (head.X + feet.X) * 0.5f - width * 0.5f - 5.f;
 
 		const FLinearColor color{1.f - pct, pct, 0.f, 1.f};
-		Globals::Canvas->K2_DrawLine({barX, feet.Y}, {barX, feet.Y - height * pct}, 3.f, color);
+		Render::Line({barX, feet.Y}, {barX, feet.Y - height * pct}, 3.f, color);
 	}
 
 	/// Euclidean distance between two world points, returned in metres
@@ -144,7 +145,7 @@ class Esp : public Feature
 			FVector2D b = mesh->GetBone(pair[1], controller);
 			if (OffScreen(a) || OffScreen(b)) continue;
 
-			Globals::Canvas->K2_DrawLine(a, b, 1.f, color);
+			Render::Line(a, b, 1.f, color);
 		}
 	}
 
@@ -234,7 +235,7 @@ class Esp : public Feature
 			if (OffScreen(feet)) continue;
 
 			if (visuals.Snaplines)
-				Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
+				Render::Line({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
 
 			if (visuals.Box3D)
 				DrawBox3D(controller, cached.location, boxC);
@@ -252,13 +253,13 @@ class Esp : public Feature
 			{
 				auto* state = Character->PlayerState;
 				if (state)
-					Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+					Render::Text(feet, state->PlayerNamePrivate.ToString(), visuals.FontScale, nameC);
 			}
 
 			if (visuals.Distance && hasPlayer)
 			{
 				std::string text = std::to_string((int)Distance(playerPos, cached.location)) + "m";
-				Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+				Render::Text({feet.X, feet.Y + 14.f}, text, visuals.FontScale, nameC);
 			}
 		}
 	};
