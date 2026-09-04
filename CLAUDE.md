@@ -53,6 +53,8 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
 - [docs/scripting.md](docs/scripting.md) — embedding Python and writing user scripts.
 - [docs/testing.md](docs/testing.md) — the gtest project and how to run it.
 - [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
+- [docs/planned-features.md](docs/planned-features.md) / [docs/roadmap.md](docs/roadmap.md) — design
+  notes for near-term features and larger future work (not yet implemented).
 
 ## Usage (from README)
 
