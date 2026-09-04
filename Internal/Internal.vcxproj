@@ -145,6 +145,7 @@
     <ClInclude Include="ue\UObjects.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="utils\ActorLocation.h" />
+    <ClInclude Include="utils\Memcury.h" />
     <ClInclude Include="utils\Rgb.h" />
     <ClInclude Include="utils\Util.h" />
     <ClInclude Include="menu\Menu.h" />

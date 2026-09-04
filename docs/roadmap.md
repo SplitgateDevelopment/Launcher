@@ -531,7 +531,14 @@ strategies; masks rel32 + rip-relative with `0x00`, the project's wildcard). `To
 runs every signature the DLL relies on (currently `curl_easy_setopt` and `GetBoneMatrix`) in one pass,
 so re-deriving after a game update is one command. Keep new AOBs in that registry.
 
-### memcury-style AOB engine + string-ref discovery (runtime)
+### memcury-style AOB engine + string-ref discovery (runtime) — DONE (engine); wiring optional
+
+**Shipped:** `utils/Memcury.h` — IDA `??`-pattern parsing + wildcard `FindPattern`, a `Scanner` with
+`RelativeOffset` (follow a `lea`/`call` disp32 to its target) and `GetAs<T>`, module helpers (`Scan`),
+and `FindStringRef` (string → the `lea` that references it). The pure core is unit-tested against
+crafted buffers in `Tests/MemcuryTests.cpp` (6 tests). **Still optional:** swap `CurlHook` /
+`GetBoneMatrix` resolution onto it (keeping `FindSignature` as the fallback) — the engine is ready;
+this is just a low-risk rewire.
 
 **Goal.** The runtime scanner (`Util.cpp::FindSignature`) uses **`0x00` as the wildcard**, so any real
 `0x00` byte in a pattern silently becomes a wildcard — fragile, and it can't follow relative
