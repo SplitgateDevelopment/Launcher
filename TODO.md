@@ -188,3 +188,38 @@ the fault and returns, and rely on the worker's `TryResolveViewport` (which call
 again, guarded, and *can* retry) to do the real resolve. In other words, the eager UI-thread
 `Globals::Init()` is just a convenience — it's safe to guard or even drop, because the worker
 re-resolves everything anyway.
+
+Code, if you ever need it. Add a leaf SEH wrapper next to `TryResolveViewport` (same rule: no
+objects needing unwinding in the `__try` scope):
+
+```cpp
+// Best-effort Globals::Init() for the UI thread: an early-injection fault while a global is
+// mid-construction returns false instead of crashing. The worker (TryResolveViewport) resolves
+// for real and can retry, so a false here is harmless. No unwinding objects in the __try scope.
+inline bool TryGlobalsInit()
+{
+    __try
+    {
+        Globals::Init();
+        return true;
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+}
+```
+
+Then in `Init()`, swap the eager call:
+
+```cpp
+// before
+Globals::Init();
+
+// after — don't take down the UI thread if globals aren't safe to read this early
+TryGlobalsInit(); // best-effort; the worker's TryResolveViewport does the real (retryable) resolve
+```
+
+If you ever see the fault in `EngineInit()` itself (the offset/signature scan) rather than
+`Globals::Init()`, wrap that call the same way (`if (!TryEngineInit()) return FALSE;`) — but that's
+even less likely, since `EngineInit()` already validates what it resolves.
