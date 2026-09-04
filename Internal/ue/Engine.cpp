@@ -631,6 +631,20 @@ char APortalWarsCharacter::GetTeamNum()
 	return Parameters.ReturnValue;
 }
 
+void AController::SetControlRotation(FRotator& NewRotation)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.Controller.SetControlRotation");
+	if (!Function) return;
+
+	struct
+	{
+		FRotator NewRotation;
+	} Parameters;
+	Parameters.NewRotation = NewRotation;
+
+	ProcessEvent(Function, &Parameters);
+}
+
 struct UClass* ACharacter::StaticClass()
 {
 	return (UClass*)ObjObjects->FindObject("Class Engine.Character");

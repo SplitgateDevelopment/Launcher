@@ -122,6 +122,25 @@ struct VisualsSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
 
+/// Aimbot / triggerbot tunables (the Aim tab).
+struct AimSettings
+{
+	bool Aimbot = false;
+	int AimKey = VK_RBUTTON;  ///< held down to aim
+	float AimFov = 100.f;	  ///< max distance from the crosshair to lock a target, in pixels
+	float AimSmooth = 0.5f;	  ///< per-frame aim step: 0.05 (very smooth) .. 1 (instant snap)
+	int AimBone = 0;		  ///< target bone: 0 = head, 1 = chest, 2 = pelvis
+	bool AimTeamCheck = true; ///< never aim at teammates
+
+	bool Triggerbot = false;
+	int TriggerKey = VK_XBUTTON2; ///< held down to enable the triggerbot
+	float TriggerFov = 6.f;		  ///< fire when a target is within this many pixels of the crosshair
+	int TriggerDelay = 40;		  ///< ms to wait after acquiring a target before firing
+	bool TriggerTeamCheck = true;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
+
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode
 {
@@ -188,15 +207,16 @@ struct SETTINGS
 	MiscSettings MISC;
 	DebugSettings DEBUG;
 	VisualsSettings VISUALS;
+	AimSettings AIM;
 	NetworkSettings NETWORK;
 
 	SETTINGS()
-		: MENU(), EXPLOITS(), MISC(), DEBUG(), VISUALS(), NETWORK()
+		: MENU(), EXPLOITS(), MISC(), DEBUG(), VISUALS(), AIM(), NETWORK()
 	{
 	}
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG, VISUALS, NETWORK)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(SETTINGS, MENU, EXPLOITS, MISC, DEBUG, VISUALS, AIM, NETWORK)
 
 /// The one global settings instance (defined in Settings.cpp).
 extern SETTINGS Settings;

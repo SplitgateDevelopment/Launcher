@@ -8,6 +8,7 @@
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
 #include "sections/Visuals.h"
+#include "sections/Aim.h"
 #include "sections/Network.h"
 #include "sections/Settings.h"
 #include "sections/Profiles.h"
@@ -77,6 +78,12 @@ namespace Menu
 		if (ImGui::BeginTabItem("Visuals"))
 		{
 			Menu::Sections::VisualsTab();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Aim"))
+		{
+			Menu::Sections::AimTab();
 			ImGui::EndTabItem();
 		}
 
