@@ -272,11 +272,11 @@ SG.Events.on_custom("wave_cleared", on_wave)   # handler may take the value or n
 
 ## Hot-reload
 
-**Misc → User Scripts → Reload** re-scans the folder and re-imports every script (via
-`importlib.reload`), so edits take effect without a relaunch; per-script **Run** executes one on
-demand. Custom-event handlers are cleared on reload. **Caveat:** scripts that call
-`Events.on(Events.<Type>, ...)` at import time re-register on reload, stacking duplicate bus handlers —
-prefer the per-frame `main()` model for scripts you hot-reload, or guard your registration.
+**Scripts → Reload** re-scans the folder and re-imports every script (via `importlib.reload`), so
+edits take effect without a relaunch; per-script **Run** executes one on demand. Both bus
+subscriptions (`Events.on`) and custom-event handlers (`Events.on_custom`) registered by scripts are
+**cleared before re-importing**, so reloading never stacks duplicate handlers (and handlers from a
+deleted script stop firing).
 
 ## Requirements
 

@@ -25,8 +25,19 @@ namespace Scripts
 		/// Script-defined string events (separate from the C++ Events bus): name -> (callback, wantsArg).
 		inline std::unordered_map<std::string, std::vector<std::pair<py::function, bool>>> customHandlers;
 
+		/// Ids of bus handlers a script registered via `Events.on`, so hot-reload can remove exactly
+		/// those (not the C++ feature handlers) before re-importing.
+		inline std::vector<int> scriptHandlerIds;
+
 		/// Drop every script-registered custom handler (used by hot-reload so they don't stack).
 		inline void ClearCustomEvents() { customHandlers.clear(); }
+
+		/// Un-subscribe every bus handler a script registered via `Events.on` (hot-reload).
+		inline void ClearScriptHandlers()
+		{
+			for (int id : scriptHandlerIds) ::Events::Unregister(id);
+			scriptHandlerIds.clear();
+		}
 
 		/**
 		 * Registers the `Events` submodule on @p m: the `Type` enum values, the `Payload`
@@ -93,7 +104,7 @@ namespace Scripts
 					// e.g. a builtin with no introspectable signature — assume no payload.
 				}
 
-				::Events::Register(event, [callback, wantsPayload](const ::Events::Payload& payload)
+				const int id = ::Events::Register(event, [callback, wantsPayload](const ::Events::Payload& payload)
 								   {
 					try
 					{
@@ -104,7 +115,8 @@ namespace Scripts
 					catch (py::error_already_set& e)
 					{
 						Logger::Log("ERROR", e.what());
-					} }); });
+					} });
+				scriptHandlerIds.push_back(id); });
 
 			// Script-to-script custom events: subscribe by name, and emit(name, value=None) from
 			// another script. Handlers may take the value or not (arity detected once).

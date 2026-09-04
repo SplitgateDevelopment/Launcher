@@ -170,15 +170,14 @@ namespace Scripts
 	}
 
 	/// Hot-reload: re-discover the UserScripts folder and re-import every script (via
-	/// `importlib.reload`, so edited files take effect without a relaunch). Script-registered custom
-	/// events are cleared first so they don't stack.
-	///
-	/// Caveat: scripts that subscribe to *bus* events at import time (`Events.on(Events.<Type>, ...)`)
-	/// re-register on reload, stacking duplicate handlers — prefer the per-frame `main()` model, or
-	/// guard your registration. New `.py` files are picked up; deleted ones stop running.
+	/// `importlib.reload`, so edited files take effect without a relaunch). Both script-registered
+	/// bus subscriptions (`Events.on`) and custom-event handlers (`Events.on_custom`) are cleared
+	/// first, so re-importing doesn't stack duplicate handlers. New `.py` files are picked up;
+	/// deleted ones stop running (their handlers were cleared and won't re-register).
 	void Reload()
 	{
 		Modules::ClearCustomEvents();
+		Modules::ClearScriptHandlers(); // drop the previous import's bus subscriptions so they don't stack
 		loadedScripts.clear();
 		scriptList.clear();
 

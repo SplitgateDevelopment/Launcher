@@ -155,9 +155,9 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
   gradient need a backend fill primitive.)
 - **`Events` extras — DONE:** script-to-script custom events (`emit(name, value)` /
   `on_custom(name, cb)`). More *game* events still depend on the fire/trace RE.
-- **Hot-reload — DONE:** `Scripts::Reload()` + a **Reload** button and per-script **Run** in Misc →
-  User Scripts (re-imports via `importlib.reload`). Caveat: bus-event subscriptions re-register on
-  reload (documented) — prefer `main()` for hot-reloaded scripts.
+- **Hot-reload — DONE:** `Scripts::Reload()` + a **Reload** button and per-script **Run** in the
+  **Scripts** tab (re-imports via `importlib.reload`). Script-registered event handlers (bus and
+  custom) are cleared before re-importing, so reloading never stacks duplicates.
 
 ### Still-open scripting ideas
 - Weapon/loadout/ammo reads and `respawn()`/`suicide()` (need the weapon/loadout RE + fire path).
@@ -165,7 +165,9 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
 - ~~Filled-rect draw~~ **DONE** — `Render::RectFilled` (ImGui `AddRectFilled`; canvas approximates
   with bounded horizontal lines) + `SplitgateInternal.Render.rect_filled`. Gradients still open.
 - More *game* events (weapon fire, portal spawned, pickup) as the fire/trace hook lands.
-- Scoped script-handler unregister so hot-reload doesn't stack bus-event subscriptions.
+- ~~Scoped script-handler unregister so hot-reload doesn't stack bus-event subscriptions.~~ **DONE** —
+  `Events::Register` returns an id and `Events::Unregister(id)` removes it; the Events module tracks
+  script-registered bus-handler ids and `Scripts::Reload()` clears them (and the custom-event ones).
 
 ---
 

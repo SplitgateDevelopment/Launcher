@@ -25,8 +25,8 @@ namespace Menu
 			ImGui::SameLine();
 			if (ImGui::Button("Reload")) Scripts::Reload();
 			ImGui::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
-						   "without a relaunch). Scripts that subscribe to bus events at import time will\n"
-						   "stack duplicate handlers — prefer the per-frame main() model for those.");
+						   "without a relaunch). Previously-registered script event handlers are cleared\n"
+						   "first, so reloading doesn't stack duplicates.");
 
 			ImGui::SeparatorText("Loaded Scripts");
 			if (Scripts::scriptList.empty())

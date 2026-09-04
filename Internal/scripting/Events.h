@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 /**
@@ -51,28 +53,53 @@ namespace Events
 		const char* name = nullptr; ///< SettingsChanged: which setting/feature changed (a label)
 	};
 
+	/// A registered handler and the id Register handed back (so it can be Unregister-ed).
+	using Entry = std::pair<int, std::function<void(const Payload&)>>;
+
 	/// Subscribers, keyed by event; iterated in registration order on Dispatch.
-	inline std::unordered_map<Type, std::vector<std::function<void(const Payload&)>>> handlers;
+	inline std::unordered_map<Type, std::vector<Entry>> handlers;
+
+	/// Monotonic handler id source (0 is never used, so it can mean "no handle").
+	inline int nextHandlerId = 1;
 
 	/**
 	 * Subscribe a payload-aware handler to an event.
 	 * @param event   the event to subscribe to.
-	 * @param handler invoked with the dispatched payload; kept for the registry's lifetime.
+	 * @param handler invoked with the dispatched payload; kept until Unregister / Clear.
+	 * @return an id that Unregister can later use to remove this handler.
 	 */
-	inline void Register(Type event, std::function<void(const Payload&)> handler)
+	inline int Register(Type event, std::function<void(const Payload&)> handler)
 	{
-		handlers[event].push_back(std::move(handler));
+		const int id = nextHandlerId++;
+		handlers[event].push_back({id, std::move(handler)});
+		return id;
 	}
 
 	/**
 	 * Convenience overload for handlers that don't need the payload.
 	 * @param event   the event to subscribe to.
 	 * @param handler invoked with no arguments on dispatch.
+	 * @return the handler id (see the payload overload).
 	 */
-	inline void Register(Type event, std::function<void()> handler)
+	inline int Register(Type event, std::function<void()> handler)
 	{
-		handlers[event].push_back([h = std::move(handler)](const Payload&)
-								  { h(); });
+		const int id = nextHandlerId++;
+		handlers[event].push_back({id, [h = std::move(handler)](const Payload&)
+								   { h(); }});
+		return id;
+	}
+
+	/**
+	 * Remove a handler previously added by Register, by its returned id. Scans every event, so an
+	 * id need not carry its event. Used to un-subscribe script handlers on hot-reload so they don't
+	 * stack. A no-op if the id isn't found.
+	 */
+	inline void Unregister(int id)
+	{
+		for (auto& [type, list] : handlers)
+			list.erase(std::remove_if(list.begin(), list.end(), [id](const Entry& e)
+									  { return e.first == id; }),
+					   list.end());
 	}
 
 	/// @return true if at least one handler is subscribed to @p event.
@@ -99,7 +126,7 @@ namespace Events
 		auto it = handlers.find(event);
 		if (it == handlers.end()) return;
 
-		for (auto& handler : it->second)
+		for (auto& [id, handler] : it->second)
 		{
 			try
 			{

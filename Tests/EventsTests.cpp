@@ -90,6 +90,29 @@ namespace
 		EXPECT_TRUE(Events::Empty());
 	}
 
+	TEST_F(EventsTest, UnregisterRemovesOnlyThatHandler)
+	{
+		int keptCalls = 0;
+		int removedCalls = 0;
+
+		const int keptId = Events::Register(Type::Render, [&]
+											{ keptCalls++; });
+		const int removedId = Events::Register(Type::Render, [&]
+											   { removedCalls++; });
+		EXPECT_NE(keptId, removedId);
+
+		Events::Dispatch(Type::Render);
+		EXPECT_EQ(1, keptCalls);
+		EXPECT_EQ(1, removedCalls);
+
+		Events::Unregister(removedId);
+		Events::Dispatch(Type::Render);
+		EXPECT_EQ(2, keptCalls);	 // still fires
+		EXPECT_EQ(1, removedCalls); // no longer fires
+
+		EXPECT_NO_THROW(Events::Unregister(removedId)); // removing again is a no-op
+	}
+
 	TEST_F(EventsTest, DispatchPassesPayloadToHandlers)
 	{
 		void* gotSource = nullptr;
