@@ -234,11 +234,18 @@ tab's "Request flow" panel.
 
 ---
 
-### Realtime SDK viewer
+### Realtime SDK viewer — DONE
 
-**Goal.** An in-overlay explorer of the live UObject world: search for a class by name and list its
-valid instances, enumerate all known `UClass`es, and browse `GObjects` — for on-the-fly RE without a
-rebuild (find the projectile/bot/weapon class, inspect a live actor, confirm an offset).
+Shipped as a dedicated **SDK tab** ([menu/sections/Sdk.h](../Internal/menu/sections/Sdk.h)):
+**Object search** (scan every GObject, list those whose full name contains the text),
+**Class instances** (resolve a class by name — trying `Class …` / `BlueprintGeneratedClass …` forms —
+then list its live instances via `IsA`, with addresses), and the **GObjects dump** (moved here from
+Debug). All reads go through the already-resolved `ObjObjects` / `FindObject` / `IsA` / `GetFullName`;
+scans run on button press. Great for finding the bot/projectile/weapon class or a live instance to
+inspect.
+
+**Original goal.** An in-overlay explorer of the live UObject world: search for a class by name and
+list its valid instances, enumerate `UClass`es, and browse `GObjects`.
 
 **Approach.** Everything is already reachable: `ObjObjects` (the `TUObjectArray`) is iterated in
 **Debug → Dump GObjects**, `ObjObjects->FindObject(name)` resolves by full name, and `UObject`
@@ -433,11 +440,15 @@ hitscan variant.
 A GUI button (Debug or Misc) that triggers `Hook::UnHook` on a detached thread (the same teardown
 the Shutdown event runs), so the DLL can be unloaded on demand. **Size:** Small.
 
-### Fix "Summon Bot" / actor spawn
-`SendToConsole("summon PortalWarsBot_BP_C")` doesn't spawn — likely the wrong class path or a
-blocked `summon`. Confirm the bot's full class name from the GObjects dump (**Debug → Dump
-GObjects**) and fix the command (and/or use `SpawnObject`/`SpawnActor` with the resolved class).
-**Size:** Small (needs the class name).
+### Fix "Summon Bot" / actor spawn — DONE (mechanism; needs the real class name in-game)
+The deferred-spawn machinery is built: `FQuat`/`FTransform`/`ESpawnActorCollisionHandlingMethod` +
+`UGameplayStatics::BeginDeferredActorSpawnFromClass` / `FinishSpawningActor` wrappers and a
+`SpawnActor(worldContext, class, location, collision, owner)` helper in `ue/Engine.*`. The **Summon
+Bot** button (moved to the **Misc** tab) resolves the bot class by name, calls `SpawnActor` in front
+of the local pawn, and **falls back to the console `summon`** if the class doesn't resolve. The one
+remaining unknown is the bot's exact class name — find it via the new **SDK tab** (search "Bot") and
+drop it into the button. Param-struct layouts follow UE4 (FTransform 16-aligned at 0x10); verify
+in-game.
 
 **Proper spawn via the deferred two-step (`UGameplayStatics`).** Instead of the console `summon`,
 spawn the actor directly through `UGameplayStatics` — the reliable pattern is
@@ -472,8 +483,9 @@ button), a resolved bot class name. **Size:** Small–medium (needs the class na
 
 ### RGB for everything colorable — PARTIAL (watermark, menu accent, radar self done)
 Two strands. **(1) Per-element pickers:** a `Color` (ImGui `ColorEdit4`) for every drawable element —
-ESP lines/boxes/bones/name/health (done), a custom crosshair, and the render-side ones (mesh / chams /
-glow, and if achievable our gun and player, riding on the glow/cosmetics work). **(2) A single RGB
+ESP lines/boxes/bones/name/health (done), a **custom crosshair (done** — `features/Crosshair.h`, a
+size/gap/thickness/color cross at screen centre, RGB-aware, in the Visuals tab), and the render-side
+ones (mesh / chams / glow, and if achievable our gun and player, riding on the glow/cosmetics work). **(2) A single RGB
 rainbow toggle** (`MenuSettings.Rgb`, done): a time-cycled hue (`utils/Rgb.h`) that tints the
 watermark, the ImGui menu accent (`ImGui::GetStyle().Colors[...]`, snapshotting the theme defaults so
 toggling off restores them), and the radar self-icon; off falls back to their defaults (red / white)
