@@ -78,7 +78,7 @@ class Radar : public Feature
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
-		const bool showFriendly = Settings.VISUALS.ShowFriendly;
+		const bool showFriendly = Settings.VISUALS.RadarShowFriendly;
 		const FLinearColor friendColor{Settings.VISUALS.FriendColor.R, Settings.VISUALS.FriendColor.G, Settings.VISUALS.FriendColor.B, Settings.VISUALS.FriendColor.A};
 
 		// The local player's team, so teammates plot in FriendColor (and only when shown).

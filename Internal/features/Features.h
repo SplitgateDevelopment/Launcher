@@ -55,7 +55,10 @@ namespace Features
 			feature->UpdateEnabled();
 		Events::Register(Events::Type::SettingsChanged, []
 						 {
-			for (auto& feature : Features) feature->UpdateEnabled(); });
+			for (auto& feature : Features) feature->UpdateEnabled();
+
+			// Autosave: persist on every change when enabled.
+			if (Settings.MISC.AutoSave) SettingsHelper::File().Save(); });
 
 		// Subscribe event-driven features (Event != "render") to the event bus;
 		// render features run from Features::Execute each frame instead.

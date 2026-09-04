@@ -67,9 +67,10 @@ struct MiscSettings
 	bool DiscordRPCEnabled = true;
 	std::string SteamAppId = "677620"; ///< runtime-only (not persisted)
 	bool UserScriptsEnabled = false;
+	bool AutoSave = false; ///< save settings to disk on every change (SettingsChanged)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, ShowConsole, PlayerName, DiscordRPCEnabled, UserScriptsEnabled)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, ShowConsole, PlayerName, DiscordRPCEnabled, UserScriptsEnabled, AutoSave)
 
 /// Developer/diagnostic switches (the Debug tab).
 struct DebugSettings
@@ -105,9 +106,10 @@ struct VisualsSettings
 	bool Health = false;
 	bool Distance = false;
 
-	bool Radar = false;		   ///< separate 2D radar feature
-	bool ShowFriendly = false; ///< also draw teammates (ESP + radar), in FriendColor
-	bool DrawAllNames = false; ///< debug: draw the object name of every actor (not just players)
+	bool Radar = false;				///< separate 2D radar feature
+	bool ShowFriendly = false;		///< ESP: also draw teammates, in FriendColor
+	bool RadarShowFriendly = false; ///< radar: also plot teammates, in FriendColor
+	bool DrawAllNames = false;		///< debug: draw the object name of every actor (not just players)
 
 	float FontScale = 1.f; ///< text size for ESP names/distance (and the debug names)
 
@@ -118,7 +120,7 @@ struct VisualsSettings
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode

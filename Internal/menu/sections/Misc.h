@@ -27,14 +27,26 @@ namespace Menu
 			ImGui::SliderFloat("Player Speed", &Settings.EXPLOITS.PlayerSpeed, 0.2f, 4.f);
 			if (!isInGame) ImGui::EndDisabled();
 
+			if (ImGui::Button("Reset FOV / Speed"))
+			{
+				Settings.EXPLOITS.FOV = ExploitsSettings{}.FOV;
+				Settings.EXPLOITS.PlayerSpeed = ExploitsSettings{}.PlayerSpeed;
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
+
 			ImGui::SeparatorText("Game");
 
-			if (isInGame) ImGui::BeginDisabled();
+			// "Load into map" is only usable out of a game, and only once per session — it disables
+			// itself after the first use.
+			static bool loadUsed = false;
+			const bool loadDisabled = isInGame || loadUsed;
+			if (loadDisabled) ImGui::BeginDisabled();
 			if (ImGui::Button("Load into map"))
 			{
 				Events::Dispatch(Events::Type::LoadIntoMap);
+				loadUsed = true;
 			};
-			if (isInGame) ImGui::EndDisabled();
+			if (loadDisabled) ImGui::EndDisabled();
 
 			ImGui::SeparatorText("Overlay");
 			ImGui::Tooltip("Hide the overlay from screen capture (OBS, Discord, Game Bar). Needs Windows 10 2004+.");
@@ -43,6 +55,10 @@ namespace Menu
 				Window::SetStreamproof(Settings.MENU.Streamproof);
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
+
+			ImGui::SeparatorText("Config");
+			if (ImGui::ToggleButton("Autosave on change", &Settings.MISC.AutoSave))
+				Events::Dispatch(Events::Type::SettingsChanged);
 
 			ImGui::SeparatorText("User Scripts");
 			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))

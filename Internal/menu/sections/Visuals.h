@@ -37,6 +37,7 @@ namespace Menu
 
 			ImGui::SeparatorText("Radar");
 			changed |= ImGui::ToggleButton("Enable Radar", &v.Radar);
+			changed |= ImGui::ToggleButton("Radar teammates", &v.RadarShowFriendly);
 
 			ImGui::SeparatorText("Debug");
 			changed |= ImGui::ToggleButton("Draw all object names", &v.DrawAllNames);
