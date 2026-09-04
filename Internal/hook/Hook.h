@@ -48,6 +48,36 @@ namespace Hook
 		if (!unhooking.exchange(true)) std::thread(&UnHook).detach();
 	}
 
+	// Resolve World -> OwningGameInstance -> LocalPlayers[0] -> ViewportClient (+ its VFTable)
+	// under SEH so partially-constructed pointers during early injection yield nullptr instead of
+	// an access violation. Keep this a leaf helper with no unwinding objects in the __try scope
+	// (the TArray copy has no destructor, so it's allowed).
+	inline void** TryResolveViewport(UPortalWarsLocalPlayer*& outLocalPlayer, UGameViewportClient*& outViewport)
+	{
+		__try
+		{
+			Globals::Init(); // re-resolve the world (it changes across map loads)
+
+			UGameInstance* gameInstance = Globals::World ? Globals::World->OwningGameInstance : nullptr;
+			if (!gameInstance) return nullptr;
+
+			TArray<ULocalPlayer*> localPlayers = gameInstance->LocalPlayers;
+			if (localPlayers.Num() <= 0 || !localPlayers[0]) return nullptr;
+
+			auto* localPlayer = reinterpret_cast<UPortalWarsLocalPlayer*>(localPlayers[0]);
+			auto* viewport = localPlayer->ViewportClient;
+			if (!viewport || !viewport->VFTable) return nullptr;
+
+			outLocalPlayer = localPlayer;
+			outViewport = viewport;
+			return viewport->VFTable;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			return nullptr;
+		}
+	}
+
 	bool Init()
 	{
 		Logger::CreateConsole();
@@ -80,29 +110,14 @@ namespace Hook
 		// Off-thread, so waiting generously (up to ~60s) stalls nothing.
 		for (int attempt = 0; attempt < 600; ++attempt)
 		{
-			Globals::Init(); // re-resolve the world (it changes across map loads)
-
-			UGameInstance* OwningGameInstance = Globals::World ? Globals::World->OwningGameInstance : nullptr;
-			if (OwningGameInstance)
-			{
-				TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
-				if (LocalPlayers.Num() > 0 && LocalPlayers[0]) // guard against an empty array (OOB read)
-				{
-					LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-					ViewPortClient = LocalPlayer->ViewportClient;
-					ViewPortClientVTable = ViewPortClient ? ViewPortClient->VFTable : nullptr;
-					if (ViewPortClientVTable) break;
-				}
-			}
+			ViewPortClientVTable = TryResolveViewport(LocalPlayer, ViewPortClient);
+			if (ViewPortClientVTable) break;
 
 			LocalPlayer = nullptr;
 			ViewPortClient = nullptr;
-			ViewPortClientVTable = nullptr;
 
 			if (attempt == 0)
-			{
 				Logger::Log("INFO", "Waiting for the world / local player to be ready...");
-			}
 
 			Sleep(100);
 		}
