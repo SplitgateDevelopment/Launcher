@@ -673,6 +673,23 @@ char APortalWarsCharacter::GetTeamNum()
 	return Parameters.ReturnValue;
 }
 
+bool AActor::WasRecentlyRendered(float Tolerance)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.WasRecentlyRendered");
+	if (!Function) return true; // if the check can't run, don't hide the actor
+
+	struct
+	{
+		float Tolerance;
+		bool ReturnValue;
+	} Parameters;
+	Parameters.Tolerance = Tolerance;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
 void AController::SetControlRotation(FRotator& NewRotation)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.Controller.SetControlRotation");

@@ -27,6 +27,10 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Team check##aim", &a.AimTeamCheck);
 			changed |= ImGui::ToggleButton("Silent aim", &a.SilentAim);
 			ImGui::Tooltip("Snap to the target only while firing (left click), ignoring the aim key.");
+			changed |= ImGui::ToggleButton("Visibility check", &a.AimVisibleCheck);
+			ImGui::Tooltip("Only lock onto targets that were recently rendered (visible). Also applies to the triggerbot.");
+			changed |= ImGui::ToggleButton("Draw FOV circle", &a.DrawAimFov);
+			ImGui::ColorEdit4("FOV circle color", &a.AimFovColor.R);
 
 			ImGui::SeparatorText("Triggerbot");
 			changed |= ImGui::ToggleButton("Enable##trig", &a.Triggerbot);

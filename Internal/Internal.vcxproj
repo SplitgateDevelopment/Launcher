@@ -93,6 +93,7 @@
     <ClInclude Include="features\DebugNames.h" />
     <ClInclude Include="features\Aimbot.h" />
     <ClInclude Include="features\Triggerbot.h" />
+    <ClInclude Include="features\AimFov.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
