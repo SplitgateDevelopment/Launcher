@@ -8,25 +8,15 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 
-// Detaches the camera into a free-flying mode while enabled, via
-// APlayerController::ClientSetCameraMode. Like ThirdPerson it is a OneTime
-// feature so the networked call fires once on enable and reverts once on disable.
-//
-// NOTE: the camera-mode name ("FreeCam") is a game-specific guess — confirm
-// in-game (LogProcessEvent watching ClientSetCameraMode) and adjust if needed.
+// Toggles a free-flying camera while enabled by running the UE console command
+// `ToggleDebugCamera` (the game forces first person, so the ClientSetCameraMode approach didn't
+// engage — but a console command does). OneTime, so the toggle fires once on enable and once on
+// disable. ToggleDebugCamera is the stock UE command; if a different command works in this build,
+// change the string here (or run it from Debug > Console command).
 class FreeCam : public Feature
 {
   private:
-	FName freeCamMode{};	 ///< cached FName of the free-camera mode, applied by Run()
-	FName firstPersonMode{}; ///< cached FName of the default mode, restored by Destroy()
-
-	/// Resolve a string into an FName via the Blueprint string library (using
-	/// the player controller only as a call context).
-	FName MakeName(const char* text)
-	{
-		return reinterpret_cast<UKismetStringLibrary*>(Globals::PlayerController)
-			->Conv_StringToName(FString(text));
-	}
+	static constexpr const char* Command = "ToggleDebugCamera";
 
   public:
 	FreeCam()
@@ -55,26 +45,17 @@ class FreeCam : public Feature
 
 	void Init()
 	{
-		if (!Globals::PlayerController)
-		{
-			Initialized = false;
-			return;
-		}
-
-		freeCamMode = MakeName("FreeCam");
-		firstPersonMode = MakeName("FirstPerson");
-
-		Initialized = true;
+		Initialized = (Globals::PlayerController != nullptr);
 		Log("Initialized");
 	};
 
 	void Destroy()
 	{
-		Globals::PlayerController->ClientSetCameraMode(firstPersonMode);
+		Globals::PlayerController->SendToConsole(FString(Command)); // toggle back off
 	};
 
 	void Run()
 	{
-		Globals::PlayerController->ClientSetCameraMode(freeCamMode);
+		Globals::PlayerController->SendToConsole(FString(Command));
 	};
 };

@@ -541,7 +541,7 @@ void APlayerController::ClientSetCameraMode(struct FName NewCameraMode)
 
 void APlayerController::SendToConsole(FString Command)
 {
-	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SendToConsole");
 
 	struct
 	{

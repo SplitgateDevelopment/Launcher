@@ -34,6 +34,18 @@ namespace Menu
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
+			ImGui::SeparatorText("Console command");
+			static char consoleBuffer[256] = "";
+			ImGui::SetNextItemWidth(260.f);
+			ImGui::InputText("##console", consoleBuffer, sizeof(consoleBuffer));
+			ImGui::SameLine();
+			if (ImGui::Button("Run") && consoleBuffer[0] && Globals::PlayerController)
+			{
+				Globals::PlayerController->SendToConsole(FString(std::string(consoleBuffer)));
+			}
+
+			ImGui::SeparatorText("Actions");
+
 			if (ImGui::Button("Summon Bot"))
 			{
 				if (!Globals::PlayerController) return;
