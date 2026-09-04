@@ -594,7 +594,9 @@ void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origi
 
 bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVector2D& ScreenLocation, bool bPlayerViewportRelative)
 {
-	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
+	// Resolve the UFunction once and reuse it. This is on the ESP hot path (one call per bone per
+	// enemy per frame); doing the object-array lookup every call was the main ESP frame-rate cost.
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
 
 	struct
 	{
