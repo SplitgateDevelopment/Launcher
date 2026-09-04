@@ -9,6 +9,7 @@
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../utils/WorldToScreen.h"
+#include "../utils/Rgb.h"
 #include "../render/Render.h"
 
 #include <cmath>
@@ -200,6 +201,11 @@ class Esp : public Feature
 		const FLinearColor snaplineColor = ToColor(visuals.SnaplineColor);
 		const FLinearColor friendColor = ToColor(visuals.FriendColor);
 
+		// RGB overrides the box/bone/snapline colors (for enemies and teammates alike) with the
+		// cycling rainbow, computed once per frame. Name and health keep their own colors.
+		const bool rgb = Settings.MENU.Rgb;
+		const FLinearColor rgbColor = rgb ? ToColor(Rgb::Current()) : FLinearColor{};
+
 		auto* controller = Globals::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		const bool hasPlayer = localPawn != nullptr;
@@ -225,9 +231,9 @@ class Esp : public Feature
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !visuals.ShowFriendly) continue;
 
-			const FLinearColor boxC = friendly ? friendColor : boxColor;
-			const FLinearColor bonesC = friendly ? friendColor : bonesColor;
-			const FLinearColor snapC = friendly ? friendColor : snaplineColor;
+			const FLinearColor boxC = rgb ? rgbColor : (friendly ? friendColor : boxColor);
+			const FLinearColor bonesC = rgb ? rgbColor : (friendly ? friendColor : bonesColor);
+			const FLinearColor snapC = rgb ? rgbColor : (friendly ? friendColor : snaplineColor);
 			const FLinearColor nameC = friendly ? friendColor : nameColor;
 
 			auto Mesh = Character->Mesh;
