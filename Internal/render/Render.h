@@ -43,6 +43,11 @@ namespace Render
 		active->Text(pos, text, scale, color);
 	}
 
+	inline void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color)
+	{
+		active->RectFilled(min, max, color);
+	}
+
 	/// Replay the ImGui backend's per-frame command buffer (no-op in canvas mode — the buffer is
 	/// empty). Call once per frame from the Present hook after ImGui::NewFrame().
 	inline void Flush()

@@ -96,6 +96,12 @@ namespace Scripts
 				::Render::Line(bl, tl, thickness, c); },
 				  py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"), py::arg("color") = py::none(), py::arg("thickness") = 1.f);
 
+			// Filled rectangle (x, y = top-left). Fast on the ImGui renderer; approximated with
+			// horizontal lines on the UE canvas.
+			r.def("rect_filled", [](float x, float y, float w, float h, py::object color)
+				  { ::Render::RectFilled(FVector2D{x, y}, FVector2D{x + w, y + h}, ParseColor(color)); },
+				  py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"), py::arg("color") = py::none());
+
 			// One-call bone skeleton for a player snapshot (resolves it live; call players() first).
 			r.def("skeleton", [](const PlayerInfo& player, py::object color, float thickness) -> bool
 				  {

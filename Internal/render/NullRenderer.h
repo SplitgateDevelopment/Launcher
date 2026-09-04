@@ -11,4 +11,5 @@ class NullRenderer : public Renderer
   public:
 	void Line(const FVector2D&, const FVector2D&, float, const FLinearColor&) override {}
 	void Text(const FVector2D&, const std::string&, float, const FLinearColor&) override {}
+	void RectFilled(const FVector2D&, const FVector2D&, const FLinearColor&) override {}
 };

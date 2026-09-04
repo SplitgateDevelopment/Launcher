@@ -29,9 +29,15 @@ class ImGuiRenderer : public Renderer
 		float scale;
 		ImU32 color;
 	};
+	struct RectCmd
+	{
+		ImVec2 min, max;
+		ImU32 color;
+	};
 
 	std::vector<LineCmd> lines;
 	std::vector<TextCmd> texts;
+	std::vector<RectCmd> rects;
 
 	static ImU32 ToU32(const FLinearColor& c) { return ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A)); }
 
@@ -46,6 +52,11 @@ class ImGuiRenderer : public Renderer
 		texts.push_back({ImVec2(pos.X, pos.Y), text, scale, ToU32(color)});
 	}
 
+	void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color) override
+	{
+		rects.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(color)});
+	}
+
 	/// Replay this frame's recorded commands into the background draw list, then clear. Call once
 	/// per frame from the Present hook, after ImGui::NewFrame(). No-op when nothing was recorded.
 	void Flush()
@@ -53,6 +64,10 @@ class ImGuiRenderer : public Renderer
 		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 		ImFont* font = ImGui::GetFont();
 		const float baseSize = ImGui::GetFontSize();
+
+		// Fills first so lines/text draw on top.
+		for (const auto& r : rects)
+			drawList->AddRectFilled(r.min, r.max, r.color);
 
 		for (const auto& l : lines)
 			drawList->AddLine(l.a, l.b, l.color, l.thickness);
@@ -66,5 +81,6 @@ class ImGuiRenderer : public Renderer
 
 		lines.clear();
 		texts.clear();
+		rects.clear();
 	}
 };
