@@ -14,6 +14,11 @@
 #include "modules/Logger.h"
 #include "modules/Settings.h"
 #include "modules/Events.h"
+#include "modules/Actors.h"
+#include "modules/Player.h"
+#include "modules/Engine.h"
+#include "modules/Render.h"
+#include "modules/Input.h"
 
 /**
  * @file
@@ -37,6 +42,11 @@ PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m)
 	Scripts::Modules::Logger(m);
 	Scripts::Modules::Settings(m);
 	Scripts::Modules::Events(m);
+	Scripts::Modules::Actors(m);
+	Scripts::Modules::Player(m);
+	Scripts::Modules::Engine(m);
+	Scripts::Modules::Render(m);
+	Scripts::Modules::Input(m);
 }
 
 namespace Scripts

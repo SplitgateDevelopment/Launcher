@@ -110,6 +110,11 @@
     <ClInclude Include="menu\sections\Watermark.h" />
     <ClInclude Include="scripting\modules\Logger.h" />
     <ClInclude Include="scripting\modules\Settings.h" />
+    <ClInclude Include="scripting\modules\Actors.h" />
+    <ClInclude Include="scripting\modules\Player.h" />
+    <ClInclude Include="scripting\modules\Engine.h" />
+    <ClInclude Include="scripting\modules\Render.h" />
+    <ClInclude Include="scripting\modules\Input.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
     <ClInclude Include="hook\Hook.h" />

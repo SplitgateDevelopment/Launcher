@@ -45,17 +45,13 @@ namespace ActorCache
 		return actor && actor->RootComponent && !actor->bHidden && !actor->bActorIsBeingDestroyed;
 	}
 
-	/// Rebuild the cache: one pass over every level's actors, keeping valid PortalWarsCharacters and
-	/// caching their location + team. Call once per frame (from PostRender) before the features run.
-	/// Skips the work entirely when nothing consumes it (ESP and radar both off).
-	inline void Update()
+	/// Do the actual actor pass unconditionally: one loop over every level's actors, keeping valid
+	/// PortalWarsCharacters and caching their location + team + health. Used by Update() (gated) and by
+	/// the scripting Actors module (which needs the list regardless of the feature toggles).
+	inline void Rebuild()
 	{
 		players.clear();
 
-		// Rebuild only when something consumes the list: the visual features (ESP, radar) or the aim
-		// features (aimbot, triggerbot), which iterate it to pick a target. Without the aim checks the
-		// cache stayed empty when only an aim feature was on, so it silently found no targets.
-		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot) return;
 		if (!Globals::World) return;
 		if (!characterClass) characterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
@@ -81,6 +77,19 @@ namespace ActorCache
 				players.push_back({character, character->K2_GetActorLocation(), character->GetTeamNum(), character->Health});
 			}
 		}
+	}
+
+	/// Rebuild the cache for this frame, but only when something consumes it: the visual features
+	/// (ESP, radar) or the aim features (aimbot, triggerbot). Call once per frame (from PostRender)
+	/// before the features run. Skips the pass entirely when nothing needs it.
+	inline void Update()
+	{
+		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot)
+		{
+			players.clear();
+			return;
+		}
+		Rebuild();
 	}
 
 	/// The characters cached this frame. Includes the local player — skip it at the call site.

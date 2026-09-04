@@ -1,0 +1,88 @@
+#pragma once
+
+#include <cmath>
+#include <string>
+
+#include <pybind11/embed.h>
+
+#include "../../ue/Engine.h"
+#include "../../render/Render.h"
+#include "../../utils/WorldToScreen.h"
+
+/**
+ * @file
+ * @brief pybind11 module letting user scripts draw through the active render backend as
+ * `SplitgateInternal.Render.*` (line/text/circle in screen space, plus world_line/world_text that
+ * project 3D points). Call these from a handler subscribed to `Events.Render` (dispatched each
+ * frame by the UserScripts feature) so drawing lands in the current frame.
+ */
+
+namespace py = pybind11;
+
+namespace Scripts
+{
+	namespace Modules
+	{
+		/// Parse an (r, g, b[, a]) 0-1 sequence into an FLinearColor (defaults to opaque white).
+		inline FLinearColor ParseColor(const py::object& color)
+		{
+			FLinearColor c{1.f, 1.f, 1.f, 1.f};
+			if (color.is_none()) return c;
+			auto seq = color.cast<py::sequence>();
+			const size_t n = py::len(seq);
+			if (n > 0) c.R = seq[0].cast<float>();
+			if (n > 1) c.G = seq[1].cast<float>();
+			if (n > 2) c.B = seq[2].cast<float>();
+			if (n > 3) c.A = seq[3].cast<float>();
+			return c;
+		}
+
+		/// Registers the `Render` submodule.
+		void Render(py::module_& m)
+		{
+			auto r = m.def_submodule("Render");
+
+			r.def("line", [](float x1, float y1, float x2, float y2, py::object color, float thickness)
+				  { ::Render::Line(FVector2D{x1, y1}, FVector2D{x2, y2}, thickness, ParseColor(color)); },
+				  py::arg("x1"), py::arg("y1"), py::arg("x2"), py::arg("y2"), py::arg("color") = py::none(), py::arg("thickness") = 1.f);
+
+			r.def("text", [](float x, float y, std::string text, py::object color, float scale)
+				  { ::Render::Text(FVector2D{x, y}, text, scale, ParseColor(color)); },
+				  py::arg("x"), py::arg("y"), py::arg("text"), py::arg("color") = py::none(), py::arg("scale") = 1.f);
+
+			r.def("circle", [](float x, float y, float radius, py::object color, int segments, float thickness)
+				  {
+				const FLinearColor c = ParseColor(color);
+				if (segments < 3) segments = 3;
+				constexpr float twoPi = 6.28318530718f;
+				FVector2D prev{x + radius, y};
+				for (int i = 1; i <= segments; i++)
+				{
+					const float a = twoPi * i / segments;
+					FVector2D cur{x + radius * std::cos(a), y + radius * std::sin(a)};
+					::Render::Line(prev, cur, thickness, c);
+					prev = cur;
+				} },
+				  py::arg("x"), py::arg("y"), py::arg("radius"), py::arg("color") = py::none(), py::arg("segments") = 32, py::arg("thickness") = 1.f);
+
+			// Project two world points and draw a line between them; skipped if either is off-screen.
+			r.def("world_line", [](float x1, float y1, float z1, float x2, float y2, float z2, py::object color, float thickness) -> bool
+				  {
+				FVector2D a{}, b{};
+				if (!Projection::WorldToScreen(FVector{x1, y1, z1}, a)) return false;
+				if (!Projection::WorldToScreen(FVector{x2, y2, z2}, b)) return false;
+				::Render::Line(a, b, thickness, ParseColor(color));
+				return true; },
+				  py::arg("x1"), py::arg("y1"), py::arg("z1"), py::arg("x2"), py::arg("y2"), py::arg("z2"), py::arg("color") = py::none(), py::arg("thickness") = 1.f);
+
+			// Project a world point and draw text there; returns whether it was on-screen.
+			r.def("world_text", [](float x, float y, float z, std::string text, py::object color, float scale) -> bool
+				  {
+				FVector2D p{};
+				if (!Projection::WorldToScreen(FVector{x, y, z}, p)) return false;
+				::Render::Text(p, text, scale, ParseColor(color));
+				return true; },
+				  py::arg("x"), py::arg("y"), py::arg("z"), py::arg("text"), py::arg("color") = py::none(), py::arg("scale") = 1.f);
+		}
+	} // namespace Modules
+} // namespace Scripts
