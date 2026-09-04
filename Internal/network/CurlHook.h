@@ -10,6 +10,7 @@
 
 #include "../utils/Logger.h"
 #include "../utils/Util.h"
+#include "../settings/Settings.h"
 #include "HttpLogger.h"
 #include "Redirect.h"
 
@@ -28,7 +29,9 @@
  */
 namespace Network::Curl
 {
-	constexpr int CURLOPT_URL = 10002; ///< from curl.h (CURLOPTTYPE_STRINGPOINT + 2)
+	constexpr int CURLOPT_URL = 10002;			   ///< from curl.h (CURLOPTTYPE_STRINGPOINT + 2)
+	constexpr int CURLOPT_SSL_VERIFYPEER = 64;	   ///< CURLOPTTYPE_LONG + 64 (verify the peer's cert)
+	constexpr int CURLOPT_SSL_VERIFYHOST = 81;	   ///< CURLOPTTYPE_LONG + 81 (verify the cert's hostname)
 
 	using SetOpt_t = int(__cdecl*)(void* handle, int option, void* param);
 	inline SetOpt_t Original = nullptr;
@@ -62,6 +65,13 @@ namespace Network::Curl
 
 	inline int __cdecl HookedSetOpt(void* handle, int option, void* param)
 	{
+		// TLS bypass: force cert/host verification off so a redirected host can serve a self-signed
+		// cert without curl rejecting it. These options take a long, passed in the same slot as
+		// `param`, so overriding it with 0 sets the value to 0. (Disables verification for ALL curl
+		// traffic while on — hence the opt-in setting.)
+		if (Settings.NETWORK.BypassSslVerify && (option == CURLOPT_SSL_VERIFYPEER || option == CURLOPT_SSL_VERIFYHOST))
+			return Original(handle, option, reinterpret_cast<void*>(0));
+
 		if (option != CURLOPT_URL || !param) return Original(handle, option, param);
 
 		const std::string original(static_cast<const char*>(param));

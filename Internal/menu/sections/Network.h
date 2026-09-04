@@ -78,8 +78,11 @@ namespace Menu
 				changed = true;
 			}
 
-			// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
-			// the DLL's SETTINGS. Only relevant when the launcher will spawn mitmproxy.
+				changed |= ImGui::ToggleButton("Bypass SSL verification", &Settings.NETWORK.BypassSslVerify);
+				ImGui::Tooltip("Force curl's cert/host verification off so a redirected host can serve a self-signed cert.\nDisables TLS verification for ALL curl traffic while on.");
+
+				// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
+				// the DLL's SETTINGS. Only relevant when the launcher will spawn mitmproxy.
 			if (Settings.NETWORK.Proxy == ProxyMode::Mitmproxy)
 			{
 				ImGui::SeparatorText("Mitmproxy script");

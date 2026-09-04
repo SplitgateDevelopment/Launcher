@@ -169,14 +169,23 @@ linked**, so its symbols aren't exported and `GetProcAddress` can't find them. T
 (`CurlHook.h`):
 
 1. **Locate `curl_easy_setopt` by an AOB signature.** Since it isn't exported, we scan the game
-   module for its prologue with `Util.h::FindSignature`. The signature is **build-specific and
-   left empty** — fill it once from a RE pass (IDA/Ghidra/x64dbg); `0x00` bytes are wildcards.
-   Until it's set, the curl hook is inert and WinHTTP is the fallback.
+   module for its prologue with `Util.h::FindSignature` (`0x00` bytes are wildcards). The signature
+   is **build-specific**; it's currently **filled for the shipping build's libcurl 7.55.1** — it was
+   found by its call sites (the sole target of dozens of `mov edx, <CURLOPT>; call`), reproducible
+   with [`Tools/find_signature.py`](../Tools/find_signature.py):
+   `python Tools/find_signature.py callsite --exe <game.exe> --reg edx --imm 10000-10300 --imm
+   20000-20120 --imm 30000-30060`. Re-derive if the game updates curl; if empty/not found the hook
+   is inert and WinHTTP is the fallback.
 2. **Hook it and rewrite `CURLOPT_URL`.** `curl_easy_setopt(CURL*, CURLoption, ...)` is
    variadic, but on x64 the single vararg lands in one register, so a three-parameter prototype
    is ABI-compatible for the `CURLOPT_URL` (a `char*`) case. On that option we log the URL and,
    if its host is a redirect key, pass `RewriteUrl(url)` instead. curl copies the string during
    `setopt`, so a rewritten temporary is safe.
+3. **Optionally bypass TLS verification.** With **Bypass SSL verification** on
+   (`NetworkSettings.BypassSslVerify`, Network tab), the same hook forces `CURLOPT_SSL_VERIFYPEER`
+   and `CURLOPT_SSL_VERIFYHOST` to `0`, so a redirected host can serve a **self-signed cert** without
+   curl rejecting it (the technique [Platanium](https://github.com/WorkingRobot/Platanium/blob/master/curlhooks.h)
+   uses). It disables verification for **all** curl traffic while on, so it's opt-in.
 
 That single choke point covers **all** of the game's HTTP (login, profile, matchmaking, feed),
 because every request's URL flows through `curl_easy_setopt`.
@@ -191,8 +200,8 @@ the game uses.
 
 ### Known limitations
 
-- **libcurl signature.** The one piece needing your RE — an empty AOB until you fill it. WinHTTP
-  works offset-free in the meantime.
+- **libcurl signature.** Build-specific; filled for the current libcurl 7.55.1 build (re-derive with
+  `Tools/find_signature.py` if the game updates curl). WinHTTP works offset-free regardless.
 - **Timing** — the in-process hook only covers calls made *after* injection, so the earliest
   backend call (login) can escape it. This has its own design note:
   [early-injection.md](early-injection.md) (recommended fix: suspended-launch + early injection

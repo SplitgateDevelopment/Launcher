@@ -220,9 +220,10 @@ struct NetworkSettings
 	bool HttpLogging = false;			///< log outgoing HTTP calls to the console
 	bool HttpLogToFile = false;			///< also mirror the HTTP log to http.log
 	bool HttpLogRedirectedOnly = false; ///< only log calls whose host is a redirect key
+	bool BypassSslVerify = false;		///< force curl's CURLOPT_SSL_VERIFYPEER/VERIFYHOST off so a redirected host can use a self-signed cert (disables TLS verification for ALL curl traffic)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, Proxy, Redirects, HttpLogging, HttpLogToFile, HttpLogRedirectedOnly)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(NetworkSettings, Proxy, Redirects, HttpLogging, HttpLogToFile, HttpLogRedirectedOnly, BypassSslVerify)
 
 /// Root settings object — the sections that persist together as one JSON document.
 struct SETTINGS
