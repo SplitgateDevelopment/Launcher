@@ -1,16 +1,20 @@
 # Roadmap
 
 Design notes for larger future work, beyond the near-term [planned-features.md](planned-features.md)
-(minidumps, streamproof, guard-hook, aimbot, profiles, renderer). Nothing here is implemented —
-this is the plan. Grouped by theme; each entry has an approach, the files it touches, a rough size,
-and dependencies. "Forbidden files" = `Internal/dllmain.cpp` / `Launcher/Launcher.cpp`, whose edits
-go to `TODO.md`.
+(minidumps, streamproof, guard-hook, aimbot, profiles, renderer). Most entries are the plan; the ones
+marked **DONE** / **PARTIAL** have been built (kept for reference). Grouped by theme; each entry has an
+approach, the files it touches, a rough size, and dependencies. "Forbidden files" =
+`Internal/dllmain.cpp` / `Launcher/Launcher.cpp`, whose edits go to `TODO.md`.
+
+**Still outstanding (need RE / in-game / a separate render pipeline, so not done blind):** the glow /
+chams, the streamproof separate-overlay window, and the custom third-person camera. The
+spawn/despawn-diff cache was analysed and intentionally skipped — see its note.
 
 ---
 
 ## Performance
 
-### Native WorldToScreen
+### Native WorldToScreen — DONE
 
 **Goal.** Replace `ProjectWorldLocationToScreen` (a `ProcessEvent` per point) with matrix math, so
 projection costs nothing. The ESP's skeleton is ~32 projections per enemy per frame — this is the
@@ -30,7 +34,14 @@ single biggest projection win, independent of the renderer.
 **Files.** `ue/Engine.*` (WorldToScreen + camera POV read), `features/Esp.h`.
 **Size.** Medium. **Depends on:** confirming the `PlayerCameraManager` POV offset in-game.
 
-### Spawn/despawn-diff actor cache
+### Spawn/despawn-diff actor cache — SKIPPED (analysed, not beneficial yet)
+
+> **Update:** measured against reality, this doesn't help here and could hurt. `IsA` is a handful of
+> pointer compares, and the cache must still re-read each player's location/team every frame (they
+> move), so the diff only avoids the cheap `IsA` on unchanged actors — while *adding* the cost of
+> building an unordered_set of every actor pointer each frame plus the set difference. It only pays
+> off with expensive classification or cached **static** data (walls/pickups), so it should land with
+> the first such feature, not now. Kept as a plan.
 
 **Goal.** The `std::set_difference` approach: cache actor pointers frame-to-frame, `IsA`-classify only
 newly-spawned actors, drop despawned ones — avoiding the per-frame `IsA` and, more importantly,
@@ -109,7 +120,7 @@ safe surface and examples in `docs/scripting.md`.
 
 ## Events
 
-### Pass the changed setting to `SettingsChanged`
+### Pass the changed setting to `SettingsChanged` — DONE (infrastructure + Exploits tab)
 
 **Goal.** `SettingsChanged` currently carries no payload, so every handler refreshes everything. Include
 *which* setting changed so handlers (and scripts) can react selectively.
@@ -159,7 +170,7 @@ blocking features.
 
 ## GUI
 
-### Recent logs panel
+### Recent logs panel — DONE
 
 **Goal.** View recent log lines in the overlay instead of only the console/`internal.log`.
 
@@ -237,7 +248,7 @@ untouched. **Size:** Medium; needs the fire function name (discoverable in-game)
 
 ## Requested UI / QoL
 
-### Unload button
+### Unload button — DONE
 A GUI button (Debug or Misc) that triggers `Hook::UnHook` on a detached thread (the same teardown
 the Shutdown event runs), so the DLL can be unloaded on demand. **Size:** Small.
 
@@ -247,7 +258,7 @@ blocked `summon`. Confirm the bot's full class name from the GObjects dump (**De
 GObjects**) and fix the command (and/or use `SpawnObject`/`SpawnActor` with the resolved class).
 **Size:** Small (needs the class name).
 
-### RGB for everything colorable
+### RGB for everything colorable — PARTIAL (watermark, menu accent, radar self done)
 A `Color` (with an ImGui `ColorEdit4`) for every drawable/tintable element, unified in one place:
 ESP lines/boxes/bones/name/health (partly done), radar self-icon, watermark text, the ImGui menu
 accent / top-bar (via `ImGuiStyle` colors), a custom crosshair, and the render-side ones — mesh /
