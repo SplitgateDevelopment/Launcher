@@ -9,6 +9,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../render/Render.h"
+#include "../utils/WorldToScreen.h"
 
 #include <string>
 
@@ -72,7 +73,7 @@ class DebugNames : public Feature
 				if (!Actor || !Actor->RootComponent) continue;
 
 				FVector2D screen;
-				if (!controller->ProjectWorldLocationToScreen(Actor->K2_GetActorLocation(), screen, false)) continue;
+				if (!Projection::WorldToScreen(Actor->K2_GetActorLocation(), screen)) continue;
 				if (!screen.X && !screen.Y) continue;
 
 				Render::Text(screen, Actor->GetName(), scale, color);

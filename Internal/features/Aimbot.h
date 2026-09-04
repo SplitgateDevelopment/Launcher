@@ -10,6 +10,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
+#include "../utils/WorldToScreen.h"
 
 #include <Windows.h>
 #include <cmath>
@@ -114,7 +115,7 @@ class Aimbot : public Feature
 			auto* mesh = character->Mesh;
 			if (!mesh) continue;
 
-			const FVector2D screen = mesh->GetBone(bone, controller);
+			const FVector2D screen = Projection::Bone(mesh, bone);
 			if (!screen.X && !screen.Y) continue; // off-screen / behind camera
 
 			const float dx = screen.X - crosshair.X, dy = screen.Y - crosshair.Y;

@@ -8,6 +8,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
+#include "../utils/WorldToScreen.h"
 #include "../render/Render.h"
 
 #include <cmath>
@@ -70,7 +71,7 @@ class Esp : public Feature
 
 		FVector2D screen[8];
 		for (int i = 0; i < 8; i++)
-			if (!controller->ProjectWorldLocationToScreen(world[i], screen[i], false)) return; // a corner behind the camera
+			if (!Projection::WorldToScreen(world[i], screen[i])) return; // a corner behind the camera
 
 		static constexpr int edges[][2] = {
 			{0, 1},
@@ -141,8 +142,8 @@ class Esp : public Feature
 
 		for (const auto& pair : pairs)
 		{
-			FVector2D a = mesh->GetBone(pair[0], controller);
-			FVector2D b = mesh->GetBone(pair[1], controller);
+			FVector2D a = Projection::Bone(mesh, pair[0]);
+			FVector2D b = Projection::Bone(mesh, pair[1]);
 			if (OffScreen(a) || OffScreen(b)) continue;
 
 			Render::Line(a, b, 1.f, color);
@@ -230,8 +231,8 @@ class Esp : public Feature
 
 			auto Mesh = Character->Mesh;
 
-			FVector2D head = Mesh->GetBone(BoneFNames::head, controller);
-			FVector2D feet = Mesh->GetBone(BoneFNames::Root, controller);
+			FVector2D head = Projection::Bone(Mesh, BoneFNames::head);
+			FVector2D feet = Projection::Bone(Mesh, BoneFNames::Root);
 			if (OffScreen(feet)) continue;
 
 			if (visuals.Snaplines)

@@ -10,6 +10,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
+#include "../utils/WorldToScreen.h"
 
 #include <Windows.h>
 #include <chrono>
@@ -96,7 +97,7 @@ class Triggerbot : public Feature
 
 			for (const int bone : {(int)BoneFNames::head, (int)BoneFNames::spine_03, (int)BoneFNames::pelvis})
 			{
-				const FVector2D screen = mesh->GetBone(bone, controller);
+				const FVector2D screen = Projection::Bone(mesh, bone);
 				if (!screen.X && !screen.Y) continue;
 
 				const float dx = screen.X - crosshair.X, dy = screen.Y - crosshair.Y;
