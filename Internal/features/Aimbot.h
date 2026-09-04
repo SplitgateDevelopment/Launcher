@@ -110,6 +110,7 @@ class Aimbot : public Feature
 		{
 			auto* character = cached.character;
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
+			if (ActorCache::IsDead(cached)) continue; // don't lock onto a dead body
 			if (aim.AimTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
 
 			auto* mesh = character->Mesh;

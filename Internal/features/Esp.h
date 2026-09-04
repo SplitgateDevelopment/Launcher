@@ -217,6 +217,7 @@ class Esp : public Feature
 		{
 			auto* Character = cached.character;
 			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
+			if (ActorCache::IsDead(cached)) continue; // stop drawing a dead body on the ground
 
 			// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
 			// in FriendColor when shown.

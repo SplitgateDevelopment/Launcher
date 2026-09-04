@@ -25,7 +25,15 @@ namespace ActorCache
 		APortalWarsCharacter* character;
 		FVector location; ///< K2_GetActorLocation, once
 		char team;		  ///< GetTeamNum, once (-1 if unknown)
+		float health;	  ///< Health field, once (<= 0 = dead body on the ground)
 	};
+
+	/// A cached player is dead (a corpse on the ground) once its health drops to zero. Features that
+	/// track live enemies (ESP, aimbot, triggerbot) skip these; radar still shows them.
+	inline bool IsDead(const Player& p)
+	{
+		return p.health <= 0.f;
+	}
 
 	inline std::vector<Player> players;		  ///< cached characters this frame (incl. the local player)
 	inline UObject* characterClass = nullptr; ///< resolved PortalWarsCharacter class (once)
@@ -67,7 +75,7 @@ namespace ActorCache
 				if (!actor->IsA(characterClass)) continue;
 
 				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
-				players.push_back({character, character->K2_GetActorLocation(), character->GetTeamNum()});
+				players.push_back({character, character->K2_GetActorLocation(), character->GetTeamNum(), character->Health});
 			}
 		}
 	}

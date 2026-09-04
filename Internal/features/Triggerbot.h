@@ -90,6 +90,7 @@ class Triggerbot : public Feature
 		{
 			auto* character = cached.character;
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
+			if (ActorCache::IsDead(cached)) continue; // don't fire at a dead body
 			if (aim.TriggerTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
 
 			auto* mesh = character->Mesh;
