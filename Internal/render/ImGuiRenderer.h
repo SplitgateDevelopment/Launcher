@@ -34,10 +34,23 @@ class ImGuiRenderer : public Renderer
 		ImVec2 min, max;
 		ImU32 color;
 	};
+	struct CircleCmd
+	{
+		ImVec2 center;
+		float radius;
+		ImU32 color;
+	};
+	struct GradientCmd
+	{
+		ImVec2 min, max;
+		ImU32 top, bottom;
+	};
 
 	std::vector<LineCmd> lines;
 	std::vector<TextCmd> texts;
 	std::vector<RectCmd> rects;
+	std::vector<CircleCmd> circles;
+	std::vector<GradientCmd> gradients;
 
 	static ImU32 ToU32(const FLinearColor& c) { return ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A)); }
 
@@ -57,6 +70,16 @@ class ImGuiRenderer : public Renderer
 		rects.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(color)});
 	}
 
+	void CircleFilled(const FVector2D& center, float radius, const FLinearColor& color) override
+	{
+		circles.push_back({ImVec2(center.X, center.Y), radius, ToU32(color)});
+	}
+
+	void RectGradient(const FVector2D& min, const FVector2D& max, const FLinearColor& top, const FLinearColor& bottom) override
+	{
+		gradients.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(top), ToU32(bottom)});
+	}
+
 	/// Replay this frame's recorded commands into the background draw list, then clear. Call once
 	/// per frame from the Present hook, after ImGui::NewFrame(). No-op when nothing was recorded.
 	void Flush()
@@ -66,8 +89,12 @@ class ImGuiRenderer : public Renderer
 		const float baseSize = ImGui::GetFontSize();
 
 		// Fills first so lines/text draw on top.
+		for (const auto& g : gradients)
+			drawList->AddRectFilledMultiColor(g.min, g.max, g.top, g.top, g.bottom, g.bottom);
 		for (const auto& r : rects)
 			drawList->AddRectFilled(r.min, r.max, r.color);
+		for (const auto& c : circles)
+			drawList->AddCircleFilled(c.center, c.radius, c.color);
 
 		for (const auto& l : lines)
 			drawList->AddLine(l.a, l.b, l.color, l.thickness);
@@ -82,5 +109,7 @@ class ImGuiRenderer : public Renderer
 		lines.clear();
 		texts.clear();
 		rects.clear();
+		circles.clear();
+		gradients.clear();
 	}
 };

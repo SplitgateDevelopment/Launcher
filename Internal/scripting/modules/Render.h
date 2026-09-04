@@ -102,6 +102,15 @@ namespace Scripts
 				  { ::Render::RectFilled(FVector2D{x, y}, FVector2D{x + w, y + h}, ParseColor(color)); },
 				  py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"), py::arg("color") = py::none());
 
+			r.def("circle_filled", [](float x, float y, float radius, py::object color)
+				  { ::Render::CircleFilled(FVector2D{x, y}, radius, ParseColor(color)); },
+				  py::arg("x"), py::arg("y"), py::arg("radius"), py::arg("color") = py::none());
+
+			// Vertical gradient rect (x, y = top-left): top_color at the top edge, bottom_color below.
+			r.def("rect_gradient", [](float x, float y, float w, float h, py::object top_color, py::object bottom_color)
+				  { ::Render::RectGradient(FVector2D{x, y}, FVector2D{x + w, y + h}, ParseColor(top_color), ParseColor(bottom_color)); },
+				  py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"), py::arg("top_color") = py::none(), py::arg("bottom_color") = py::none());
+
 			// One-call bone skeleton for a player snapshot (resolves it live; call players() first).
 			r.def("skeleton", [](const PlayerInfo& player, py::object color, float thickness) -> bool
 				  {

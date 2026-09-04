@@ -48,6 +48,16 @@ namespace Render
 		active->RectFilled(min, max, color);
 	}
 
+	inline void CircleFilled(const FVector2D& center, float radius, const FLinearColor& color)
+	{
+		active->CircleFilled(center, radius, color);
+	}
+
+	inline void RectGradient(const FVector2D& min, const FVector2D& max, const FLinearColor& top, const FLinearColor& bottom)
+	{
+		active->RectGradient(min, max, top, bottom);
+	}
+
 	/// Replay the ImGui backend's per-frame command buffer (no-op in canvas mode — the buffer is
 	/// empty). Call once per frame from the Present hook after ImGui::NewFrame().
 	inline void Flush()

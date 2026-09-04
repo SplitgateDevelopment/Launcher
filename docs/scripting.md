@@ -26,7 +26,7 @@ under [`scripting/modules/`](../Internal/scripting/modules/):
 | `Actors`   | `players()`, `enemies()`, `count()` → `Player` (`.bone`, `.visible`, `.distance`); `Bone` enum |
 | `Player`   | `location`, `teleport`, `velocity`, `aim_at`, `health`, `set_health`, `view_rotation`, `console`, `chat`, `is_in_game` |
 | `Engine`   | `find_object`, `world_to_screen`, `canvas_size`, `distance`             |
-| `Render`   | `line`, `text`, `circle`, `rect`, `rect_filled`, `world_line`, `world_text`, `skeleton` |
+| `Render`   | `line`, `text`, `circle`, `rect`, `rect_filled`, `circle_filled`, `rect_gradient`, `world_line`, `world_text`, `skeleton` |
 | `Input`    | `is_key_down(vk)`, `is_key_pressed(vk)`                                 |
 | `Game`     | `fps()`, `map_name()`, `local_name()`                                   |
 
@@ -219,9 +219,9 @@ SG.Events.on(SG.Events.Render, draw)
 ```
 
 `line(x1,y1,x2,y2,color,thickness)`, `text(x,y,text,color,scale)`, `circle(x,y,radius,color,
-segments,thickness)`, `rect(x,y,w,h,color,thickness)`, `rect_filled(x,y,w,h,color)`,
-`world_line(x1,y1,z1,x2,y2,z2,color,thickness)`, `world_text(x,y,z,text,color,scale)`,
-`skeleton(player,color,thickness)`. `color` is an
+segments,thickness)`, `rect(x,y,w,h,color,thickness)`, `rect_filled(x,y,w,h,color)`, `circle_filled(x,y,radius,color)`,
+`rect_gradient(x,y,w,h,top_color,bottom_color)`, `world_line(x1,y1,z1,x2,y2,z2,color,thickness)`,
+`world_text(x,y,z,text,color,scale)`, `skeleton(player,color,thickness)`. `color` is an
 `(r, g, b, a)` 0-1 tuple (defaults to white); the `world_*`/`skeleton` helpers return `False` when
 off-screen.
 

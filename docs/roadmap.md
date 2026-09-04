@@ -162,8 +162,9 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
 ### Still-open scripting ideas
 - Weapon/loadout/ammo reads and `respawn()`/`suicide()` (need the weapon/loadout RE + fire path).
 - A richer `Game` module (mode, score, round state, match timer) once those reads are located.
-- ~~Filled-rect draw~~ **DONE** — `Render::RectFilled` (ImGui `AddRectFilled`; canvas approximates
-  with bounded horizontal lines) + `SplitgateInternal.Render.rect_filled`. Gradients still open.
+- ~~Filled-rect / circle / gradient draw~~ **DONE** — `Render::RectFilled` / `CircleFilled` /
+  `RectGradient` (ImGui `AddRectFilled` / `AddCircleFilled` / `AddRectFilledMultiColor`; canvas
+  scanline/interpolated approximations) + `rect_filled` / `circle_filled` / `rect_gradient` in scripts.
 - More *game* events (weapon fire, portal spawned, pickup) as the fire/trace hook lands.
 - ~~Scoped script-handler unregister so hot-reload doesn't stack bus-event subscriptions.~~ **DONE** —
   `Events::Register` returns an id and `Events::Unregister(id)` removes it; the Events module tracks
