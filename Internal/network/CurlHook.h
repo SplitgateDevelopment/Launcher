@@ -4,6 +4,8 @@
 #include <Psapi.h>
 #include <MinHook.h>
 
+#include <cstdarg>
+#include <cstdint>
 #include <format>
 #include <string>
 #include <vector>
@@ -86,8 +88,58 @@ namespace Network::Curl
 		return Original(handle, option, buffer.data());
 	}
 
-	/// Locates curl_easy_setopt via @ref signature and hooks it. No-op if the signature is
-	/// unset or not found (WinHTTP remains the fallback).
+	// The internal Curl_vsetopt(CURL*, CURLoption, va_list) that curl_easy_setopt forwards to. We
+	// resolve it (it's the call target inside curl_easy_setopt) and hook it too, so setopt calls made
+	// through curl's *internal* path (not the public wrapper) are also covered. The public wrapper's
+	// hook still runs first; both rewrites are idempotent (a re-checked URL/already-0 verify is a
+	// no-op), so the two coexist without double-applying.
+	using VSetOpt_t = int(__cdecl*)(void* data, int option, va_list args);
+	inline VSetOpt_t OriginalV = nullptr;
+
+	inline int __cdecl HookedVSetOpt(void* data, int option, va_list args)
+	{
+		// On x64 Windows a va_list is a pointer to the 8-byte argument slots; the first (only) vararg
+		// of a setopt call sits at *(void**)args. We patch that slot in place, then forward the same
+		// va_list — never advancing it with va_arg, so `args` still points at slot 0 for the original.
+		if (Settings.NETWORK.BypassSslVerify && (option == CURLOPT_SSL_VERIFYPEER || option == CURLOPT_SSL_VERIFYHOST))
+		{
+			*reinterpret_cast<std::uintptr_t*>(args) = 0; // force the long argument to 0
+			return OriginalV(data, option, args);
+		}
+
+		if (option == CURLOPT_URL)
+		{
+			auto* slot = reinterpret_cast<char**>(args);
+			if (*slot)
+			{
+				const std::string original(*slot);
+				const std::string rewritten = Redirect::RewriteUrl(original);
+				if (rewritten != original)
+				{
+					static thread_local std::string buffer; // outlives the setopt copy
+					buffer = rewritten;
+					*slot = buffer.data();
+				}
+			}
+		}
+
+		return OriginalV(data, option, args);
+	}
+
+	/// Follow the single near-call inside curl_easy_setopt to resolve Curl_vsetopt.
+	inline BYTE* ResolveVSetOpt(BYTE* easySetOpt)
+	{
+		for (int i = 0; i < 0x40; i++)
+		{
+			if (easySetOpt[i] != 0xE8) continue; // near call rel32
+			const int rel = *reinterpret_cast<int*>(easySetOpt + i + 1);
+			return easySetOpt + i + 5 + rel;
+		}
+		return nullptr;
+	}
+
+	/// Locates curl_easy_setopt via @ref signature and hooks it (plus the internal Curl_vsetopt it
+	/// forwards to). No-op if the signature is unset or not found (WinHTTP remains the fallback).
 	inline void Install()
 	{
 		if (installed || signature.empty()) return;
@@ -105,6 +157,18 @@ namespace Network::Curl
 
 		if (MH_CreateHook(target, &HookedSetOpt, reinterpret_cast<void**>(&Original)) != MH_OK) return;
 		MH_EnableHook(target);
+
+		// Also hook the internal Curl_vsetopt it calls (address followed from the call), so setopt
+		// calls that bypass the public wrapper are covered too. Best-effort: failure here doesn't
+		// disable the working public hook.
+		if (BYTE* vsetopt = ResolveVSetOpt(target))
+		{
+			if (MH_CreateHook(vsetopt, &HookedVSetOpt, reinterpret_cast<void**>(&OriginalV)) == MH_OK &&
+				MH_EnableHook(vsetopt) == MH_OK)
+				Logger::Log("SUCCESS", "[Network] Curl_vsetopt hook installed");
+			else
+				Logger::Log("ERROR", "[Network] Curl_vsetopt hook failed");
+		}
 
 		installed = true;
 		Logger::Log("SUCCESS", "[Network] libcurl hook installed");
