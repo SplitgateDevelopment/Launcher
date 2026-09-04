@@ -240,12 +240,13 @@ tab's "Request flow" panel.
 ### Realtime SDK viewer — DONE
 
 Shipped as a dedicated **SDK tab** ([menu/sections/Sdk.h](../Internal/menu/sections/Sdk.h)):
-**Object search** (scan every GObject, list those whose full name contains the text),
-**Class instances** (resolve a class by name — trying `Class …` / `BlueprintGeneratedClass …` forms —
-then list its live instances via `IsA`, with addresses), and the **GObjects dump** (moved here from
-Debug). All reads go through the already-resolved `ObjObjects` / `FindObject` / `IsA` / `GetFullName`;
-scans run on button press. Great for finding the bot/projectile/weapon class or a live instance to
-inspect.
+**Object search** (scan every GObject, list those whose full name contains the text), **Class search**
+(filter the cached list of every class; click a row to copy the exact name), **Class instances**
+(resolve a class by name — trying `Class …` / `BlueprintGeneratedClass …` forms — then list its live
+instances via `IsA`, with addresses), and the **GObjects dump** (moved here from Debug). The class list
+is a shared, lazily-built [ClassCache](../Internal/cache/ClassCache.h) (identifies classes by their
+`ClassPrivate` meta-class, so `GetFullName` is only paid on classes) reused by the **Misc spawn
+picker**. Result lists are clipped to visible rows; scans run on button press.
 
 **Original goal.** An in-overlay explorer of the live UObject world: search for a class by name and
 list its valid instances, enumerate `UClass`es, and browse `GObjects`.

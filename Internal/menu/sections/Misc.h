@@ -9,8 +9,9 @@
 
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
-#include "../../utils/Logger.h" // Logger::SetConsoleVisibility
-#include "../gui/Window.h"		// Window::SetStreamproof
+#include "../../cache/ClassCache.h" // shared class list for the spawn picker
+#include "../../utils/Logger.h"		// Logger::SetConsoleVisibility
+#include "../gui/Window.h"			// Window::SetStreamproof
 
 // Forward-declared instead of including hook/Hook.h: that header transitively includes this menu
 // (via Features -> GUI -> Menu), so including it here would be circular. The inline definition in
@@ -71,63 +72,38 @@ namespace Menu
 			// Spawn picker: a searchable dropdown of spawnable actor classes (bots, pawns, guns, ...)
 			// scanned from GObjects, plus a Spawn button that spawns the selection in front of you.
 			{
-				static std::vector<std::string> spawnClasses;
-				static std::vector<int> filtered;			 // indices into spawnClasses matching the search
+				static std::vector<int> filtered;	   // indices into the shared ClassCache
 				static char search[128] = "";
-				static std::string lastSearch = "\x01";		 // sentinel: forces the first filter build
+				static std::string lastKey = "\x01";   // sentinel: forces the first filter build
+				static size_t lastCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
 				static std::string selected;
-				static bool scanned = false;
-
-				const auto scan = []
-				{
-					spawnClasses.clear();
-					static const char* keywords[] = {"Bot", "Pawn", "Gun", "Weapon", "Character", "Projectile", "Grenade", "Vehicle"};
-
-					// Identify class objects by their class pointer (the Class / BlueprintGeneratedClass
-					// meta-class) so GetFullName() — which allocates and walks the outer chain — is only
-					// paid on the handful of class objects, not on every one of the ~100k GObjects.
-					UObject* classMeta = ObjObjects->FindObject("Class CoreUObject.Class");
-					UObject* bgcMeta = ObjObjects->FindObject("Class Engine.BlueprintGeneratedClass");
-					const bool fast = (classMeta || bgcMeta);
-
-					const auto count = ObjObjects->NumElements;
-					for (auto i = 0u; i < count; i++)
-					{
-						auto* obj = ObjObjects->GetObjectPtr(i);
-						if (!obj) continue;
-						auto* cls = reinterpret_cast<UObject*>(obj->ClassPrivate);
-						if (fast && cls != classMeta && cls != bgcMeta) continue;
-
-						std::string full = obj->GetFullName();
-						if (!fast && full.rfind("Class ", 0) != 0 && full.rfind("BlueprintGeneratedClass ", 0) != 0) continue;
-
-						for (const char* kw : keywords)
-							if (full.find(kw) != std::string::npos)
-							{
-								spawnClasses.push_back(std::move(full));
-								break;
-							}
-					}
-					scanned = true;
-					lastSearch = "\x01"; // re-filter against the fresh list
-				};
+				static const char* keywords[] = {"Bot", "Pawn", "Gun", "Weapon", "Character", "Projectile", "Grenade", "Vehicle"};
 
 				ImGui::SetNextItemWidth(240.f);
 				if (ImGui::BeginCombo("##spawnclass", selected.empty() ? "Spawn class..." : selected.c_str()))
 				{
-					if (!scanned) scan(); // once, not every frame the combo is open
+					const auto& classes = ClassCache::Get(); // shared, built once
 
 					ImGui::SetNextItemWidth(-1.f);
 					ImGui::InputTextWithHint("##spawnsearch", "filter: bot, gun, pawn...", search, sizeof(search));
 
-					// Rebuild the filtered index list only when the search text changes.
-					if (search != lastSearch)
+					// Rebuild the filtered index list only when the search or the underlying cache changes.
+					if (search != lastKey || classes.size() != lastCacheSize)
 					{
-						lastSearch = search;
+						lastKey = search;
+						lastCacheSize = classes.size();
 						filtered.clear();
-						for (int i = 0; i < static_cast<int>(spawnClasses.size()); i++)
-							if (lastSearch.empty() || spawnClasses[i].find(lastSearch) != std::string::npos)
-								filtered.push_back(i);
+						const std::string needle = search;
+						for (int i = 0; i < static_cast<int>(classes.size()); i++)
+						{
+							const std::string& name = classes[i].name;
+							bool spawnable = false; // narrow to bots/pawns/guns/... so it's a spawn list, not every class
+							for (const char* kw : keywords)
+								if (name.find(kw) != std::string::npos) { spawnable = true; break; }
+							if (!spawnable) continue;
+							if (!needle.empty() && name.find(needle) == std::string::npos) continue;
+							filtered.push_back(i);
+						}
 					}
 
 					// Clip to the visible rows so a few-thousand-class list isn't laid out in full each frame.
@@ -137,14 +113,14 @@ namespace Menu
 					while (clipper.Step())
 						for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
 						{
-							const std::string& name = spawnClasses[filtered[r]];
+							const std::string& name = classes[filtered[r]].name;
 							if (ImGui::Selectable(name.c_str(), name == selected)) selected = name;
 						}
 					ImGui::EndChild();
 					ImGui::EndCombo();
 				}
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Refresh##spawn")) scan();
+				if (ImGui::SmallButton("Refresh##spawn")) ClassCache::Rebuild();
 
 				ImGui::SameLine();
 				if (!isInGame || selected.empty()) ImGui::BeginDisabled();

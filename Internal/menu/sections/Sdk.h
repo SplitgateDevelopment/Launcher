@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "../../settings/Settings.h"
+#include "../../cache/ClassCache.h"
 #include "../../utils/Globals.h"
 #include "../../utils/Logger.h"
 
@@ -72,6 +73,43 @@ namespace Menu
 				while (clipper.Step())
 					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 						ImGui::Text("[%d] %s", nameResults[i].index, nameResults[i].name.c_str());
+				ImGui::EndChild();
+			}
+
+			ImGui::SeparatorText("Class search");
+			ImGui::Tooltip("Filter the cached list of every class (shared with the Misc spawn picker; built\nonce, Refresh to rebuild). Click a row to copy the exact name.");
+
+			static char classFilter[128] = "";
+			static std::vector<int> classFiltered;
+			static std::string lastClassKey = "\x01";	 // sentinel: forces the first filter build
+			static size_t lastClassCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
+			ImGui::SetNextItemWidth(260.f);
+			ImGui::InputText("##classfilter", classFilter, sizeof(classFilter));
+			ImGui::SameLine();
+			if (ImGui::Button("Refresh##classes")) ClassCache::Rebuild();
+			{
+				const auto& classes = ClassCache::Get();
+				if (classFilter != lastClassKey || classes.size() != lastClassCacheSize)
+				{
+					lastClassKey = classFilter;
+					lastClassCacheSize = classes.size();
+					classFiltered.clear();
+					const std::string needle = classFilter;
+					for (int i = 0; i < static_cast<int>(classes.size()); i++)
+						if (needle.empty() || classes[i].name.find(needle) != std::string::npos)
+							classFiltered.push_back(i);
+				}
+
+				ImGui::Text("%d / %d classes", static_cast<int>(classFiltered.size()), static_cast<int>(classes.size()));
+				ImGui::BeginChild("ClassResults", ImVec2(0, 160), true, ImGuiWindowFlags_HorizontalScrollbar);
+				ImGuiListClipper clipper;
+				clipper.Begin(static_cast<int>(classFiltered.size()));
+				while (clipper.Step())
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+					{
+						const std::string& name = classes[classFiltered[i]].name;
+						if (ImGui::Selectable(name.c_str())) ImGui::SetClipboardText(name.c_str());
+					}
 				ImGui::EndChild();
 			}
 
