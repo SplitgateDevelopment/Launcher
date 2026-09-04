@@ -207,6 +207,26 @@ tab's "Request flow" panel.
 
 ---
 
+### Realtime SDK viewer
+
+**Goal.** An in-overlay explorer of the live UObject world: search for a class by name and list its
+valid instances, enumerate all known `UClass`es, and browse `GObjects` — for on-the-fly RE without a
+rebuild (find the projectile/bot/weapon class, inspect a live actor, confirm an offset).
+
+**Approach.** Everything is already reachable: `ObjObjects` (the `TUObjectArray`) is iterated in
+**Debug → Dump GObjects**, `ObjObjects->FindObject(name)` resolves by full name, and `UObject`
+exposes `GetFullName`/`GetName`/`IsA`. Build a `menu/sections/Sdk.h` tab:
+- **Class search:** an input box → `FindObject("Class <...>")`; then one `GObjects` pass collecting
+  every object whose class `IsA` the searched class → list them (index, full name, address), with a
+  filter and a cap so a broad class doesn't flood the UI.
+- **Enumerate UClasses:** one `GObjects` pass listing objects whose class is `Class` (i.e. the
+  `UClass` instances), searchable — the live equivalent of the dump.
+- **Object browser:** page through `GObjects` (index range) with the name filter, showing
+  `GetFullName()`; clicking one could later show fields (needs the dumped struct layout to be useful).
+Do the scans on demand (button / throttled), not every frame — a full `GObjects` walk is ~the Dump
+GObjects cost. **Files.** `menu/sections/Sdk.h`, `menu/Menu.h` (new tab); reuses `ue/UObjects.h`.
+**Size.** Medium; a self-contained RE tool that pairs well with the [ue4-cheatsheet.md](ue4-cheatsheet.md).
+
 ## Cameras
 
 ### Custom third-person (and free-cam), since the game forces first person
@@ -281,20 +301,30 @@ shows, RE the `Gun` native fire (an AOB like the `curl_easy_setopt` one in
 **Files.** the fire hook, `settings/Settings.h`, `menu/sections/Aim.h`. **Size:** Medium; **depends
 on:** identifying the fire/trace function in-game.
 
-### Phasing bullets (wallbang) toggle — BLOCKED (needs the native fire/trace function)
+### Phasing bullets (wallbang) toggle
 
 **Goal.** Let the local player's shots register through world geometry, so a target behind cover
 can still be hit.
 
-**Approach.** Rides on the *same* native fire/trace hook as the trace-redirect silent aim above —
-there is no accessible collision-channel field or trace UFunction to flip from the DLL, so this can't
-be built until that hook exists. Once it does: drop world collision from the shot (rewrite the trace's
-collision channel / query params to ignore `WorldStatic`, or extend the trace and force the hit result
-onto the target). Confirm whether the game trusts the client's hit (many titles server-validate
-line-of-sight, so this may be client-visual only or rejected). Guarded on a `bool PhasingBullets`.
-**Files.** `settings/Settings.h` (AimSettings), the fire-hook feature, `menu/sections/Aim.h`.
-**Size.** Medium. **Depends on:** the fire/trace function (shared with trace-redirect silent aim);
-in-game verification of server trust.
+**Approach A — disable wall collision (no native hook needed, worth trying first).** Cycle the actor
+list (like `ActorCache`), and for every world/geometry actor call
+`SetActorEnableCollision(false)` (`Function Engine.Actor.SetActorEnableCollision` — a ProcessEvent
+wrapper like the others in `Engine.cpp`). With the walls non-colliding, a hitscan trace passes through
+them. Re-enable on toggle-off (cache the set we disabled, or just re-enable all). Caveats: identifying
+"a wall" (filter by class — `StaticMeshActor`/`BSP`/`CullableActor`, not players/pickups); it may
+break local movement/physics (you'd fall through floors) so scope it to walls not floors, or gate it
+to only-while-firing; and the server may still validate the hit. Cheapest path — try it before the
+native hook.
+
+**Approach B — native fire/trace hook (see the trace-redirect silent aim above).** Rewrite the shot's
+trace collision channel / query params to ignore `WorldStatic`, or force the hit result onto the
+target. Needs the native fire function (BLOCKED on the same in-game RE), but is the "clean" version and
+doesn't disturb world physics.
+
+Guarded on a `bool PhasingBullets`. **Files.** `ue/Engine.*` (`SetActorEnableCollision` wrapper),
+`settings/Settings.h`, a feature, `menu/sections/Aim.h` (or Exploits). **Size.** Medium.
+**Depends on:** (A) a wall-class filter + in-game testing that it doesn't break movement; (B) the
+fire/trace function.
 
 ### Aimbot visibility check toggle — DONE
 
@@ -309,6 +339,23 @@ offset); if a per-frame, ProcessEvent-free version is ever wanted, those offsets
 `UPrimitiveComponent->BoundsScale` (0x284) are the path (see
 [ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour)).
 
+### Per-bone visibility check (LineTraceSingle)
+
+**Goal.** A stricter visibility test than the current whole-actor `WasRecentlyRendered` — decide
+per *bone* whether that exact point is in line of sight, so the aimbot can pick a visible bone (e.g.
+skip the head when only the feet are exposed) instead of accepting/rejecting the whole target.
+
+**Approach.** For a candidate bone's world position, trace from the camera (`CameraCachePrivate.POV`,
+already read by [WorldToScreen.h](../Internal/utils/WorldToScreen.h)) to the bone with
+`UKismetSystemLibrary::LineTraceSingle` (or `UWorld::LineTraceSingleByChannel`) on the visibility
+channel, ignoring the local pawn; the bone is visible if there's no blocking hit before it (or the hit
+actor is the target). Wrap the trace UFunction in `Engine.cpp`. In the aimbot, prefer the configured
+bone, else fall back to the first visible bone in a priority list (head → chest → pelvis). One
+`ProcessEvent` per tested bone, so gate it behind `AimVisibleCheck`'s "strict" sub-mode and only test
+until a visible bone is found. **Files.** `ue/Engine.*` (trace wrapper), `features/Aimbot.h`,
+`settings/Settings.h`, `menu/sections/Aim.h`. **Size.** Medium. **Depends on:** a `LineTraceSingle`
+wrapper + confirming the visibility trace channel in-game.
+
 ### Draw aim FOV circle — DONE
 
 **Goal.** Optionally draw a circle at the crosshair with radius = `AimFov`, so the lock-on cone is
@@ -317,6 +364,41 @@ visible while tuning.
 **Shipped.** A `bool DrawAimFov` + `Color AimFovColor` (`AimSettings`, Aim tab) and a small render
 feature (`features/AimFov.h`) that draws a 48-segment circle of radius `AimFov` px at screen centre
 through the `Render` abstraction, so it follows whichever renderer is active.
+
+## Projectiles
+
+### Bullet speed / "bullet TP"
+
+**Goal.** Change how fast the local player's projectiles travel — slow them down to watch, or crank the
+speed so they hit near-instantly ("bullet teleport").
+
+**Approach.** Projectiles are actors in the world, so cycle the actor list (like `ActorCache`), find
+the one(s) that are bullets — filter by class (the projectile `UClass`, resolved from the GObjects
+dump; e.g. a `PortalWars.*Projectile`/`Gun`-spawned actor) and optionally "owned by the local pawn" —
+and modify their movement each frame. Two knobs: scale the actor's velocity
+(`AActor` velocity / the `UProjectileMovementComponent`'s `Velocity` + `InitialSpeed`/`MaxSpeed`), or
+push the actor along its velocity toward the target (the "TP" effect) by writing its location. Both are
+field writes once the projectile actor + its movement component are located; confirm the offsets from
+the dump. Guarded on a setting with a speed multiplier. Caveat: projectile motion is often
+server-simulated, so this may be client-visual only — verify in-game. **Files.** `cache/ActorCache.h`
+(or a projectile pass), a `features/BulletSpeed.h`, `settings/Settings.h`, `menu/sections/Exploits.h`.
+**Size.** Medium. **Depends on:** the projectile class + movement-component offsets.
+
+### Bullet traces (tracer trails)
+
+**Goal.** When you fire, draw the bullet's trajectory and leave it on screen for a few seconds — a
+visual tracer/history.
+
+**Approach.** Each frame, find the local player's live projectile actors (same projectile filter as
+above) and record a timestamped point (world position) per projectile id. Keep a ring/list of recent
+points (or line segments start→current) with an expiry (~2-3 s); every frame project the surviving
+points with `Projection::WorldToScreen` and draw connecting lines via `Render::Line` (respects the
+active renderer), fading by age. For hitscan weapons (no projectile actor) this instead needs the fire
+trace's start/end — which ties into the native fire hook (BLOCKED item above); the projectile path is
+independent and buildable now. Guarded on a `bool BulletTraces` (+ color / duration). **Files.**
+a `features/BulletTraces.h`, `settings/Settings.h`, `menu/sections/Visuals.h`. **Size.** Medium.
+**Depends on:** locating projectile actors (shared with bullet speed); native fire hook only for the
+hitscan variant.
 
 ## Requested UI / QoL
 
@@ -393,6 +475,49 @@ A dedicated Discord tab to configure presence, and more state: track kills (from
 event / `PlayerState` score), show the current level/map and elapsed game time, party/mode, etc.,
 updating the RPC `details`/`state`/timestamps periodically. Builds on the existing `discord/` RPC.
 **Size:** Medium (game-state reads + RPC fields + a menu tab).
+
+## Tooling (reverse-engineering)
+
+### Signature scripts — DONE (offline) + known-signatures registry
+
+`Tools/find_signature.py` locates a function and emits a masked AOB (callsite / bytes / stringref
+strategies; masks rel32 + rip-relative with `0x00`, the project's wildcard). `Tools/known_signatures.py`
+runs every signature the DLL relies on (currently `curl_easy_setopt` and `GetBoneMatrix`) in one pass,
+so re-deriving after a game update is one command. Keep new AOBs in that registry.
+
+### memcury-style AOB engine + string-ref discovery (runtime)
+
+**Goal.** The runtime scanner (`Util.cpp::FindSignature`) uses **`0x00` as the wildcard**, so any real
+`0x00` byte in a pattern silently becomes a wildcard — fragile, and it can't follow relative
+instructions. Adopt a small [memcury](https://github.com/projectnovafn/Sinum/blob/main/Windows/Utilities/memcury.h)-style
+API instead (single header, MIT):
+
+- **IDA-style patterns** — `"48 8B 45 ?? E8 ?? ?? ?? ??"` with `??` wildcards (distinct from literal
+  `00`), converted to bytes+mask once.
+- **Relative-instruction resolution** — `.RelativeOffset(n)` to follow a `lea`/`call` rip-relative
+  displacement to its target (turns "the call inside curl_easy_setopt" into `Curl_vsetopt`'s address
+  directly, no second scan).
+- **String-ref discovery** — `FindStringRef(L"...")`: locate a `.rdata` string, then the `.text`
+  `lea reg,[rip+disp]` that references it, then scan backward to the function prologue. This is how
+  [Sinum](https://github.com/projectnovafn/Sinum/blob/main/Windows/Core/EOS.cpp) finds its HTTP hook
+  (from the `"ProcessRequest failed. URL '%s' ..."` string) — far more update-stable than a raw byte
+  prologue, and it mirrors the same strategy already added to `find_signature.py`.
+
+Swap `CurlHook` / `GetBoneMatrix` resolution onto it, keeping `FindSignature` as the fallback.
+**Files.** a new `utils/Memcury.h` (or a trimmed vendored copy), `network/CurlHook.h`, `ue/Engine.cpp`.
+**Size.** Medium; pure infrastructure, testable offline against the same signatures.
+
+### Hook `curl_setopt` (Curl_vsetopt) too — optional
+
+Platanium hooks **both** `curl_easy_setopt` (the public, variadic entry) **and** `curl_setopt`
+(the internal `Curl_vsetopt(CURL*, CURLoption, va_list)` it forwards to). We only hook the public one
+and forward with a 3-param prototype, which is ABI-correct for the single-register vararg cases we use
+(`CURLOPT_URL`, the `SSL_VERIFY*` longs). Resolving `Curl_vsetopt` — whose address we already get for
+free (it's the `call` target inside `curl_easy_setopt`; `find_signature.py --reg edx ... --len` +
+`RelativeOffset`) — would let us forward the real `va_list` (fully correct for *any* option type) and
+catch options set through the internal path. Low priority: not needed for the redirect/SSL bypass, but
+the address is already in hand if we want a more complete hook. **Files.** `network/CurlHook.h`.
+**Size.** Small.
 
 ## Suggested sequencing
 
