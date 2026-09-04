@@ -617,6 +617,48 @@ bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVec
 	return Parameters.ReturnValue;
 };
 
+FVector APlayerCameraManager::GetCameraLocation()
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraLocation");
+
+	struct
+	{
+		FVector ReturnValue;
+	} Parameters;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+};
+
+FRotator APlayerCameraManager::GetCameraRotation()
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraRotation");
+
+	struct
+	{
+		FRotator ReturnValue;
+	} Parameters;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+};
+
+float APlayerCameraManager::GetFOVAngle()
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetFOVAngle");
+
+	struct
+	{
+		float ReturnValue;
+	} Parameters;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+};
+
 char APortalWarsCharacter::GetTeamNum()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.GetTeamNum");
