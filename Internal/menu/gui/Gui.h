@@ -91,11 +91,18 @@ namespace GUI
 
 		if (!initialized)
 			InitializeImGui(pSwapChain);
+		if (!initialized) return;
+
+		// While minimized the back buffer is 0x0: recreating the render target and running ImGui
+		// with a zero display size corrupts D3D state (freeze then crash on minimize). Skip the
+		// overlay entirely and just let Present forward until the window is restored.
+		if (IsIconic(Window::WindowHandle)) return;
 
 		// A window resize releases our render target in HookResizeBuffers (so the game's own
 		// ResizeBuffers can succeed); recreate it here once the swap chain has the new back buffer.
-		if (initialized && !Window::RenderTargetView)
+		if (!Window::RenderTargetView)
 			Window::CreateRenderTarget();
+		if (!Window::RenderTargetView) return; // RTV not ready yet (mid-resize) - skip this frame
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
