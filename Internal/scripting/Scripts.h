@@ -19,6 +19,7 @@
 #include "modules/Engine.h"
 #include "modules/Render.h"
 #include "modules/Input.h"
+#include "modules/Game.h"
 
 /**
  * @file
@@ -47,6 +48,7 @@ PYBIND11_EMBEDDED_MODULE(SplitgateInternal, m)
 	Scripts::Modules::Engine(m);
 	Scripts::Modules::Render(m);
 	Scripts::Modules::Input(m);
+	Scripts::Modules::Game(m);
 }
 
 namespace Scripts
@@ -165,5 +167,62 @@ namespace Scripts
 		{
 			Logger::Log("ERROR", e.what());
 		}
+	}
+
+	/// Hot-reload: re-discover the UserScripts folder and re-import every script (via
+	/// `importlib.reload`, so edited files take effect without a relaunch). Script-registered custom
+	/// events are cleared first so they don't stack.
+	///
+	/// Caveat: scripts that subscribe to *bus* events at import time (`Events.on(Events.<Type>, ...)`)
+	/// re-register on reload, stacking duplicate handlers — prefer the per-frame `main()` model, or
+	/// guard your registration. New `.py` files are picked up; deleted ones stop running.
+	void Reload()
+	{
+		Modules::ClearCustomEvents();
+		loadedScripts.clear();
+		scriptList.clear();
+
+		if (!fs::exists(scriptsPath) || !fs::is_directory(scriptsPath)) return;
+
+		try
+		{
+			for (const auto& entry : fs::directory_iterator(scriptsPath))
+			{
+				const std::string filename = entry.path().filename().string();
+				if (filename != "__init__.py" && filename.find(".py") != std::string::npos)
+					scriptList.push_back(filename);
+			}
+		}
+		catch (const std::exception& e)
+		{
+			Logger::Log("ERROR", e.what());
+			return;
+		}
+
+		for (const auto& filename : scriptList)
+		{
+			try
+			{
+				std::string scriptName = filename;
+				const std::size_t ext = scriptName.find(".py");
+				if (ext != std::string::npos) scriptName.erase(ext, 3);
+				const std::string moduleName = "UserScripts." + scriptName;
+
+				auto sysModules = py::module_::import("sys").attr("modules");
+				py::module_ scriptModule;
+				if (sysModules.contains(moduleName))
+					scriptModule = py::module_::import("importlib").attr("reload")(sysModules[py::str(moduleName)]);
+				else
+					scriptModule = py::module_::import(moduleName.c_str());
+
+				loadedScripts.push_back(scriptModule);
+			}
+			catch (py::error_already_set& e)
+			{
+				Logger::Log("ERROR", e.what());
+			}
+		}
+
+		Logger::Log("SUCCESS", std::format("Reloaded {} scripts", loadedScripts.size()));
 	}
 } // namespace Scripts

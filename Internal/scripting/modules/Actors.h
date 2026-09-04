@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <format>
 #include <string>
@@ -36,6 +37,16 @@ namespace Scripts
 			bool isLocal = false;
 			std::uintptr_t address = 0;
 		};
+
+		/// Validate an address against the *current* actor cache and return the live character (or
+		/// nullptr). Used by the per-player methods so a stale/dangling address can't be dereferenced —
+		/// call `players()` first so the cache holds this frame's pointers.
+		inline APortalWarsCharacter* ResolveLive(std::uintptr_t address)
+		{
+			for (const auto& p : ActorCache::Players())
+				if (reinterpret_cast<std::uintptr_t>(p.character) == address) return p.character;
+			return nullptr;
+		}
 
 		/// Rebuild the actor list (unconditionally, so scripts see it regardless of the ESP/aim
 		/// toggles) and snapshot every character into plain values.
@@ -83,8 +94,48 @@ namespace Scripts
 				.def_readonly("name", &PlayerInfo::name)
 				.def_readonly("is_local", &PlayerInfo::isLocal)
 				.def_readonly("address", &PlayerInfo::address)
+				// Live per-player queries (re-validate the address against the current cache first, so a
+				// stale snapshot can't crash the game). Call players()/enemies() this frame first.
+				.def("bone", [](const PlayerInfo& p, BoneFNames index) -> py::object
+					 {
+					auto* c = ResolveLive(p.address);
+					if (!c || !c->Mesh) return py::none();
+					FVector v = c->Mesh->GetBoneMatrix(index);
+					return py::make_tuple(v.X, v.Y, v.Z); }, py::arg("index"), "World position of a bone (Actors.Bone.*), or None.")
+				.def("visible", [](const PlayerInfo& p)
+					 {
+					auto* c = ResolveLive(p.address);
+					return c && reinterpret_cast<AActor*>(c)->WasRecentlyRendered(0.1f); }, "Whether the character was recently rendered (occlusion-aware).")
+				.def("distance", [](const PlayerInfo& p) -> py::object
+					 {
+					if (!Globals::PlayerController || !Globals::PlayerController->AcknowledgedPawn) return py::none();
+					FVector me = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn)->K2_GetActorLocation();
+					const double dx = p.x - me.X, dy = p.y - me.Y, dz = p.z - me.Z;
+					return py::float_(std::sqrt(dx * dx + dy * dy + dz * dz) / 100.0); }, "Distance from the local player, in metres.")
 				.def("__repr__", [](const PlayerInfo& p)
 					 { return std::format("<Player {} team={} hp={:.0f} local={}>", p.name, p.team, p.health, p.isLocal); });
+
+			// Common bone indices (BoneFNames) for bone()/skeleton drawing.
+			py::enum_<BoneFNames>(actors, "Bone")
+				.value("Root", BoneFNames::Root)
+				.value("Pelvis", BoneFNames::pelvis)
+				.value("Spine01", BoneFNames::spine_01)
+				.value("Spine03", BoneFNames::spine_03)
+				.value("Neck", BoneFNames::neck_01)
+				.value("Head", BoneFNames::head)
+				.value("UpperArmL", BoneFNames::upperarm_l)
+				.value("LowerArmL", BoneFNames::lowerarm_l)
+				.value("HandL", BoneFNames::hand_l)
+				.value("UpperArmR", BoneFNames::upperarm_r)
+				.value("LowerArmR", BoneFNames::lowerarm_r)
+				.value("HandR", BoneFNames::hand_r)
+				.value("ThighL", BoneFNames::thigh_l)
+				.value("CalfL", BoneFNames::calf_l)
+				.value("FootL", BoneFNames::foot_l)
+				.value("ThighR", BoneFNames::thigh_r)
+				.value("CalfR", BoneFNames::calf_r)
+				.value("FootR", BoneFNames::foot_r)
+				.export_values();
 
 			actors.def("players", &CollectPlayers, "Every PortalWarsCharacter this frame (includes the local player).");
 			actors.def("count", []

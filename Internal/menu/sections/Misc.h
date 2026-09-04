@@ -82,16 +82,31 @@ namespace Menu
 			ImGui::SameLine();
 			if (ImGui::Button("Unload")) Hook::RequestUnload();
 
+			if (ImGui::ToggleButton("Announce toggles in chat", &Settings.MISC.AnnounceToggles))
+				Events::Dispatch(Events::Type::SettingsChanged);
+			ImGui::Tooltip("Post a local (client-only) chat line when you toggle a feature, e.g. \"[ESP] Enabled\".\nShown only to you, not sent to the server.");
+
 			ImGui::SeparatorText("User Scripts");
 			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))
 				Events::Dispatch(Events::Type::SettingsChanged);
+			ImGui::SameLine();
+			if (ImGui::Button("Reload")) Scripts::Reload();
+			ImGui::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
+						   "without a relaunch). Scripts that subscribe to bus events at import time will\n"
+						   "stack duplicate handlers — prefer the per-frame main() model for those.");
 
 			if (ImGui::TreeNode("Loaded Scripts"))
 			{
+				std::string toRun;
 				for (const auto& script : Scripts::scriptList)
 				{
-					ImGui::BulletText(script.c_str());
+					ImGui::PushID(script.c_str());
+					if (ImGui::SmallButton("Run")) toRun = script;
+					ImGui::SameLine();
+					ImGui::TextUnformatted(script.c_str());
+					ImGui::PopID();
 				}
+				if (!toRun.empty()) Scripts::ExecuteUnloaded(toRun);
 
 				ImGui::TreePop();
 			}

@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include <pybind11/embed.h>
 #include "../Events.h"
 #include "../../utils/Logger.h"
@@ -18,6 +22,12 @@ namespace Scripts
 {
 	namespace Modules
 	{
+		/// Script-defined string events (separate from the C++ Events bus): name -> (callback, wantsArg).
+		inline std::unordered_map<std::string, std::vector<std::pair<py::function, bool>>> customHandlers;
+
+		/// Drop every script-registered custom handler (used by hot-reload so they don't stack).
+		inline void ClearCustomEvents() { customHandlers.clear(); }
+
 		/**
 		 * Registers the `Events` submodule on @p m: the `Type` enum values, the `Payload`
 		 * type, and an `on` function that subscribes a Python callable to an event. The
@@ -95,6 +105,38 @@ namespace Scripts
 					{
 						Logger::Log("ERROR", e.what());
 					} }); });
+
+			// Script-to-script custom events: subscribe by name, and emit(name, value=None) from
+			// another script. Handlers may take the value or not (arity detected once).
+			events.def("on_custom", [](std::string name, py::function callback)
+					   {
+				bool wantsArg = false;
+				try
+				{
+					py::gil_scoped_acquire gil;
+					auto params = py::module_::import("inspect").attr("signature")(callback).attr("parameters");
+					wantsArg = py::len(params) >= 1;
+				}
+				catch (py::error_already_set&) {}
+				customHandlers[name].push_back({callback, wantsArg}); }, py::arg("name"), py::arg("callback"));
+
+			events.def("emit", [](std::string name, py::object value)
+					   {
+				auto it = customHandlers.find(name);
+				if (it == customHandlers.end()) return;
+				for (auto& [callback, wantsArg] : it->second)
+				{
+					try
+					{
+						py::gil_scoped_acquire gil;
+						if (wantsArg) callback(value);
+						else callback();
+					}
+					catch (py::error_already_set& e)
+					{
+						Logger::Log("ERROR", e.what());
+					}
+				} }, py::arg("name"), py::arg("value") = py::none());
 		}
 	} // namespace Modules
 } // namespace Scripts

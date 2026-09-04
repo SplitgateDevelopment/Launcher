@@ -78,10 +78,11 @@ struct MiscSettings
 	bool DiscordRPCEnabled = true;
 	std::string SteamAppId = "677620"; ///< runtime-only (not persisted)
 	bool UserScriptsEnabled = false;
-	bool AutoSave = false; ///< save settings to disk on every change (SettingsChanged)
+	bool AutoSave = false;			///< save settings to disk on every change (SettingsChanged)
+	bool AnnounceToggles = false;	///< post a local (client-only) chat line when a feature is toggled
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, ShowConsole, PlayerName, DiscordRPCEnabled, UserScriptsEnabled, AutoSave)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MiscSettings, ShowConsole, PlayerName, DiscordRPCEnabled, UserScriptsEnabled, AutoSave, AnnounceToggles)
 
 /// Developer/diagnostic switches (the Debug tab).
 struct DebugSettings

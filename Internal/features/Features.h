@@ -24,6 +24,7 @@
 #include "Aimbot.h"
 #include "Triggerbot.h"
 #include "AimFov.h"
+#include "AnnounceToggles.h"
 #include "../network/Network.h"
 
 namespace Features
@@ -48,6 +49,7 @@ namespace Features
 		Features.push_back(std::make_unique<Aimbot>());
 		Features.push_back(std::make_unique<Triggerbot>());
 		Features.push_back(std::make_unique<AimFov>());
+		Features.push_back(std::make_unique<AnnounceToggles>());
 
 		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install
 		// its hooks once here. They self-gate on Settings.NETWORK, and MinHook is already

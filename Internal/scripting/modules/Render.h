@@ -8,6 +8,7 @@
 #include "../../ue/Engine.h"
 #include "../../render/Render.h"
 #include "../../utils/WorldToScreen.h"
+#include "Actors.h" // PlayerInfo + ResolveLive, for skeleton()
 
 /**
  * @file
@@ -83,6 +84,45 @@ namespace Scripts
 				::Render::Text(p, text, scale, ParseColor(color));
 				return true; },
 				  py::arg("x"), py::arg("y"), py::arg("z"), py::arg("text"), py::arg("color") = py::none(), py::arg("scale") = 1.f);
+
+			// Rectangle outline (x, y = top-left).
+			r.def("rect", [](float x, float y, float w, float h, py::object color, float thickness)
+				  {
+				const FLinearColor c = ParseColor(color);
+				const FVector2D tl{x, y}, tr{x + w, y}, br{x + w, y + h}, bl{x, y + h};
+				::Render::Line(tl, tr, thickness, c);
+				::Render::Line(tr, br, thickness, c);
+				::Render::Line(br, bl, thickness, c);
+				::Render::Line(bl, tl, thickness, c); },
+				  py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"), py::arg("color") = py::none(), py::arg("thickness") = 1.f);
+
+			// One-call bone skeleton for a player snapshot (resolves it live; call players() first).
+			r.def("skeleton", [](const PlayerInfo& player, py::object color, float thickness) -> bool
+				  {
+				auto* c = ResolveLive(player.address);
+				if (!c || !c->Mesh) return false;
+				auto* mesh = c->Mesh;
+				const FLinearColor col = ParseColor(color);
+
+				static constexpr int pairs[][2] = {
+					{BoneFNames::head, BoneFNames::neck_01}, {BoneFNames::neck_01, BoneFNames::spine_03},
+					{BoneFNames::spine_03, BoneFNames::spine_01}, {BoneFNames::spine_01, BoneFNames::pelvis},
+					{BoneFNames::spine_03, BoneFNames::upperarm_l}, {BoneFNames::upperarm_l, BoneFNames::lowerarm_l},
+					{BoneFNames::lowerarm_l, BoneFNames::hand_l}, {BoneFNames::spine_03, BoneFNames::upperarm_r},
+					{BoneFNames::upperarm_r, BoneFNames::lowerarm_r}, {BoneFNames::lowerarm_r, BoneFNames::hand_r},
+					{BoneFNames::pelvis, BoneFNames::thigh_l}, {BoneFNames::thigh_l, BoneFNames::calf_l},
+					{BoneFNames::calf_l, BoneFNames::foot_l}, {BoneFNames::pelvis, BoneFNames::thigh_r},
+					{BoneFNames::thigh_r, BoneFNames::calf_r}, {BoneFNames::calf_r, BoneFNames::foot_r}};
+
+				for (const auto& pair : pairs)
+				{
+					FVector2D a{}, b{};
+					if (!Projection::WorldToScreen(mesh->GetBoneMatrix(pair[0]), a)) continue;
+					if (!Projection::WorldToScreen(mesh->GetBoneMatrix(pair[1]), b)) continue;
+					::Render::Line(a, b, thickness, col);
+				}
+				return true; },
+				  py::arg("player"), py::arg("color") = py::none(), py::arg("thickness") = 1.f);
 		}
 	} // namespace Modules
 } // namespace Scripts

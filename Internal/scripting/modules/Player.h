@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <string>
 
 #include <pybind11/embed.h>
@@ -81,6 +82,29 @@ namespace Scripts
 				if (!Globals::PlayerController) return;
 				FRotator r{pitch, yaw, roll};
 				Globals::PlayerController->SetControlRotation(r); }, py::arg("pitch"), py::arg("yaw"), py::arg("roll") = 0.f);
+
+			player.def("velocity", []() -> py::object
+					   {
+				auto* pawn = LocalPawn();
+				if (!pawn) return py::none();
+				FVector v = pawn->GetVelocity();
+				return py::make_tuple(v.X, v.Y, v.Z); });
+
+			// Point the view at a world position (eye-height origin), instantly. Handy for scripted aim.
+			player.def("aim_at", [](float x, float y, float z) -> bool
+					   {
+				auto* pawn = LocalPawn();
+				if (!pawn) return false;
+				FVector eye = pawn->K2_GetActorLocation();
+				eye.Z += 80.f; // rough eye height
+				const float dx = x - eye.X, dy = y - eye.Y, dz = z - eye.Z;
+				constexpr float toDeg = 180.f / 3.14159265f;
+				FRotator r;
+				r.Yaw = std::atan2(dy, dx) * toDeg;
+				r.Pitch = std::atan2(dz, std::sqrt(dx * dx + dy * dy)) * toDeg;
+				r.Roll = 0.f;
+				Globals::PlayerController->SetControlRotation(r);
+				return true; }, py::arg("x"), py::arg("y"), py::arg("z"));
 
 			player.def("console", [](std::string command)
 					   {

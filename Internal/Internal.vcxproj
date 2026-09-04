@@ -94,6 +94,7 @@
     <ClInclude Include="features\Aimbot.h" />
     <ClInclude Include="features\Triggerbot.h" />
     <ClInclude Include="features\AimFov.h" />
+    <ClInclude Include="features\AnnounceToggles.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
@@ -115,6 +116,7 @@
     <ClInclude Include="scripting\modules\Engine.h" />
     <ClInclude Include="scripting\modules\Render.h" />
     <ClInclude Include="scripting\modules\Input.h" />
+    <ClInclude Include="scripting\modules\Game.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
     <ClInclude Include="hook\Hook.h" />

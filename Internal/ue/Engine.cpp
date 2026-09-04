@@ -690,6 +690,39 @@ bool AActor::WasRecentlyRendered(float Tolerance)
 	return Parameters.ReturnValue;
 }
 
+FVector AActor::GetVelocity()
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.GetVelocity");
+	if (!Function) return FVector{0.f, 0.f, 0.f};
+
+	struct
+	{
+		FVector ReturnValue;
+	} Parameters;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
+void APlayerController::ClientMessage(FString S, FName Type, float MsgLifeTime)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientMessage");
+	if (!Function) return;
+
+	struct
+	{
+		FString S;
+		FName Type;
+		float MsgLifeTime;
+	} Parameters;
+	Parameters.S = S;
+	Parameters.Type = Type;
+	Parameters.MsgLifeTime = MsgLifeTime;
+
+	ProcessEvent(Function, &Parameters);
+}
+
 void AController::SetControlRotation(FRotator& NewRotation)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.Controller.SetControlRotation");
