@@ -41,6 +41,18 @@ namespace Menu
 			ImGui::ToggleButton("RGB", &Settings.MENU.Rgb);
 			ImGui::Tooltip("Cycle the watermark, menu accent, and radar self-icon through a rainbow. Off = the defaults (red / white).");
 
+			// Restore every hotkey (menu, no-clip, aim, trigger) to its struct default, leaving the
+			// rest of the config untouched.
+			if (ImGui::Button("Reset keybinds"))
+			{
+				Settings.MENU.ShowHotkey = MenuSettings{}.ShowHotkey;
+				Settings.EXPLOITS.NoClip = ExploitsSettings{}.NoClip;
+				Settings.AIM.AimKey = AimSettings{}.AimKey;
+				Settings.AIM.TriggerKey = AimSettings{}.TriggerKey;
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
+			ImGui::Tooltip("Reset all hotkeys (menu, no-clip, aim, trigger) to their defaults.");
+
 			ImGui::SeparatorText("Save current config");
 			static char nameBuffer[64] = "";
 			ImGui::SetNextItemWidth(200.f);
