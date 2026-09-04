@@ -39,6 +39,15 @@ namespace Hook
 	// The world-dependent half of Init, run on a worker thread (defined below).
 	void InitWorld();
 
+	// Tear the module down exactly once, off the render/UI thread (used by both the Shutdown event
+	// and the menu's Unload button — unhooking on the caller's thread would free the trampoline it
+	// returns through, or race the render thread).
+	inline void RequestUnload()
+	{
+		static std::atomic<bool> unhooking = false;
+		if (!unhooking.exchange(true)) std::thread(&UnHook).detach();
+	}
+
 	bool Init()
 	{
 		Logger::CreateConsole();
@@ -165,9 +174,7 @@ namespace Hook
 		// NOTE: UnHook also destroys the GUI, which can race the render thread; acceptable
 		// during shutdown but wants in-game verification.
 		Events::Register(Events::Type::Shutdown, []
-						 {
-			static std::atomic<bool> unhooking = false;
-			if (!unhooking.exchange(true)) std::thread(&UnHook).detach(); });
+						 { RequestUnload(); });
 	}
 
 	void UnHook()

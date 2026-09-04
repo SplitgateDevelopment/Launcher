@@ -10,8 +10,7 @@
 #include "sections/Visuals.h"
 #include "sections/Aim.h"
 #include "sections/Network.h"
-#include "sections/Settings.h"
-#include "sections/Profiles.h"
+#include "sections/Config.h"
 #include "sections/Debug.h"
 #include "sections/Watermark.h"
 
@@ -93,15 +92,9 @@ namespace Menu
 			ImGui::EndTabItem();
 		}
 
-		if (ImGui::BeginTabItem("Settings"))
+		if (ImGui::BeginTabItem("Config"))
 		{
-			Menu::Sections::SettingsTab();
-			ImGui::EndTabItem();
-		}
-
-		if (ImGui::BeginTabItem("Profiles"))
-		{
-			Menu::Sections::ProfilesTab();
+			Menu::Sections::ConfigTab();
 			ImGui::EndTabItem();
 		}
 

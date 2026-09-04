@@ -6,7 +6,16 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
-#include "../gui/Window.h" // Window::SetStreamproof
+#include "../../utils/Logger.h" // Logger::SetConsoleVisibility
+#include "../gui/Window.h"		// Window::SetStreamproof
+
+// Forward-declared instead of including hook/Hook.h: that header transitively includes this menu
+// (via Features -> GUI -> Menu), so including it here would be circular. The inline definition in
+// Hook.h is compiled in the same translation unit.
+namespace Hook
+{
+	void RequestUnload();
+}
 
 namespace Menu
 {
@@ -64,9 +73,14 @@ namespace Menu
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
 
-			ImGui::SeparatorText("Config");
-			if (ImGui::ToggleButton("Autosave on change", &Settings.MISC.AutoSave))
-				Events::Dispatch(Events::Type::SettingsChanged);
+			ImGui::SeparatorText("Program");
+			if (ImGui::Button("Toggle Console"))
+			{
+				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
+				Logger::SetConsoleVisibility(Settings.MISC.ShowConsole);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Unload")) Hook::RequestUnload();
 
 			ImGui::SeparatorText("User Scripts");
 			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))

@@ -1,7 +1,8 @@
 #pragma once
 
 /// @file
-/// @brief Profiles tab: save/load/delete named settings profiles, and export/import share codes.
+/// @brief Config tab: settings persistence (save/reload/reset, autosave, delete-on-crash), the menu
+/// hotkey/watermark, named profiles, and share codes.
 
 #include <cstring>
 
@@ -11,16 +12,39 @@ namespace Menu
 {
 	namespace Sections
 	{
-		/// @brief Renders the Profiles tab: a save-as field, the list of saved profiles (load/delete),
-		/// and share-code copy/paste-import via the clipboard.
-		void ProfilesTab()
+		/// @brief Renders the Config tab.
+		void ConfigTab()
 		{
+			ImGui::SeparatorText("Config");
+			if (ImGui::Button("Save")) SettingsHelper::File().Save();
+			ImGui::SameLine();
+			if (ImGui::Button("Reload"))
+			{
+				SettingsHelper::File().Load();
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reset defaults"))
+			{
+				SettingsHelper::File().Reset();
+				Events::Dispatch(Events::Type::SettingsChanged);
+			}
+
+			if (ImGui::ToggleButton("Autosave on change", &Settings.MISC.AutoSave))
+				Events::Dispatch(Events::Type::SettingsChanged);
+			if (ImGui::ToggleButton("Delete config on crash", &Settings.DEBUG.DeleteSettingsOnCrash))
+				Events::Dispatch(Events::Type::SettingsChanged);
+
+			ImGui::SeparatorText("Menu");
+			ImGui::HotKey("Open Menu", &Settings.MENU.ShowHotkey);
+			ImGui::ToggleButton("Watermark", &Settings.MENU.ShowWatermark);
+
 			ImGui::SeparatorText("Save current config");
 			static char nameBuffer[64] = "";
 			ImGui::SetNextItemWidth(200.f);
 			ImGui::InputText("##name", nameBuffer, sizeof(nameBuffer));
 			ImGui::SameLine();
-			if (ImGui::Button("Save") && nameBuffer[0])
+			if (ImGui::Button("Save as") && nameBuffer[0])
 			{
 				Profiles::Save(nameBuffer);
 				nameBuffer[0] = '\0';

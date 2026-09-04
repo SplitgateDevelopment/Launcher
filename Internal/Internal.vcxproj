@@ -102,8 +102,7 @@
     <ClInclude Include="menu\sections\Exploits.h" />
     <ClInclude Include="menu\sections\Misc.h" />
     <ClInclude Include="menu\sections\Network.h" />
-    <ClInclude Include="menu\sections\Settings.h" />
-    <ClInclude Include="menu\sections\Profiles.h" />
+    <ClInclude Include="menu\sections\Config.h" />
     <ClInclude Include="settings\Profiles.h" />
     <ClInclude Include="utils\Base64.h" />
     <ClInclude Include="menu\sections\Watermark.h" />
