@@ -160,5 +160,31 @@ Notes:
       Sleep(100);
   }
   ```
-- Optional extra safety: if you ever see a crash *before* the worker (i.e. in `Init()` itself on
-  the UI thread), wrap that `Globals::Init()` the same way; not needed for the reported crash.
+**Optional extra safety — guarding `Init()`'s own `Globals::Init()` (explained).**
+
+`Hook::Init()` runs on the game's **UI/message thread** (it's called when the `WH_GETMESSAGE`
+trigger is pulled from the queue). It does `EngineInit()` → `Globals::Init()` → spawn the worker.
+That first `Globals::Init()` is normally safe, and here's *why* it's separate from the worker crash:
+
+- `Globals::Init()` only does **single-level reads** of engine globals: `UEngine::GetEngine()`
+  (reads `GEngine`), `UWorld::GetWorld()` (reads `GWorld`), and a few `StaticClass()` CDO lookups
+  (`FindObject`). If `GEngine`/`GWorld` aren't set yet they read back **null** — no chained
+  dereference, so no fault. And `FindObject` is safe once `EngineInit()` has **validated the
+  `GObjects`/`GNames` offsets** (it returns false and `Init()` bails if they weren't found), so the
+  object-array walk never runs over garbage.
+- The crash you hit was different: the **worker's** `World -> OwningGameInstance ->
+  LocalPlayers[0] -> ViewportClient -> VFTable` is a *chain* of dereferences, so a
+  partially-constructed link mid-chain access-violates. That's what `TryResolveViewport`'s SEH now
+  absorbs.
+
+So `Init()`'s `Globals::Init()` was **not** the culprit and needs no change today. The only way it
+could fault is if you inject so early that a global is non-null but *mid-construction* (e.g. `GWorld`
+points at a `UWorld` whose fields are still being built) and one of those reads touches unmapped
+memory. **If** you ever see a crash whose stack sits in `Init()` / `Globals::Init()` on the UI thread
+(not the worker), the fix is the same SEH shape — but you **can't** `Sleep`-retry on the UI thread
+(that freezes the game). Instead, make the UI-thread `Globals::Init()` best-effort: wrap it in a
+leaf `__try/__except` helper (no unwinding objects in scope, like `TryResolveViewport`) that swallows
+the fault and returns, and rely on the worker's `TryResolveViewport` (which calls `Globals::Init()`
+again, guarded, and *can* retry) to do the real resolve. In other words, the eager UI-thread
+`Globals::Init()` is just a convenience — it's safe to guard or even drop, because the worker
+re-resolves everything anyway.
