@@ -56,6 +56,8 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
 - [docs/style.md](docs/style.md) — the clang-format / clang-tidy setup.
 - [docs/planned-features.md](docs/planned-features.md) / [docs/roadmap.md](docs/roadmap.md) — design
   notes for near-term features and larger future work (not yet implemented).
+- [docs/ue4-cheatsheet.md](docs/ue4-cheatsheet.md) — a living UE4 reverse-engineering reference (key
+  objects, neighbour-derived offsets, and snippets), cross-linked to the repo's implementations.
 
 ## Usage (from README)
 

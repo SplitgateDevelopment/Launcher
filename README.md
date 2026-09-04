@@ -46,3 +46,4 @@ If Python is installed somewhere custom that isn't picked up, set the `SPLITGATE
 - [Scripting](docs/scripting.md) — embedding Python and writing user scripts
 - [Testing](docs/testing.md) — the gtest project and how to run it
 - [Style & linting](docs/style.md) — clang-format / clang-tidy setup
+- [UE4 cheatsheet](docs/ue4-cheatsheet.md) — living RE reference: key objects, offsets, and snippets

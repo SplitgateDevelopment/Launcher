@@ -57,6 +57,29 @@ letting static objects (walls, pickups, portals) cache their unchanging data onc
 **Files.** `cache/ActorCache.h`.
 **Size.** Medium. **Depends on:** a feature that reads static world objects (to justify it).
 
+### Offset-only reads (drop the remaining ProcessEvent/AOB calls)
+
+**Goal.** The ESP/aim still lean on a few `ProcessEvent` UFunctions (`K2_GetActorLocation`,
+`GetTeamNum`) and an AOB-scanned `GetBoneMatrix`. The UE4 memory layout exposes the same data as
+plain field reads, which the [ue4-cheatsheet.md](ue4-cheatsheet.md) collects — swapping to them
+removes per-actor/per-bone call cost entirely.
+
+**Approach (incremental, confirm each offset against the dump first).**
+- **Location:** read `RootComponent->RelativeLocation` (or `ComponentToWorld` translation) instead of
+  `K2_GetActorLocation`. One field read per actor per frame vs a `ProcessEvent`.
+- **Bones:** read the bone array directly (`USkeletalMeshComponent->LODData - 0x4` on UE4; `- 0x8`
+  and `double` `FMatrix` on UE5) rather than the AOB `GetBoneMatrix` — no signature to maintain and no
+  call per bone. Keep the AOB path as a fallback (a Debug toggle, like the existing native/UFunction
+  ones).
+- **Visibility:** the `LastRenderTimeOnScreen` / `LastSubmitTime` pair (both off `BoundsScale`) → a
+  trace-free `IsVisible` shared by the aimbot visibility check and, later, a "visible only" ESP.
+- **Actor id:** `Actor + 0x18` for a stable per-actor key (useful for the spawn/despawn-diff cache and
+  any per-actor state).
+**Files.** `ue/Engine.*` (offset accessors), `cache/ActorCache.h`, `features/Esp.h` /
+`features/Aimbot.h`, `settings/Settings.h` + `menu/sections/Debug.h` (fallback toggles).
+**Size.** Medium, spread across small verified steps. **Depends on:** confirming each offset in-game /
+against [game-dump.md](game-dump.md).
+
 ---
 
 ## Visuals
@@ -265,13 +288,19 @@ verification of server trust.
 
 **Goal.** Only lock onto targets in line of sight, so the aimbot ignores enemies behind walls.
 
-**Approach.** A `bool AimVisibleCheck` in `AimSettings`. In the target-selection pass, before
-accepting a candidate, trace from the camera location to the target bone (a `LineTraceSingle` /
-visibility channel) and skip the candidate if the first blocking hit isn't that character. Reuse the
-camera POV read from the native WorldToScreen work. Same check is reusable for the triggerbot.
-**Files.** `settings/Settings.h` (AimSettings), the aimbot feature/target selection,
-`menu/sections/Aim.h`.
-**Size.** Small–medium. **Depends on:** a world line-trace helper in `ue/`.
+**Approach.** A `bool AimVisibleCheck` in `AimSettings`, skipping any candidate that isn't visible in
+the target-selection pass (reusable for the triggerbot). Two ways to test visibility:
+- **Render-flag (preferred, no ProcessEvent):** compare the mesh's `LastRenderTimeOnScreen` against
+  `LastSubmitTime` — if it rendered within a tick, it's visible. Both are neighbour-derived offsets
+  off `UPrimitiveComponent->BoundsScale` (see [ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour));
+  the `Projection::IsVisible(mesh)` helper is two field reads. Cheap enough to run every frame.
+- **Line trace (strict, optional):** `LineTraceSingle` from the camera to the target bone, skipping
+  the candidate if the first blocking hit isn't that character — stricter but costs a `ProcessEvent`.
+  Reuses the camera POV from the native WorldToScreen work. Good as a "strict" sub-mode.
+**Files.** `settings/Settings.h` (AimSettings), a visibility helper (`utils/` or `ue/`), the aimbot
+target selection, `menu/sections/Aim.h`.
+**Size.** Small–medium. **Depends on:** the render-flag offsets (from the dump) or a world line-trace
+helper in `ue/`.
 
 ### Draw aim FOV circle
 
