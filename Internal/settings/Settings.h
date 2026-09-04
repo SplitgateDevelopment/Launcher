@@ -146,6 +146,7 @@ struct AimSettings
 	float AimSmooth = 0.5f;	  ///< per-frame aim step: 0.05 (very smooth) .. 1 (instant snap)
 	int AimBone = 0;		  ///< target bone: 0 = head, 1 = chest, 2 = pelvis
 	bool AimTeamCheck = true; ///< never aim at teammates
+	bool SilentAim = false;	  ///< snap to target only while firing (left click), instead of the aim key
 
 	bool Triggerbot = false;
 	int TriggerKey = VK_XBUTTON2; ///< held down to enable the triggerbot
@@ -154,7 +155,7 @@ struct AimSettings
 	bool TriggerTeamCheck = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode

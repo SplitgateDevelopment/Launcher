@@ -84,7 +84,11 @@ class Aimbot : public Feature
 	void Run()
 	{
 		const auto& aim = Settings.AIM;
-		if (!(GetAsyncKeyState(aim.AimKey) & 0x8000)) return; // only while the aim key is held
+		// Silent aim engages while firing (left click) and snaps instantly; otherwise it engages on
+		// the aim key with the configured smoothing. (This is a snap-on-fire silent aim, not a
+		// trace-redirect one — the view still moves; see docs/roadmap.md.)
+		const bool engaged = aim.SilentAim ? (GetAsyncKeyState(VK_LBUTTON) & 0x8000) : (GetAsyncKeyState(aim.AimKey) & 0x8000);
+		if (!engaged) return;
 
 		auto* controller = Globals::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
@@ -132,7 +136,7 @@ class Aimbot : public Feature
 		const FRotator wanted = DirToRotator(dir);
 
 		const FRotator current = controller->ControlRotation;
-		float t = aim.AimSmooth;
+		float t = aim.SilentAim ? 1.f : aim.AimSmooth; // silent aim snaps instantly
 		if (t < 0.01f) t = 0.01f;
 		if (t > 1.f) t = 1.f;
 
