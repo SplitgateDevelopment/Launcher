@@ -8,9 +8,12 @@
 /// timestamps, party fields). Keeps the upstream discord-rpc naming for the
 /// library calls it forwards to.
 #include <chrono>
+#include <format>
+#include <string>
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../external/discord-rpc/include/discord_register.h"
 #include "../utils/Logger.h"
+#include "../utils/Globals.h"
 #include "handlers.h"
 
 #pragma comment(lib, "discord-rpc.lib")
@@ -82,4 +85,37 @@ namespace DiscordRPC
 		Discord_UpdatePresence(&discordPresence);
 		Logger::Log("RPC", "Updated presence");
 	};
+
+	/// Refresh the presence `state` from the live game: in a match it shows the map and the local
+	/// player's K/D (read from APortalWarsPlayerState.PlayerStats), otherwise "In menu". Cheap field
+	/// reads, no ProcessEvent; call throttled from the game thread (the DiscordPresence feature).
+	/// Only pushes to Discord when the string actually changes.
+	void UpdateGameState()
+	{
+		if (!Settings.MISC.DiscordRPCEnabled) return;
+
+		static std::string stateBuffer; // persists so discordPresence.state stays valid across updates
+
+		auto* controller = Globals::PlayerController;
+		if (controller && controller->IsInGame())
+		{
+			const std::string map = Globals::World ? Globals::World->GetName() : "";
+			int kills = 0, deaths = 0;
+			if (auto* state = reinterpret_cast<APortalWarsPlayerState*>(controller->PlayerState))
+			{
+				kills = state->PlayerStats.Kills;
+				deaths = state->PlayerStats.Deaths;
+			}
+			stateBuffer = std::format("In match: {}  (K/D {}/{})", map, kills, deaths);
+		}
+		else
+		{
+			stateBuffer = "In menu";
+		}
+
+		if (discordPresence.state && stateBuffer == discordPresence.state) return; // unchanged
+
+		discordPresence.state = stateBuffer.c_str();
+		Discord_UpdatePresence(&discordPresence);
+	}
 }; // namespace DiscordRPC
