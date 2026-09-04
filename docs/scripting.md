@@ -22,12 +22,13 @@ under [`scripting/modules/`](../Internal/scripting/modules/):
 | ---------- | ----------------------------------------------------------------------- |
 | `Logger`   | `Log(level, message)`                                                   |
 | `Settings` | `Save()`, `Reset()`, `get(path)`, `set(path, value)`, `toggle(path)`    |
-| `Events`   | `on(event, handler)`, the `Type` enum, and `Payload`                    |
-| `Actors`   | `players()`, `enemies()`, `count()` → `Player` snapshots               |
-| `Player`   | `location`, `teleport`, `health`, `set_health`, `view_rotation`, `console`, `chat`, `is_in_game` |
+| `Events`   | `on(event, handler)`, `on_custom(name, cb)`, `emit(name, value)`, the `Type` enum, `Payload` |
+| `Actors`   | `players()`, `enemies()`, `count()` → `Player` (`.bone`, `.visible`, `.distance`); `Bone` enum |
+| `Player`   | `location`, `teleport`, `velocity`, `aim_at`, `health`, `set_health`, `view_rotation`, `console`, `chat`, `is_in_game` |
 | `Engine`   | `find_object`, `world_to_screen`, `canvas_size`, `distance`             |
-| `Render`   | `line`, `text`, `circle`, `world_line`, `world_text`                    |
+| `Render`   | `line`, `text`, `circle`, `rect`, `world_line`, `world_text`, `skeleton` |
 | `Input`    | `is_key_down(vk)`, `is_key_pressed(vk)`                                 |
+| `Game`     | `fps()`, `map_name()`, `local_name()`                                   |
 
 See **[API reference](#api-reference)** below for signatures and examples.
 
@@ -163,7 +164,18 @@ def main():
 ```
 
 A `Player` has: `x`, `y`, `z`, `location` (tuple), `team`, `health`, `max_health`, `name`,
-`is_local`, `address`. `enemies()` drops you and same-team players; `count()` is the total.
+`is_local`, `address`, plus live methods (call `players()`/`enemies()` **this frame first**, so the
+address re-validates against the current cache):
+
+```python
+for p in SG.Actors.enemies():
+    head = p.bone(SG.Actors.Bone.Head)   # world (x,y,z) of a bone, or None
+    if p.visible():                       # occlusion-aware (WasRecentlyRendered)
+        SG.Logger.Log("INFO", f"{p.name} {p.distance():.0f}m")
+```
+
+`Actors.Bone` has `Root, Pelvis, Spine01, Spine03, Neck, Head, UpperArm{L,R}, LowerArm{L,R},
+Hand{L,R}, Thigh{L,R}, Calf{L,R}, Foot{L,R}`.
 
 ### `Player` — control the local character
 
@@ -174,6 +186,8 @@ def main():
     x, y, z = SG.Player.location()
     SG.Player.teleport(x, y, z + 500)      # hop up 5m (keeps your view rotation)
     SG.Player.set_health(100.0)
+    vx, vy, vz = SG.Player.velocity()       # GetVelocity
+    SG.Player.aim_at(x, y, z)               # point the view at a world position
     pitch, yaw, roll = SG.Player.view_rotation()
     SG.Player.set_view_rotation(pitch, yaw)
     SG.Player.console("stat fps")          # SendToConsole
@@ -197,16 +211,26 @@ Drawing must happen while the frame's render backend is active, so subscribe to 
 def draw():
     w, h = SG.Engine.canvas_size() or (0, 0)
     SG.Render.circle(w/2, h/2, 100, color=(1, 0, 0, 1))           # crosshair FOV ring
-    for p in SG.Actors.enemies():
+    for p in SG.Actors.enemies():                                  # players() first, so bones re-validate
+        SG.Render.skeleton(p, color=(1, 1, 0, 1))                  # one-call bone ESP
         SG.Render.world_text(p.x, p.y, p.z, p.name, color=(1, 1, 0, 1))
 
 SG.Events.on(SG.Events.Render, draw)
 ```
 
 `line(x1,y1,x2,y2,color,thickness)`, `text(x,y,text,color,scale)`, `circle(x,y,radius,color,
-segments,thickness)`, `world_line(x1,y1,z1,x2,y2,z2,color,thickness)`, `world_text(x,y,z,text,color,
-scale)`. `color` is an `(r, g, b, a)` 0-1 tuple (defaults to white); the `world_*` helpers return
-`False` when the point is off-screen.
+segments,thickness)`, `rect(x,y,w,h,color,thickness)`, `world_line(x1,y1,z1,x2,y2,z2,color,
+thickness)`, `world_text(x,y,z,text,color,scale)`, `skeleton(player,color,thickness)`. `color` is an
+`(r, g, b, a)` 0-1 tuple (defaults to white); the `world_*`/`skeleton` helpers return `False` when
+off-screen.
+
+### `Game` — state reads
+
+```python
+SG.Game.fps()          # smoothed frame rate
+SG.Game.map_name()     # current world/map name, or None
+SG.Game.local_name()   # your display name, or None
+```
 
 ### `Input` — keys
 
@@ -230,6 +254,28 @@ SG.Settings.toggle("MENU.Rgb")            # -> the new bool value
 SG.Settings.set("AIM.AimVisibleCheck", True)
 SG.Settings.Save()                         # persist to disk
 ```
+
+### Custom events (script-to-script)
+
+Besides the built-in bus events, scripts can define their own by name:
+
+```python
+# producer.py
+SG.Events.emit("wave_cleared", 3)
+
+# consumer.py (in another script)
+def on_wave(n):
+    SG.Logger.Log("INFO", f"wave {n}")
+SG.Events.on_custom("wave_cleared", on_wave)   # handler may take the value or nothing
+```
+
+## Hot-reload
+
+**Misc → User Scripts → Reload** re-scans the folder and re-imports every script (via
+`importlib.reload`), so edits take effect without a relaunch; per-script **Run** executes one on
+demand. Custom-event handlers are cleared on reload. **Caveat:** scripts that call
+`Events.on(Events.<Type>, ...)` at import time re-register on reload, stacking duplicate bus handlers —
+prefer the per-frame `main()` model for scripts you hot-reload, or guard your registration.
 
 ## Requirements
 

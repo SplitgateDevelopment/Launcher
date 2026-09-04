@@ -143,19 +143,28 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
   dispatches `SettingsChanged` like the menu. This is how scripts drive the program's latest features
   (RGB, aim visibility check, FOV circle, SSL bypass, ...).
 
-### Further ideas (not built)
-- **`Actors` extras:** per-bone world positions (`bone(index)`), `visible` (via `WasRecentlyRendered`),
-  distance-to-local convenience, weapon/loadout fields once RE'd.
-- **`Player` extras:** velocity read/write, `set_location` without teleport semantics, ammo/loadout,
-  `respawn()` / `suicide()` via console, aim-at(actor) helper.
-- **`Game` module:** map name, mode, score/round state, FPS, match timer (some already on the event
-  bus — expose as reads).
-- **`Render` extras:** filled rect / gradient, `bone_skeleton(actor)` one-call ESP, per-frame text
-  anchored to an actor.
-- **`Events` extras:** more game events (weapon fire, portal spawned, pickup) as the fire/trace RE
-  lands; a way for scripts to *dispatch* custom events.
-- **Hot-reload** of user scripts from the menu (re-import without a relaunch), and a scripts panel
-  (list/enable/run/errors) in the GUI.
+### Further ideas — DONE (this pass)
+- **`Actors` extras — DONE:** `player.bone(Actors.Bone.*)` world positions, `player.visible()` (via
+  `WasRecentlyRendered`), `player.distance()` to local; an `Actors.Bone` enum. (Weapon/loadout fields
+  still need RE.)
+- **`Player` extras — DONE:** `velocity()`, `aim_at(x,y,z)`. (Ammo/loadout and `respawn()` still need
+  RE / the fire path.)
+- **`Game` module — DONE:** `fps()`, `map_name()`, `local_name()`. (Mode/score/round/timer need RE —
+  some are on the event bus already.)
+- **`Render` extras — DONE:** `rect()` outline and `skeleton(player)` one-call ESP. (Filled rect /
+  gradient need a backend fill primitive.)
+- **`Events` extras — DONE:** script-to-script custom events (`emit(name, value)` /
+  `on_custom(name, cb)`). More *game* events still depend on the fire/trace RE.
+- **Hot-reload — DONE:** `Scripts::Reload()` + a **Reload** button and per-script **Run** in Misc →
+  User Scripts (re-imports via `importlib.reload`). Caveat: bus-event subscriptions re-register on
+  reload (documented) — prefer `main()` for hot-reloaded scripts.
+
+### Still-open scripting ideas
+- Weapon/loadout/ammo reads and `respawn()`/`suicide()` (need the weapon/loadout RE + fire path).
+- A richer `Game` module (mode, score, round state, match timer) once those reads are located.
+- Filled-rect / gradient draw (needs a backend fill primitive in `render/`).
+- More *game* events (weapon fire, portal spawned, pickup) as the fire/trace hook lands.
+- Scoped script-handler unregister so hot-reload doesn't stack bus-event subscriptions.
 
 ---
 
@@ -478,13 +487,14 @@ cosmetics are likely server-authoritative, so changes may be **client-visual onl
 scope it as a visual override and verify in-game. Needs the skin/material/emote fields via RE.
 **Size:** Large.
 
-### Announce toggles in chat (from the feature, not the player)
-When enabled and in a game, post `[ESP] Enabled` / `[ESP] 3D boxes on` on each toggle. Key point:
-`PlayerController->SendChatMessage` sends to the **server** (everyone sees it as you) — wrong for
-this. Use a **client-only local message** instead (e.g. `APlayerController::ClientMessage`, or the
-chat widget's local "add message"), so it shows only in your chat, labeled by the feature. This
-pairs with the **`SettingsChanged` payload** item (to know *which* setting/feature changed).
-**Size:** Medium; needs a local-message function + the changed-setting payload.
+### Announce toggles in chat (from the feature, not the player) — DONE
+`Settings.MISC.AnnounceToggles` (Misc → Program). The `AnnounceToggles` feature runs on
+`SettingsChanged`, diffs a snapshot of the tracked feature bools (ESP, radar, aimbot, triggerbot, god
+mode, jetpack, no-recoil, spin-bot, third-person, free-cam, infinite-ammo, no-reload), and on a real
+change posts `[ESP] Enabled` / `Disabled` via **`APlayerController::ClientMessage`** — a client-only
+local message (shown only to you, **not** sent to the server, unlike `SendChatMessage`). It snapshots
+without announcing on enable and re-seeds on disable, so it never spams. Independent of the
+`SettingsChanged` payload (it diffs state itself), so it works for every tracked toggle.
 
 ## Integrations
 
