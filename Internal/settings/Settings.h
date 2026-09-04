@@ -91,9 +91,12 @@ struct DebugSettings
 	bool ShowDemoWindow = false;
 	bool ShowStyleEditor = false;
 	bool DeleteSettingsOnCrash = true; ///< wipe settings on an unhandled crash so the next launch is clean
+
+	bool NativeWorldToScreen = true; ///< project overlays with math; off falls back to the ProjectWorldLocationToScreen UFunction
+	bool NativeBones = true;		 ///< project the ESP skeleton via native GetBoneMatrix + math; off uses the game's bone projection
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones)
 
 /// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
 /// ImGui/DX11 (near-free). Switchable live from the Visuals tab.

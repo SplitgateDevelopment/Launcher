@@ -29,6 +29,12 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
 			changed |= ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
+			ImGui::SeparatorText("Performance");
+			changed |= ImGui::ToggleButton("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
+			ImGui::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
+			changed |= ImGui::ToggleButton("Native bones", &Settings.DEBUG.NativeBones);
+			ImGui::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
+
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
 			ImGui::SeparatorText("Console command");
