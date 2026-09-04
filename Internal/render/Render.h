@@ -13,12 +13,21 @@ namespace Render
 {
 	inline CanvasRenderer canvas;
 	inline ImGuiRenderer imgui;
-	inline Renderer* active = &canvas;
+
+	/// The backends, indexed by RendererMode (order must match the enum). Adding a renderer is a new
+	/// enum value + a new entry here — no branching at the call site.
+	inline Renderer* const Backends[] = {
+		&canvas, // RendererMode::Canvas
+		&imgui,	 // RendererMode::ImGui
+	};
+
+	inline Renderer* active = Backends[0];
 
 	/// Point the active backend at the one the setting selects (called each frame before drawing).
 	inline void Select(RendererMode mode)
 	{
-		active = (mode == RendererMode::ImGui) ? static_cast<Renderer*>(&imgui) : static_cast<Renderer*>(&canvas);
+		const size_t index = static_cast<size_t>(mode);
+		active = (index < (sizeof(Backends) / sizeof(*Backends))) ? Backends[index] : &canvas;
 	}
 
 	inline void Line(const FVector2D& a, const FVector2D& b, float thickness, const FLinearColor& color)
