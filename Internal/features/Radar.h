@@ -7,6 +7,7 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../utils/Rgb.h"
 #include "../cache/ActorCache.h"
 
 #include <cmath>
@@ -95,7 +96,8 @@ class Radar : public Feature
 		const float cx = Globals::Canvas->ClipX - Margin - radius;
 		const float cy = Margin + radius;
 
-		const auto& self = Settings.VISUALS.RadarSelfColor;
+		// Panel border + own marker: the cycling RGB color when enabled, else the default white.
+		const Color self = Settings.MENU.Rgb ? Rgb::Current() : Color{1.f, 1.f, 1.f, 1.f};
 		const FLinearColor border{self.R, self.G, self.B, self.A};
 		const FLinearColor dot{1.f, 0.f, 0.f, 1.f};
 

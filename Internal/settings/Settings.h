@@ -43,12 +43,10 @@ struct MenuSettings
 	std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
 	int ShowHotkey = VK_INSERT; ///< virtual-key code toggling the GUI (default Insert)
 	bool Streamproof = false;	///< hide the overlay from screen capture (SetWindowDisplayAffinity)
-
-	Color WatermarkColor{1.f, 1.f, 1.f, 1.f};	 ///< watermark text color
-	Color AccentColor{0.26f, 0.59f, 0.98f, 1.f}; ///< menu accent (tabs / headers / sliders)
+	bool Rgb = false;			///< cycle the watermark, menu accent, and radar self-icon through a rainbow; off = their defaults (red / white)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof, WatermarkColor, AccentColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof, Rgb)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 struct ExploitsSettings
@@ -137,11 +135,10 @@ struct VisualsSettings
 	Color BoxColor{1.f, 0.f, 0.f, 1.f};
 	Color BonesColor{0.f, 1.f, 0.f, 1.f};
 	Color SnaplineColor{1.f, 1.f, 0.f, 1.f};
-	Color FriendColor{0.f, 0.f, 1.f, 1.f};	  ///< color for teammates when ShowFriendly is on (default blue)
-	Color RadarSelfColor{1.f, 1.f, 1.f, 1.f}; ///< radar panel border + your own marker
+	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, RadarSelfColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

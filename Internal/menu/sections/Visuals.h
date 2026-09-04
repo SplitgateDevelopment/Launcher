@@ -62,7 +62,6 @@ namespace Menu
 			ImGui::ColorEdit4("Bones", &v.BonesColor.R);
 			ImGui::ColorEdit4("Snaplines", &v.SnaplineColor.R);
 			ImGui::ColorEdit4("Friendly", &v.FriendColor.R);
-			ImGui::ColorEdit4("Radar self", &v.RadarSelfColor.R);
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}

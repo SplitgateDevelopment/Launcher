@@ -63,6 +63,9 @@
     <ClInclude Include="utils\Util.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="utils\Rgb.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="utils\Logger.h">
       <Filter>utils</Filter>
     </ClInclude>

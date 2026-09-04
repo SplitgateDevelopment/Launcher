@@ -38,8 +38,8 @@ namespace Menu
 			ImGui::SeparatorText("Menu");
 			ImGui::HotKey("Open Menu", &Settings.MENU.ShowHotkey);
 			ImGui::ToggleButton("Watermark", &Settings.MENU.ShowWatermark);
-			ImGui::ColorEdit4("Accent color", &Settings.MENU.AccentColor.R);
-			ImGui::ColorEdit4("Watermark color", &Settings.MENU.WatermarkColor.R);
+			ImGui::ToggleButton("RGB", &Settings.MENU.Rgb);
+			ImGui::Tooltip("Cycle the watermark, menu accent, and radar self-icon through a rainbow. Off = the defaults (red / white).");
 
 			ImGui::SeparatorText("Save current config");
 			static char nameBuffer[64] = "";

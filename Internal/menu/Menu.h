@@ -5,6 +5,7 @@
 
 #include "../settings/Settings.h"
 #include "../scripting/Events.h"
+#include "../utils/Rgb.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
 #include "sections/Visuals.h"
@@ -15,6 +16,8 @@
 #include "sections/Watermark.h"
 
 #include <imgui.h>
+
+#include <array>
 
 /// @brief Top-level menu: owns the main window and routes each frame to the tab sections.
 namespace Menu
@@ -50,15 +53,35 @@ namespace Menu
 			ImGui::ShowStyleEditor();
 		}
 
-		// Apply the configurable accent color to the interactive style elements each frame.
+		// Tint the interactive accent slots each frame: the cycling RGB color when enabled, else the
+		// theme's default reds. The defaults are snapshotted once (before the first override) so
+		// toggling RGB back off restores the original per-slot shades instead of freezing on the last
+		// rainbow frame.
 		{
-			const auto& a = Settings.MENU.AccentColor;
-			const ImVec4 accent(a.R, a.G, a.B, a.A);
+			static constexpr ImGuiCol accentSlots[] = {
+				ImGuiCol_CheckMark, ImGuiCol_SliderGrab, ImGuiCol_SliderGrabActive,
+				ImGuiCol_Header, ImGuiCol_HeaderHovered, ImGuiCol_HeaderActive,
+				ImGuiCol_Tab, ImGuiCol_TabHovered, ImGuiCol_TabActive, ImGuiCol_TitleBgActive};
+
 			ImVec4* colors = ImGui::GetStyle().Colors;
-			for (ImGuiCol c : {ImGuiCol_CheckMark, ImGuiCol_SliderGrab, ImGuiCol_SliderGrabActive,
-							   ImGuiCol_Header, ImGuiCol_HeaderHovered, ImGuiCol_HeaderActive,
-							   ImGuiCol_Tab, ImGuiCol_TabHovered, ImGuiCol_TabActive, ImGuiCol_TitleBgActive})
-				colors[c] = accent;
+
+			static const std::array<ImVec4, IM_ARRAYSIZE(accentSlots)> defaults = [&]
+			{
+				std::array<ImVec4, IM_ARRAYSIZE(accentSlots)> saved{};
+				for (size_t i = 0; i < saved.size(); ++i) saved[i] = colors[accentSlots[i]];
+				return saved;
+			}();
+
+			if (Settings.MENU.Rgb)
+			{
+				const Color rgb = Rgb::Current();
+				const ImVec4 accent(rgb.R, rgb.G, rgb.B, rgb.A);
+				for (ImGuiCol slot : accentSlots) colors[slot] = accent;
+			}
+			else
+			{
+				for (size_t i = 0; i < defaults.size(); ++i) colors[accentSlots[i]] = defaults[i];
+			}
 		}
 
 		if (!ImGui::Begin("Splitgate Internal", &Settings.MENU.ShowMenu, windowFlags))

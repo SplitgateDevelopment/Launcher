@@ -4,6 +4,7 @@
 /// @brief Watermark overlay: draws the product name and live FPS in the top-left corner.
 
 #include "../../settings/Settings.h"
+#include "../../utils/Rgb.h"
 
 namespace Menu
 {
@@ -15,8 +16,17 @@ namespace Menu
 		{
 			if (!Settings.MENU.ShowWatermark) return;
 
-			const auto& c = Settings.MENU.WatermarkColor;
-			ImU32 color = ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A));
+			// RGB on: the cycling rainbow. Off: the theme's active title color (the default red).
+			ImU32 color;
+			if (Settings.MENU.Rgb)
+			{
+				const Color c = Rgb::Current();
+				color = ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A));
+			}
+			else
+			{
+				color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
+			}
 
 			ImGuiIO& io = ImGui::GetIO();
 			(void)io;
