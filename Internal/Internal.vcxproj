@@ -96,6 +96,9 @@
     <ClInclude Include="menu\sections\Misc.h" />
     <ClInclude Include="menu\sections\Network.h" />
     <ClInclude Include="menu\sections\Settings.h" />
+    <ClInclude Include="menu\sections\Profiles.h" />
+    <ClInclude Include="settings\Profiles.h" />
+    <ClInclude Include="utils\Base64.h" />
     <ClInclude Include="menu\sections\Watermark.h" />
     <ClInclude Include="scripting\modules\Logger.h" />
     <ClInclude Include="scripting\modules\Settings.h" />
