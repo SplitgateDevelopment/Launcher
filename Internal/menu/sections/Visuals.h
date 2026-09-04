@@ -56,6 +56,17 @@ namespace Menu
 			ImGui::SeparatorText("Text");
 			changed |= ImGui::SliderFloat("Font size", &v.FontScale, 0.5f, 3.f, "%.2f");
 
+			ImGui::SeparatorText("Crosshair");
+			changed |= ImGui::ToggleButton("Crosshair", &v.Crosshair);
+			if (v.Crosshair)
+			{
+				changed |= ImGui::SliderFloat("Size", &v.CrosshairSize, 1.f, 30.f, "%.0f");
+				changed |= ImGui::SliderFloat("Gap", &v.CrosshairGap, 0.f, 20.f, "%.0f");
+				changed |= ImGui::SliderFloat("Thickness", &v.CrosshairThickness, 1.f, 6.f, "%.0f");
+				ImGui::ColorEdit4("Crosshair color", &v.CrosshairColor.R);
+				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+			}
+
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);
 			ImGui::ColorEdit4("Box", &v.BoxColor.R);

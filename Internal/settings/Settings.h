@@ -140,9 +140,15 @@ struct VisualsSettings
 	Color BonesColor{0.f, 1.f, 0.f, 1.f};
 	Color SnaplineColor{1.f, 1.f, 0.f, 1.f};
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
+
+	bool Crosshair = false;					   ///< draw a custom crosshair at screen centre
+	float CrosshairSize = 8.f;				   ///< length of each arm, px
+	float CrosshairGap = 4.f;				   ///< gap from centre to each arm, px
+	float CrosshairThickness = 1.f;			   ///< line thickness, px
+	Color CrosshairColor{0.f, 1.f, 1.f, 1.f};  ///< crosshair color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

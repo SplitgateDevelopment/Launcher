@@ -705,6 +705,70 @@ FVector AActor::GetVelocity()
 	return Parameters.ReturnValue;
 }
 
+AActor* UGameplayStatics::BeginDeferredActorSpawnFromClass(UObject* WorldContextObject, UClass* ActorClass, FTransform SpawnTransform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, AActor* Owner)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.GameplayStatics.BeginDeferredActorSpawnFromClass");
+	if (!Function) return nullptr;
+
+	// Layout matches UE's param struct: FTransform (16-aligned) lands at 0x10 after the two
+	// pointers, the collision byte at 0x40, Owner at 0x48, ReturnValue at 0x50.
+	struct
+	{
+		UObject* WorldContextObject;						 // 0x00
+		UClass* ActorClass;									 // 0x08
+		FTransform SpawnTransform;							 // 0x10
+		ESpawnActorCollisionHandlingMethod CollisionHandling; // 0x40
+		AActor* Owner;										 // 0x48
+		AActor* ReturnValue;								 // 0x50
+	} Parameters;
+	Parameters.WorldContextObject = WorldContextObject;
+	Parameters.ActorClass = ActorClass;
+	Parameters.SpawnTransform = SpawnTransform;
+	Parameters.CollisionHandling = CollisionHandlingOverride;
+	Parameters.Owner = Owner;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
+AActor* UGameplayStatics::FinishSpawningActor(AActor* Actor, FTransform SpawnTransform)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.GameplayStatics.FinishSpawningActor");
+	if (!Function) return nullptr;
+
+	// UE 16-aligns FTransform, so SpawnTransform sits at 0x10 (pad after Actor), ReturnValue at 0x40.
+	struct
+	{
+		AActor* Actor;			   // 0x00
+		char pad_08[0x8];		   // 0x08
+		FTransform SpawnTransform; // 0x10
+		AActor* ReturnValue;	   // 0x40
+	} Parameters;
+	Parameters.Actor = Actor;
+	Parameters.SpawnTransform = SpawnTransform;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
+AActor* SpawnActor(UObject* worldContextObject, UClass* actorClass, FVector location, ESpawnActorCollisionHandlingMethod collision, AActor* owner)
+{
+	auto* gameplayStatics = reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
+	if (!gameplayStatics || !actorClass) return nullptr;
+
+	FTransform transform{};
+	transform.Rotation = FQuat{0.f, 0.f, 0.f, 1.f};
+	transform.Translation = location;
+	transform.Scale3D = FVector{1.f, 1.f, 1.f};
+
+	AActor* deferred = gameplayStatics->BeginDeferredActorSpawnFromClass(worldContextObject, actorClass, transform, collision, owner);
+	if (!deferred) return nullptr;
+
+	return gameplayStatics->FinishSpawningActor(deferred, transform);
+}
+
 void APlayerController::ClientMessage(FString S, FName Type, float MsgLifeTime)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientMessage");

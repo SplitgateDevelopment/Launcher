@@ -12,6 +12,8 @@
 #include "sections/Aim.h"
 #include "sections/Network.h"
 #include "sections/Config.h"
+#include "sections/Scripts.h"
+#include "sections/Sdk.h"
 #include "sections/Debug.h"
 #include "sections/Watermark.h"
 
@@ -129,6 +131,18 @@ namespace Menu
 		if (ImGui::BeginTabItem("Config"))
 		{
 			Menu::Sections::ConfigTab();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Scripts"))
+		{
+			Menu::Sections::ScriptsTab();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("SDK"))
+		{
+			Menu::Sections::SdkTab();
 			ImGui::EndTabItem();
 		}
 

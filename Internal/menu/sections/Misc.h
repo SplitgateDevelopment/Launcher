@@ -1,10 +1,10 @@
 #pragma once
 
 /// @file
-/// @brief Misc tab: player FOV/speed sliders, load-into-map action, and user-scripting controls.
+/// @brief Misc tab: player FOV/speed sliders, load-into-map / summon-bot actions, overlay/program
+/// controls, and the announce-toggles switch. (User scripts moved to the Scripts tab.)
 
 #include "../../settings/Settings.h"
-#include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
 #include "../../utils/Logger.h" // Logger::SetConsoleVisibility
 #include "../gui/Window.h"		// Window::SetStreamproof
@@ -65,6 +65,29 @@ namespace Menu
 			};
 			if (loadDisabled) ImGui::EndDisabled();
 
+			ImGui::SameLine();
+			if (ImGui::Button("Summon Bot") && isInGame && Globals::PlayerController)
+			{
+				// Prefer a real deferred spawn if the bot class resolves (find its exact name in the
+				// SDK tab); otherwise fall back to the console summon.
+				UObject* botClass = ObjObjects->FindObject("BlueprintGeneratedClass PortalWarsBot_BP.PortalWarsBot_BP_C");
+				auto* pawn = Globals::PlayerController->AcknowledgedPawn;
+				if (botClass && pawn)
+				{
+					FVector loc = reinterpret_cast<AActor*>(pawn)->K2_GetActorLocation();
+					loc.X += 200.f; // a bit in front
+					AActor* bot = SpawnActor(reinterpret_cast<UObject*>(Globals::PlayerController), reinterpret_cast<UClass*>(botClass),
+											 loc, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn, nullptr);
+					Logger::Log(bot ? "SUCCESS" : "ERROR", bot ? "Spawned bot" : "SpawnActor failed");
+				}
+				else
+				{
+					Globals::PlayerController->SendToConsole(FString("summon PortalWarsBot_BP_C"));
+					Logger::Log("INFO", "Summon Bot: class not resolved, used console (find the class in the SDK tab)");
+				}
+			}
+			ImGui::Tooltip("Spawn a bot. Uses a deferred SpawnActor when the bot class resolves; else the\nconsole summon. Find the exact bot class in the SDK tab.");
+
 			ImGui::SeparatorText("Overlay");
 			ImGui::Tooltip("Hide the overlay from screen capture (OBS, Discord, Game Bar). Needs Windows 10 2004+.");
 			if (ImGui::ToggleButton("Streamproof", &Settings.MENU.Streamproof))
@@ -86,30 +109,6 @@ namespace Menu
 				Events::Dispatch(Events::Type::SettingsChanged);
 			ImGui::Tooltip("Post a local (client-only) chat line when you toggle a feature, e.g. \"[ESP] Enabled\".\nShown only to you, not sent to the server.");
 
-			ImGui::SeparatorText("User Scripts");
-			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))
-				Events::Dispatch(Events::Type::SettingsChanged);
-			ImGui::SameLine();
-			if (ImGui::Button("Reload")) Scripts::Reload();
-			ImGui::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
-						   "without a relaunch). Scripts that subscribe to bus events at import time will\n"
-						   "stack duplicate handlers — prefer the per-frame main() model for those.");
-
-			if (ImGui::TreeNode("Loaded Scripts"))
-			{
-				std::string toRun;
-				for (const auto& script : Scripts::scriptList)
-				{
-					ImGui::PushID(script.c_str());
-					if (ImGui::SmallButton("Run")) toRun = script;
-					ImGui::SameLine();
-					ImGui::TextUnformatted(script.c_str());
-					ImGui::PopID();
-				}
-				if (!toRun.empty()) Scripts::ExecuteUnloaded(toRun);
-
-				ImGui::TreePop();
-			}
 		}
 	} // namespace Sections
 } // namespace Menu

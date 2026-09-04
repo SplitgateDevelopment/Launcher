@@ -364,6 +364,31 @@ struct FRotator
 	float Roll;
 };
 
+// Hand-added (not in the Dumpspace dump) for UGameplayStatics::SpawnActor. FTransform is laid out to
+// match UE4's 0x30-byte struct (Rotation @0x00, Translation @0x10, Scale3D @0x20).
+struct FQuat
+{
+	float X, Y, Z, W;
+};
+
+struct FTransform
+{
+	FQuat Rotation;			 // 0x00
+	struct FVector Translation; // 0x10
+	char pad_1C[0x4];		 // 0x1C
+	struct FVector Scale3D;	 // 0x20
+	char pad_2C[0x4];		 // 0x2C
+};
+
+enum class ESpawnActorCollisionHandlingMethod : unsigned char
+{
+	Undefined = 0,
+	AlwaysSpawn = 1,
+	AdjustIfPossibleButAlwaysSpawn = 2,
+	AdjustIfPossibleButDontSpawnIfColliding = 3,
+	DontSpawnIfColliding = 4,
+};
+
 enum class EObjectTypeQuery : int
 {
 };
@@ -2826,8 +2851,17 @@ struct UGameplayStatics : UBlueprintFunctionLibrary
 {
 	struct UObject* SpawnObject(struct UObject* ObjectClass, struct UObject* Outer); // Function Engine.GameplayStatics.SpawnObject // (Final|Native|Static|Public|BlueprintCallable) // @ game+0x36f9330
 
+	// Hand-added (not in the dump). The deferred spawn two-step; call on the CDO
+	// (Globals::GameplayStatics). See SpawnActor() for the convenience wrapper.
+	struct AActor* BeginDeferredActorSpawnFromClass(struct UObject* WorldContextObject, struct UClass* ActorClass, struct FTransform SpawnTransform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, struct AActor* Owner);
+	struct AActor* FinishSpawningActor(struct AActor* Actor, struct FTransform SpawnTransform);
+
 	static struct UClass* StaticClass();
 };
+
+/// Spawn an actor of @p actorClass at @p location via the deferred two-step
+/// (BeginDeferredActorSpawnFromClass -> FinishSpawningActor). Returns the actor, or nullptr.
+struct AActor* SpawnActor(struct UObject* worldContextObject, struct UClass* actorClass, struct FVector location, ESpawnActorCollisionHandlingMethod collision, struct AActor* owner);
 
 // ScriptStruct CoreUObject.SoftObjectPath
 // Size: 0x18 (Inherited: 0x00)
