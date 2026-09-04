@@ -11,7 +11,8 @@ of gameplay features; the launcher is the companion executable used to start it.
 > **`Internal/hook/Hook.h` is partially readable**: you may read lines **1–17** (includes,
 > `namespace Hook` opening, `g_hook`, and the `SetHook` signature) and lines **34 to the end**
 > (`Init` / `UnHook` / `isKeyPressed`). **Never read lines 18–33** — the body of
-> `BYTE *SetHook(void **VTable, int index, void *TargetFunction)`.
+> `BYTE *SetHook(void **VTable, int index, void *TargetFunction)` and
+> `**Never read the full file**
 
 ## Repository layout
 
