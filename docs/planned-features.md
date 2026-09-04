@@ -8,56 +8,8 @@ first: **1 → 2 → 3 → 5 → 4**.
 Legend for "forbidden files": `Internal/dllmain.cpp` and `Launcher/Launcher.cpp` can't be edited
 here; any change they need is captured in `TODO.md` instead.
 
----
+features 1-2 already done, skip 3 for now
 
-## 1. Real minidumps in the crash handler
-
-**Goal.** The shared crash handler currently writes a text stack trace
-(`Crashes/<timestamp>/StackTrace.log`). Also write a real `.dmp` next to it so a crash can be
-opened in a debugger (Visual Studio / WinDbg) with full call stacks, locals, and module list.
-
-**Approach.**
-- In [`shared/ExceptionHandler.h`](../shared/ExceptionHandler.h), after `WriteStackTrace`, call
-  `MiniDumpWriteDump` writing `Crashes/<timestamp>/Crash.dmp`, passing the live
-  `EXCEPTION_POINTERS` via a `MINIDUMP_EXCEPTION_INFORMATION` so the dump is anchored at the fault.
-- Add a dump-type to `Config` (e.g. `MiniDumpNormal | MiniDumpWithIndirectlyReferencedMemory |
-  MiniDumpWithDataSegs` for a "small" dump; a heavier flag set for a "full" dump), defaulting to
-  the small one. Keep it a `Config` field so launcher and DLL can differ if wanted.
-- `DbgHelp.lib` is already linked (`#pragma comment` in the same header); `MiniDumpWriteDump` and
-  `MINIDUMP_TYPE` come from `<DbgHelp.h>`, already included.
-- The `WriteCrashLog` signature already carries the exception code + `CONTEXT*`; thread the
-  `EXCEPTION_POINTERS*` through `Filter` so the dump gets the real record (today only `CONTEXT` is
-  passed). Pure enough that the existing `ExceptionHandlerTests` can assert the `.dmp` is created.
-
-**Touches.** `shared/ExceptionHandler.h` (+ a test in `Tests/ExceptionHandlerTests.cpp`).
-**Forbidden files.** None — both sides already call `Install`/`WriteCrashLog` through the shared
-API.
-**Size.** Small.
-
----
-
-## 2. Streamproof overlay (toggle)
-
-**Goal.** Optionally hide the in-game overlay (menu + ESP) from screen capture (OBS, Discord,
-Xbox Game Bar) so only the local player sees it.
-
-**Approach.**
-- `SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE)` on the game window
-  (`Window::WindowHandle`, resolved in [`menu/gui/Gui.h`](../Internal/menu/gui/Gui.h) as
-  `FindWindow(L"UnrealWindow", L"PortalWars  ")`). `WDA_NONE` restores normal capture.
-- New `MenuSettings::Streamproof` bool (persisted). Apply it once at `GUI::Init()` and whenever the
-  toggle flips.
-- UI: a "Streamproof" toggle in the **Misc** section (`menu/sections/Misc.h`). Dispatch
-  `SettingsChanged` like the other toggles.
-- Caveat to document: `WDA_EXCLUDEFROMCAPTURE` needs Windows 10 2004+ (older returns an error and
-  the window just stays visible in captures); the affinity applies to the whole game window, not
-  just the overlay layer.
-
-**Touches.** `settings/Settings.h`, `menu/sections/Misc.h`, and the apply-site in `menu/gui/Gui.h`.
-**Forbidden files.** None.
-**Size.** Small.
-
----
 
 ## 3. Guard-page hook (`Hook::GuardHook`) — prototype
 
