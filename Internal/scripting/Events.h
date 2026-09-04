@@ -45,9 +45,10 @@ namespace Events
 	/// Handlers that don't care ignore it.
 	struct Payload
 	{
-		void* source = nullptr; ///< primary object involved
-		void* target = nullptr; ///< secondary object (e.g. the instigator)
-		float value = 0.f;		///< a scalar (e.g. damage)
+		void* source = nullptr;		///< primary object involved
+		void* target = nullptr;		///< secondary object (e.g. the instigator)
+		float value = 0.f;			///< a scalar (e.g. damage, or a new bool value 0/1)
+		const char* name = nullptr; ///< SettingsChanged: which setting/feature changed (a label)
 	};
 
 	/// Subscribers, keyed by event; iterated in registration order on Dispatch.
