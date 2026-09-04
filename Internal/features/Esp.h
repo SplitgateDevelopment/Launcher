@@ -30,9 +30,8 @@ class Esp : public Feature
 	/// returns {0,0} when the point is behind the camera or failed to project).
 	static bool OffScreen(const FVector2D& p) { return !p.X && !p.Y; }
 
-	// 2D bounding box from the head (top) down to the root/feet (bottom).
-	// TODO: a true 3D box needs a world-to-screen for the box corners, which the
-	// SDK does not expose yet; Box3D currently draws the same 2D box.
+	// 2D bounding box from the head (top) down to the root/feet (bottom). The 3D variant is
+	// DrawBox3D below.
 	void DrawBox(const FVector2D& head, const FVector2D& feet, const FLinearColor& color)
 	{
 		const float height = feet.Y - head.Y;
