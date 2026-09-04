@@ -617,6 +617,20 @@ bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVec
 	return Parameters.ReturnValue;
 };
 
+char APortalWarsCharacter::GetTeamNum()
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.GetTeamNum");
+
+	struct
+	{
+		char ReturnValue;
+	} Parameters;
+
+	ProcessEvent(Function, &Parameters);
+
+	return Parameters.ReturnValue;
+}
+
 struct UClass* ACharacter::StaticClass()
 {
 	return (UClass*)ObjObjects->FindObject("Class Engine.Character");

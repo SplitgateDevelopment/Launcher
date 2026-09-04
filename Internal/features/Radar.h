@@ -77,6 +77,14 @@ class Radar : public Feature
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
+		const bool showFriendly = Settings.VISUALS.ShowFriendly;
+		const FLinearColor friendColor{Settings.VISUALS.FriendColor.R, Settings.VISUALS.FriendColor.G, Settings.VISUALS.FriendColor.B, Settings.VISUALS.FriendColor.A};
+
+		// The local player's team, so teammates plot in FriendColor (and only when shown).
+		char localTeam = -1;
+		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
+			localTeam = localChar->GetTeamNum();
+
 		const FVector playerPos = localPawn->K2_GetActorLocation();
 		const float yaw = controller->ControlRotation.Yaw * (3.14159265f / 180.f);
 		const float cosYaw = cosf(yaw);
@@ -116,6 +124,11 @@ class Radar : public Feature
 				if (!Actor->IsA(CharacterClass)) continue;
 				if (Actor == localPawn) continue;
 
+				const char team = reinterpret_cast<APortalWarsCharacter*>(Actor)->GetTeamNum();
+				const bool friendly = (localTeam >= 0 && team == localTeam);
+				if (friendly && !showFriendly) continue;
+				const FLinearColor color = friendly ? friendColor : dot;
+
 				const FVector enemyPos = Actor->K2_GetActorLocation();
 				const float dx = enemyPos.X - playerPos.X;
 				const float dy = enemyPos.Y - playerPos.Y;
@@ -129,7 +142,7 @@ class Radar : public Feature
 
 				if (px < cx - radius || px > cx + radius || py < cy - radius || py > cy + radius) continue;
 
-				Cross(px, py, 2.f, 2.f, dot);
+				Cross(px, py, 2.f, 2.f, color);
 			}
 		}
 	};

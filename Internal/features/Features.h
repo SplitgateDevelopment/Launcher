@@ -20,6 +20,7 @@
 #include "ThirdPerson.h"
 #include "FreeCam.h"
 #include "Radar.h"
+#include "DebugNames.h"
 #include "../network/Network.h"
 
 namespace Features
@@ -40,6 +41,7 @@ namespace Features
 		Features.push_back(std::make_unique<ThirdPerson>());
 		Features.push_back(std::make_unique<FreeCam>());
 		Features.push_back(std::make_unique<Radar>());
+		Features.push_back(std::make_unique<DebugNames>());
 
 		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install
 		// its hooks once here. They self-gate on Settings.NETWORK, and MinHook is already

@@ -31,14 +31,23 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Health", &v.Health);
 			changed |= ImGui::ToggleButton("Distance", &v.Distance);
 
+			ImGui::SeparatorText("Teams");
+			changed |= ImGui::ToggleButton("Show teammates", &v.ShowFriendly);
+			ImGui::Tooltip("Also draw teammates (ESP + radar), in the friendly color below.");
+
 			ImGui::SeparatorText("Radar");
 			changed |= ImGui::ToggleButton("Enable Radar", &v.Radar);
+
+			ImGui::SeparatorText("Debug");
+			changed |= ImGui::ToggleButton("Draw all object names", &v.DrawAllNames);
+			ImGui::Tooltip("Draws the UObject name of every actor in the world (not just players).");
 
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);
 			ImGui::ColorEdit4("Box", &v.BoxColor.R);
 			ImGui::ColorEdit4("Bones", &v.BonesColor.R);
 			ImGui::ColorEdit4("Snaplines", &v.SnaplineColor.R);
+			ImGui::ColorEdit4("Friendly", &v.FriendColor.R);
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}

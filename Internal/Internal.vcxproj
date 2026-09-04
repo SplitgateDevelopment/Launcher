@@ -84,6 +84,7 @@
     <ClInclude Include="features\ThirdPerson.h" />
     <ClInclude Include="features\FreeCam.h" />
     <ClInclude Include="features\Radar.h" />
+    <ClInclude Include="features\DebugNames.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
     <ClInclude Include="menu\gui\Gui.h" />

@@ -157,12 +157,18 @@ class Esp : public Feature
 		const FLinearColor boxColor = ToColor(visuals.BoxColor);
 		const FLinearColor bonesColor = ToColor(visuals.BonesColor);
 		const FLinearColor snaplineColor = ToColor(visuals.SnaplineColor);
+		const FLinearColor friendColor = ToColor(visuals.FriendColor);
 
 		auto* controller = Globals::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		const bool hasPlayer = localPawn != nullptr;
 		FVector playerPos{};
 		if (hasPlayer) playerPos = localPawn->K2_GetActorLocation();
+
+		// The local player's team, so teammates can be filtered/recolored. -1 = unknown (draw all).
+		char localTeam = -1;
+		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
+			localTeam = localChar->GetTeamNum();
 
 		auto& Levels = Globals::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
@@ -185,6 +191,18 @@ class Esp : public Feature
 				if (Actor == localPawn) continue;
 
 				auto Character = reinterpret_cast<APortalWarsCharacter*>(Actor);
+
+				// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
+				// in FriendColor when shown.
+				const char team = Character->GetTeamNum();
+				const bool friendly = (localTeam >= 0 && team == localTeam);
+				if (friendly && !visuals.ShowFriendly) continue;
+
+				const FLinearColor boxC = friendly ? friendColor : boxColor;
+				const FLinearColor bonesC = friendly ? friendColor : bonesColor;
+				const FLinearColor snapC = friendly ? friendColor : snaplineColor;
+				const FLinearColor nameC = friendly ? friendColor : nameColor;
+
 				auto Mesh = Character->Mesh;
 
 				FVector2D head = Mesh->GetBone(BoneFNames::head, controller);
@@ -192,24 +210,29 @@ class Esp : public Feature
 				if (OffScreen(feet)) continue;
 
 				if (visuals.Snaplines)
-					Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snaplineColor);
+					Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
 
 				if (visuals.Box && !OffScreen(head))
-					DrawBox(head, feet, boxColor);
+					DrawBox(head, feet, boxC);
 
 				if (visuals.Health && !OffScreen(head))
 					DrawHealth(head, feet, Character->Health, Character->MaxHealth);
 
 				if (visuals.Bones)
-					DrawSkeleton(Mesh, controller, bonesColor);
+					DrawSkeleton(Mesh, controller, bonesC);
 
+				// Player name from the player state (not the UObject name).
 				if (visuals.Name)
-					Globals::Canvas->K2_DrawText(0, Actor->GetName(), feet, {1.f, 1.f}, nameColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+				{
+					auto* state = Character->PlayerState;
+					if (state)
+						Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {1.f, 1.f}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+				}
 
 				if (visuals.Distance && hasPlayer)
 				{
 					std::string text = std::to_string((int)Distance(playerPos, Actor->K2_GetActorLocation())) + "m";
-					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {1.f, 1.f}, nameColor, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {1.f, 1.f}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 				}
 			}
 		}
