@@ -67,6 +67,16 @@ namespace Menu
 				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
 
+			ImGui::SeparatorText("Bullet traces");
+			changed |= ImGui::ToggleButton("Bullet traces", &v.BulletTraces);
+			ImGui::Tooltip("Draw a fading trail behind each projectile (PortalWars.Projectile and subclasses).");
+			if (v.BulletTraces)
+			{
+				changed |= ImGui::SliderFloat("Trail duration", &v.BulletTraceDuration, 0.5f, 6.f, "%.1fs");
+				ImGui::ColorEdit4("Trail color", &v.BulletTraceColor.R);
+				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+			}
+
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);
 			ImGui::ColorEdit4("Box", &v.BoxColor.R);

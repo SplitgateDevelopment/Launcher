@@ -97,6 +97,7 @@
     <ClInclude Include="features\AimFov.h" />
     <ClInclude Include="features\AnnounceToggles.h" />
     <ClInclude Include="features\Crosshair.h" />
+    <ClInclude Include="features\BulletTraces.h" />
     <ClInclude Include="features\DiscordPresence.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />

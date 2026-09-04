@@ -425,21 +425,16 @@ server-simulated, so this may be client-visual only — verify in-game. **Files.
 (or a projectile pass), a `features/BulletSpeed.h`, `settings/Settings.h`, `menu/sections/Exploits.h`.
 **Size.** Medium. **Depends on:** the projectile class + movement-component offsets.
 
-### Bullet traces (tracer trails)
+### Bullet traces (tracer trails) — DONE (projectile weapons)
 
-**Goal.** When you fire, draw the bullet's trajectory and leave it on screen for a few seconds — a
-visual tracer/history.
-
-**Approach.** Each frame, find the local player's live projectile actors (same projectile filter as
-above) and record a timestamped point (world position) per projectile id. Keep a ring/list of recent
-points (or line segments start→current) with an expiry (~2-3 s); every frame project the surviving
-points with `Projection::WorldToScreen` and draw connecting lines via `Render::Line` (respects the
-active renderer), fading by age. For hitscan weapons (no projectile actor) this instead needs the fire
+Shipped as `features/BulletTraces.h` (Visuals tab, `VISUALS.BulletTraces` + duration + color,
+RGB-aware). Each frame it finds live projectile actors (`IsA Class PortalWars.Projectile`, which
+covers Explosive/EMP/Impact/Plasma), records a timestamped world position per projectile, and draws
+fading connecting lines via `Projection::WorldToScreen` + `Render::Line`. Trails are only drawn from
+recorded positions, so a despawned projectile's trail lingers and fades without dereferencing the dead
+actor. **Still open:** hitscan weapons (no projectile actor) — that needs the fire
 trace's start/end — which ties into the native fire hook (BLOCKED item above); the projectile path is
-independent and buildable now. Guarded on a `bool BulletTraces` (+ color / duration). **Files.**
-a `features/BulletTraces.h`, `settings/Settings.h`, `menu/sections/Visuals.h`. **Size.** Medium.
-**Depends on:** locating projectile actors (shared with bullet speed); native fire hook only for the
-hitscan variant.
+independent and is what's shipped.
 
 ## Requested UI / QoL
 
