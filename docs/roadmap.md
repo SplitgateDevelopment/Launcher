@@ -525,17 +525,16 @@ Swap `CurlHook` / `GetBoneMatrix` resolution onto it, keeping `FindSignature` as
 **Files.** a new `utils/Memcury.h` (or a trimmed vendored copy), `network/CurlHook.h`, `ue/Engine.cpp`.
 **Size.** Medium; pure infrastructure, testable offline against the same signatures.
 
-### Hook `curl_setopt` (Curl_vsetopt) too — optional
+### Hook `curl_setopt` (Curl_vsetopt) too — DONE
 
-Platanium hooks **both** `curl_easy_setopt` (the public, variadic entry) **and** `curl_setopt`
-(the internal `Curl_vsetopt(CURL*, CURLoption, va_list)` it forwards to). We only hook the public one
-and forward with a 3-param prototype, which is ABI-correct for the single-register vararg cases we use
-(`CURLOPT_URL`, the `SSL_VERIFY*` longs). Resolving `Curl_vsetopt` — whose address we already get for
-free (it's the `call` target inside `curl_easy_setopt`; `find_signature.py --reg edx ... --len` +
-`RelativeOffset`) — would let us forward the real `va_list` (fully correct for *any* option type) and
-catch options set through the internal path. Low priority: not needed for the redirect/SSL bypass, but
-the address is already in hand if we want a more complete hook. **Files.** `network/CurlHook.h`.
-**Size.** Small.
+Platanium covers both the public `curl_easy_setopt` and the internal
+`curl_setopt`/`Curl_vsetopt(CURL*, CURLoption, va_list)` it forwards to. `CurlHook` now does the same:
+after finding `curl_easy_setopt`, it follows the single near-call in its prologue to resolve
+`Curl_vsetopt` and hooks that too (`HookedVSetOpt`), applying the same URL rewrite + SSL-verify bypass
+by patching the first va_list slot in place (x64: `*(void**)args`). This catches setopt calls made
+through curl's internal path, not just the public wrapper. The two hooks coexist safely because both
+rewrites are idempotent (a re-checked URL / already-0 verify is a no-op). **Files.**
+`network/CurlHook.h`.
 
 ## Suggested sequencing
 

@@ -187,8 +187,16 @@ linked**, so its symbols aren't exported and `GetProcAddress` can't find them. T
    curl rejecting it (the technique [Platanium](https://github.com/WorkingRobot/Platanium/blob/master/curlhooks.h)
    uses). It disables verification for **all** curl traffic while on, so it's opt-in.
 
+4. **Also hook the internal `Curl_vsetopt`.** `curl_easy_setopt` forwards to
+   `Curl_vsetopt(CURL*, CURLoption, va_list)`; its address is the single near-call in the wrapper's
+   prologue, so we follow that call and hook it too, applying the same URL rewrite / SSL-verify bypass
+   by patching the first va_list slot (`*(void**)args` on x64). This covers setopt calls that reach
+   curl through its internal path, not just the public wrapper (the technique
+   [Platanium](https://github.com/WorkingRobot/Platanium/blob/master/curlhooks.h) uses). Both hooks
+   are idempotent, so they coexist without double-applying.
+
 That single choke point covers **all** of the game's HTTP (login, profile, matchmaking, feed),
-because every request's URL flows through `curl_easy_setopt`.
+because every request's URL flows through `curl_easy_setopt` / `Curl_vsetopt`.
 
 ### How to verify
 
