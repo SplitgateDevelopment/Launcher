@@ -67,6 +67,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cache\ActorCache.h" />
     <ClInclude Include="features\Feature.h" />
     <ClInclude Include="network\Network.h" />
     <ClInclude Include="network\Redirect.h" />

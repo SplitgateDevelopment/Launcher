@@ -7,6 +7,7 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../cache/ActorCache.h"
 
 #include <cmath>
 #include <string>
@@ -208,72 +209,54 @@ class Esp : public Feature
 		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
 			localTeam = localChar->GetTeamNum();
 
-		auto& Levels = Globals::World->Levels;
-		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
+		// One shared actor pass built this frame in ActorCache; iterate the cached characters.
+		for (auto* Character : ActorCache::Players())
 		{
-			if (!Levels.IsValidIndex(l)) continue;
+			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
 
-			ULevel* Level = Levels[l];
-			if (!Level) continue;
+			// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
+			// in FriendColor when shown.
+			const char team = Character->GetTeamNum();
+			const bool friendly = (localTeam >= 0 && team == localTeam);
+			if (friendly && !visuals.ShowFriendly) continue;
 
-			auto& Actors = Level->Actors;
-			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++)
+			const FLinearColor boxC = friendly ? friendColor : boxColor;
+			const FLinearColor bonesC = friendly ? friendColor : bonesColor;
+			const FLinearColor snapC = friendly ? friendColor : snaplineColor;
+			const FLinearColor nameC = friendly ? friendColor : nameColor;
+
+			auto Mesh = Character->Mesh;
+
+			FVector2D head = Mesh->GetBone(BoneFNames::head, controller);
+			FVector2D feet = Mesh->GetBone(BoneFNames::Root, controller);
+			if (OffScreen(feet)) continue;
+
+			if (visuals.Snaplines)
+				Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
+
+			if (visuals.Box3D)
+				DrawBox3D(controller, Character->K2_GetActorLocation(), boxC);
+			else if (visuals.Box && !OffScreen(head))
+				DrawBox(head, feet, boxC);
+
+			if (visuals.Health && !OffScreen(head))
+				DrawHealth(head, feet, Character->Health, Character->MaxHealth);
+
+			if (visuals.Bones)
+				DrawSkeleton(Mesh, controller, bonesC);
+
+			// Player name from the player state (not the UObject name).
+			if (visuals.Name)
 			{
-				if (!Actors.IsValidIndex(a)) continue;
+				auto* state = Character->PlayerState;
+				if (state)
+					Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+			}
 
-				auto Actor = Actors[a];
-
-				if (!Actor) continue;
-				if (!Actor->RootComponent) continue;
-				if (!Actor->IsA(CharacterClass)) continue;
-				if (Actor == localPawn) continue;
-
-				auto Character = reinterpret_cast<APortalWarsCharacter*>(Actor);
-
-				// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
-				// in FriendColor when shown.
-				const char team = Character->GetTeamNum();
-				const bool friendly = (localTeam >= 0 && team == localTeam);
-				if (friendly && !visuals.ShowFriendly) continue;
-
-				const FLinearColor boxC = friendly ? friendColor : boxColor;
-				const FLinearColor bonesC = friendly ? friendColor : bonesColor;
-				const FLinearColor snapC = friendly ? friendColor : snaplineColor;
-				const FLinearColor nameC = friendly ? friendColor : nameColor;
-
-				auto Mesh = Character->Mesh;
-
-				FVector2D head = Mesh->GetBone(BoneFNames::head, controller);
-				FVector2D feet = Mesh->GetBone(BoneFNames::Root, controller);
-				if (OffScreen(feet)) continue;
-
-				if (visuals.Snaplines)
-					Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
-
-				if (visuals.Box3D)
-					DrawBox3D(controller, Character->K2_GetActorLocation(), boxC);
-				else if (visuals.Box && !OffScreen(head))
-					DrawBox(head, feet, boxC);
-
-				if (visuals.Health && !OffScreen(head))
-					DrawHealth(head, feet, Character->Health, Character->MaxHealth);
-
-				if (visuals.Bones)
-					DrawSkeleton(Mesh, controller, bonesC);
-
-				// Player name from the player state (not the UObject name).
-				if (visuals.Name)
-				{
-					auto* state = Character->PlayerState;
-					if (state)
-						Globals::Canvas->K2_DrawText(0, state->PlayerNamePrivate, feet, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
-				}
-
-				if (visuals.Distance && hasPlayer)
-				{
-					std::string text = std::to_string((int)Distance(playerPos, Actor->K2_GetActorLocation())) + "m";
-					Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
-				}
+			if (visuals.Distance && hasPlayer)
+			{
+				std::string text = std::to_string((int)Distance(playerPos, Character->K2_GetActorLocation())) + "m";
+				Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 			}
 		}
 	};

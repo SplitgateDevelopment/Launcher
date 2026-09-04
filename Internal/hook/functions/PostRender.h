@@ -11,6 +11,7 @@
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Globals.h"
+#include "../../cache/ActorCache.h"
 #include "../../features/Features.h"
 
 /// @brief Hook code for UGameViewportClient::PostRender.
@@ -44,6 +45,9 @@ namespace PostRender
 			Globals::World = World;
 			Globals::Canvas = Canvas;
 			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+
+			// One shared actor pass per frame, consumed by the visual features below.
+			ActorCache::Update();
 
 			Features::Execute();
 		} while (false);

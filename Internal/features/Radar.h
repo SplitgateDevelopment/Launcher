@@ -7,6 +7,7 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../cache/ActorCache.h"
 
 #include <cmath>
 
@@ -106,44 +107,30 @@ class Radar : public Feature
 		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, border);
 		Cross(cx, cy, 3.f, 1.f, border);
 
-		auto& Levels = Globals::World->Levels;
-		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
+		// Shared per-frame actor pass (ActorCache), the same list the ESP uses.
+		for (auto* Character : ActorCache::Players())
 		{
-			if (!Levels.IsValidIndex(l)) continue;
+			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
 
-			ULevel* Level = Levels[l];
-			if (!Level) continue;
+			const char team = Character->GetTeamNum();
+			const bool friendly = (localTeam >= 0 && team == localTeam);
+			if (friendly && !showFriendly) continue;
+			const FLinearColor color = friendly ? friendColor : dot;
 
-			auto& Actors = Level->Actors;
-			for (int a = 0, actorCount = Actors.Num(); a < actorCount; a++)
-			{
-				if (!Actors.IsValidIndex(a)) continue;
+			const FVector enemyPos = Character->K2_GetActorLocation();
+			const float dx = enemyPos.X - playerPos.X;
+			const float dy = enemyPos.Y - playerPos.Y;
 
-				auto Actor = Actors[a];
-				if (!Actor) continue;
-				if (!Actor->IsA(CharacterClass)) continue;
-				if (Actor == localPawn) continue;
+			// Rotate the world delta into player-relative space (forward/right).
+			const float forward = dx * cosYaw + dy * sinYaw;
+			const float right = -dx * sinYaw + dy * cosYaw;
 
-				const char team = reinterpret_cast<APortalWarsCharacter*>(Actor)->GetTeamNum();
-				const bool friendly = (localTeam >= 0 && team == localTeam);
-				if (friendly && !showFriendly) continue;
-				const FLinearColor color = friendly ? friendColor : dot;
+			const float px = cx + (right / Range) * radius;
+			const float py = cy - (forward / Range) * radius; // forward = up
 
-				const FVector enemyPos = Actor->K2_GetActorLocation();
-				const float dx = enemyPos.X - playerPos.X;
-				const float dy = enemyPos.Y - playerPos.Y;
+			if (px < cx - radius || px > cx + radius || py < cy - radius || py > cy + radius) continue;
 
-				// Rotate the world delta into player-relative space (forward/right).
-				const float forward = dx * cosYaw + dy * sinYaw;
-				const float right = -dx * sinYaw + dy * cosYaw;
-
-				const float px = cx + (right / Range) * radius;
-				const float py = cy - (forward / Range) * radius; // forward = up
-
-				if (px < cx - radius || px > cx + radius || py < cy - radius || py > cy + radius) continue;
-
-				Cross(px, py, 2.f, 2.f, color);
-			}
+			Cross(px, py, 2.f, 2.f, color);
 		}
 	};
 };
