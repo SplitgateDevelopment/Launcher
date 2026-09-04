@@ -93,10 +93,14 @@ namespace GUI
 			InitializeImGui(pSwapChain);
 		if (!initialized) return;
 
-		// While minimized the back buffer is 0x0: recreating the render target and running ImGui
-		// with a zero display size corrupts D3D state (freeze then crash on minimize). Skip the
-		// overlay entirely and just let Present forward until the window is restored.
-		if (IsIconic(Window::WindowHandle)) return;
+		// Skip rendering into a degenerate target: minimized, or a zero-sized client area (which is
+		// also true during the minimize/restore transition, before IsIconic flips). Running ImGui at
+		// a 0x0 display size corrupts D3D state (freeze then crash) - and it's worse with the menu
+		// open, since that draws far more geometry. Just let Present forward until the window is back.
+		RECT clientRect{};
+		if (IsIconic(Window::WindowHandle) || !GetClientRect(Window::WindowHandle, &clientRect) ||
+			clientRect.right - clientRect.left <= 0 || clientRect.bottom - clientRect.top <= 0)
+			return;
 
 		// A window resize releases our render target in HookResizeBuffers (so the game's own
 		// ResizeBuffers can succeed); recreate it here once the swap chain has the new back buffer.
