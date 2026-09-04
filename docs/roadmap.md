@@ -514,14 +514,15 @@ without announcing on enable and re-seeds on disable, so it never spams. Indepen
 
 ## Integrations
 
-### Discord Rich Presence tab + richer state — PARTIAL (richer state done)
-**Done:** the `DiscordPresence` feature refreshes the RPC `state` every ~5s from live game reads —
-the current map (`World->GetName()`) and the local player's K/D
-(`APortalWarsPlayerState.PlayerStats.Kills/Deaths`), or "In menu" out of a match
-(`DiscordRPC::UpdateGameState` in `discord/rpc.h`). Cheap field reads, no ProcessEvent, pushed only
-on change.
-**Still open:** a dedicated Discord tab to configure presence, plus more fields (elapsed game time,
-party/mode, `details`/timestamps). **Size:** the remaining tab is Small–medium.
+### Discord Rich Presence tab + richer state — DONE
+- **Richer state:** the `DiscordPresence` feature refreshes the RPC `state` every ~5s from live game
+  reads — the current map (`World->GetName()`) and the local player's K/D
+  (`APortalWarsPlayerState.PlayerStats.Kills/Deaths`), or "In menu" out of a match
+  (`DiscordRPC::UpdateGameState` in `discord/rpc.h`). Cheap field reads, no ProcessEvent, on change.
+- **Tab:** a dedicated **Discord** tab ([menu/sections/Discord.h](../Internal/menu/sections/Discord.h))
+  — enable/disable presence (clears it from your profile when off), the live state/details, a
+  **Refresh now** button, and the app/image info.
+- **Still open (nice-to-have):** elapsed game time / party / mode fields.
 
 ## Tooling (reverse-engineering)
 

@@ -109,6 +109,7 @@
     <ClInclude Include="menu\sections\Misc.h" />
     <ClInclude Include="menu\sections\Scripts.h" />
     <ClInclude Include="menu\sections\Sdk.h" />
+    <ClInclude Include="menu\sections\Discord.h" />
     <ClInclude Include="menu\sections\Network.h" />
     <ClInclude Include="menu\sections\Config.h" />
     <ClInclude Include="settings\Profiles.h" />

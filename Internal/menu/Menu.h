@@ -14,6 +14,7 @@
 #include "sections/Config.h"
 #include "sections/Scripts.h"
 #include "sections/Sdk.h"
+#include "sections/Discord.h"
 #include "sections/Debug.h"
 #include "sections/Watermark.h"
 
@@ -143,6 +144,12 @@ namespace Menu
 		if (ImGui::BeginTabItem("SDK"))
 		{
 			Menu::Sections::SdkTab();
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Discord"))
+		{
+			Menu::Sections::DiscordTab();
 			ImGui::EndTabItem();
 		}
 
