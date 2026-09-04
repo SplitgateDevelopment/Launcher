@@ -246,6 +246,45 @@ log it, then hook it (via the event bus or MinHook) and rewrite the trace start/
 hit result) toward the selected target before the original runs, leaving `ControlRotation`
 untouched. **Size:** Medium; needs the fire function name (discoverable in-game).
 
+### Phasing bullets (wallbang) toggle
+
+**Goal.** Let the local player's shots register through world geometry, so a target behind cover
+can still be hit.
+
+**Approach.** Rides on the same fire path as the silent aim above — once the fire/trace UFunction is
+found, drop world collision from the shot: rewrite the trace's collision channel / query params to
+ignore `WorldStatic` (or extend the trace and force the hit result onto the target). Confirm whether
+the game trusts the client's hit (many titles server-validate line-of-sight, so this may be
+client-visual only or rejected) before scoping it. Guarded on a `bool PhasingBullets` in
+`AimSettings`, wired through the fire hook.
+**Files.** `settings/Settings.h` (AimSettings), the fire-hook feature, `menu/sections/Aim.h`.
+**Size.** Medium. **Depends on:** the fire function (shared with trace-redirect silent aim); in-game
+verification of server trust.
+
+### Aimbot visibility check toggle
+
+**Goal.** Only lock onto targets in line of sight, so the aimbot ignores enemies behind walls.
+
+**Approach.** A `bool AimVisibleCheck` in `AimSettings`. In the target-selection pass, before
+accepting a candidate, trace from the camera location to the target bone (a `LineTraceSingle` /
+visibility channel) and skip the candidate if the first blocking hit isn't that character. Reuse the
+camera POV read from the native WorldToScreen work. Same check is reusable for the triggerbot.
+**Files.** `settings/Settings.h` (AimSettings), the aimbot feature/target selection,
+`menu/sections/Aim.h`.
+**Size.** Small–medium. **Depends on:** a world line-trace helper in `ue/`.
+
+### Draw aim FOV circle
+
+**Goal.** Optionally draw a circle at the crosshair with radius = `AimFov`, so the lock-on cone is
+visible while tuning.
+
+**Approach.** A `bool DrawAimFov` (+ its own `Color`). Each frame, draw a circle centered on the
+screen center (crosshair) with radius `AimSettings.AimFov` px through the `Render` abstraction (or the
+ImGui foreground draw list), so it follows whichever renderer is active. Optionally only while the aim
+key is held.
+**Files.** `settings/Settings.h`, the render/ESP draw pass, `menu/sections/Aim.h` (or Visuals).
+**Size.** Small.
+
 ## Requested UI / QoL
 
 ### Unload button — DONE
@@ -259,13 +298,15 @@ GObjects**) and fix the command (and/or use `SpawnObject`/`SpawnActor` with the 
 **Size:** Small (needs the class name).
 
 ### RGB for everything colorable — PARTIAL (watermark, menu accent, radar self done)
-A `Color` (with an ImGui `ColorEdit4`) for every drawable/tintable element, unified in one place:
-ESP lines/boxes/bones/name/health (partly done), radar self-icon, watermark text, the ImGui menu
-accent / top-bar (via `ImGuiStyle` colors), a custom crosshair, and the render-side ones — mesh /
-chams / glow, and (if achievable) our gun and player. Approach: extend the relevant settings with
-`Color` fields and wire each draw/style; the menu ones set `ImGui::GetStyle().Colors[...]`; the
-mesh/gun/player ones ride on the glow/cosmetics work. **Size:** Medium spread (menu/watermark are
-easy; mesh/gun/player depend on glow/cosmetics).
+Two strands. **(1) Per-element pickers:** a `Color` (ImGui `ColorEdit4`) for every drawable element —
+ESP lines/boxes/bones/name/health (done), a custom crosshair, and the render-side ones (mesh / chams /
+glow, and if achievable our gun and player, riding on the glow/cosmetics work). **(2) A single RGB
+rainbow toggle** (`MenuSettings.Rgb`, done): a time-cycled hue (`utils/Rgb.h`) that tints the
+watermark, the ImGui menu accent (`ImGui::GetStyle().Colors[...]`, snapshotting the theme defaults so
+toggling off restores them), and the radar self-icon; off falls back to their defaults (red / white)
+rather than a user-picked color. Future colorable elements pick a strand: static ones get a picker,
+menu chrome joins the rainbow. **Size:** Medium spread (menu/watermark/rainbow done;
+mesh/gun/player depend on glow/cosmetics).
 
 ### Cosmetics changer (player / gun / emotes)
 Override the local loadout's skins/materials/emote ids on the character and weapon. Caveat:
