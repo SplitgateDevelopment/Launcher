@@ -173,6 +173,111 @@ tab's "Request flow" panel.
 
 ---
 
+## Cameras
+
+### Custom third-person (and free-cam), since the game forces first person
+
+**Why the mode strings don't work.** `ClientSetCameraMode("ThirdPerson")` never engaged because
+Splitgate's camera manager (a custom `APortalWarsPlayerCameraManager`) forces first person and
+ignores the style. The free camera only worked via the `ToggleDebugCamera` console command (a
+built-in UE debug spectator), which is why `FreeCam` now uses `SendToConsole`.
+
+**How to discover camera modes when ProcessEvent shows nothing.** The game suppresses the mode
+change, so it never dispatches — you can't log it. Instead:
+- Read `APlayerCameraManager::CameraStyle` (an `FName` field) at runtime to see the current style,
+  and enumerate camera-related `FName`s from the GNames dump (see [game-dump.md](game-dump.md)).
+- Watch ProcessEvent for the camera *update* path while in the debug camera (`UpdateCamera` /
+  `DoUpdateCamera` / the view target's `CalcCamera`) — those *do* run.
+
+**Custom third person (yes, we can build our own).** Don't rely on a mode string; take over the
+final view:
+- Hook the camera POV computation — the pawn's/`PlayerCameraManager`'s `CalcCamera` /
+  `DoUpdateCamera` (find it via the camera-manager vtable or an AOB; it may be native, so a MinHook
+  by-signature hook rather than a ProcessEvent one). In the hook, offset the out
+  `FMinimalViewInfo.Location` backward from the player: `loc -= forward * Distance; loc += up *
+  Height;` with a wall trace to pull in on collision. Configurable distance/height/side.
+- Start here: a `ThirdPerson` rewrite that hooks the camera update and applies a fixed offset, then
+  add collision + tuning. **Size:** Large (needs the camera-update function via RE). Free-cam via
+  `ToggleDebugCamera` already works as the interim.
+
+## Renderers (beyond canvas / ImGui)
+
+The `Render::Backends[]` registry makes new backends a new enum value + one array entry. Worth
+adding:
+- **Null renderer** — draws nothing; a baseline for measuring the ProcessEvent/ImGui cost, and a
+  quick global "hide overlays".
+- **External overlay renderer** — draws into a separate, capture-excluded window (the streamproof
+  fix below). It's the natural third backend: `RendererMode::ImGuiStreamproof`.
+
+### Streamproof via a separate excluded overlay window
+
+**Why the current one is wrong.** `WDA_EXCLUDEFROMCAPTURE` on the *game* window hides the whole
+game from capture (whole-screen capture included). To hide *only* the overlay it must live in its
+own window.
+
+**Approach.** Create a layered, transparent, click-through, top-most window sized to the game
+(`WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW`, `SetLayeredWindowAttributes`
+or a DWM extend for transparency), set `WDA_EXCLUDEFROMCAPTURE` on it, give it its own D3D11
+device+swapchain and a second ImGui context. The ImGui renderer's `Flush()` targets this window's
+draw list when streamproof is on; drive its Present from the game's Present hook and keep its rect
+synced to the game window. **Input caveat:** click-through means the *menu* isn't interactive there
+— keep the menu on the game window (visible in your own view, not to capture is impossible for an
+interactive window), and route only the ESP/drawings to the excluded window. **Size:** Large; a
+full second render pipeline. This is why it's planned, not done — it's not a small toggle.
+
+## Aim
+
+### True (trace-redirect) silent aim
+
+The current silent aim snaps the view on fire. A truly invisible one redirects the *shot*, not the
+view: **firing is not suppressed like the camera, so the fire UFunction shows up in ProcessEvent** —
+log it, then hook it (via the event bus or MinHook) and rewrite the trace start/direction (or the
+hit result) toward the selected target before the original runs, leaving `ControlRotation`
+untouched. **Size:** Medium; needs the fire function name (discoverable in-game).
+
+## Requested UI / QoL
+
+### Unload button
+A GUI button (Debug or Misc) that triggers `Hook::UnHook` on a detached thread (the same teardown
+the Shutdown event runs), so the DLL can be unloaded on demand. **Size:** Small.
+
+### Fix "Summon Bot" / actor spawn
+`SendToConsole("summon PortalWarsBot_BP_C")` doesn't spawn — likely the wrong class path or a
+blocked `summon`. Confirm the bot's full class name from the GObjects dump (**Debug → Dump
+GObjects**) and fix the command (and/or use `SpawnObject`/`SpawnActor` with the resolved class).
+**Size:** Small (needs the class name).
+
+### RGB for everything colorable
+A `Color` (with an ImGui `ColorEdit4`) for every drawable/tintable element, unified in one place:
+ESP lines/boxes/bones/name/health (partly done), radar self-icon, watermark text, the ImGui menu
+accent / top-bar (via `ImGuiStyle` colors), a custom crosshair, and the render-side ones — mesh /
+chams / glow, and (if achievable) our gun and player. Approach: extend the relevant settings with
+`Color` fields and wire each draw/style; the menu ones set `ImGui::GetStyle().Colors[...]`; the
+mesh/gun/player ones ride on the glow/cosmetics work. **Size:** Medium spread (menu/watermark are
+easy; mesh/gun/player depend on glow/cosmetics).
+
+### Cosmetics changer (player / gun / emotes)
+Override the local loadout's skins/materials/emote ids on the character and weapon. Caveat:
+cosmetics are likely server-authoritative, so changes may be **client-visual only or revert** —
+scope it as a visual override and verify in-game. Needs the skin/material/emote fields via RE.
+**Size:** Large.
+
+### Announce toggles in chat (from the feature, not the player)
+When enabled and in a game, post `[ESP] Enabled` / `[ESP] 3D boxes on` on each toggle. Key point:
+`PlayerController->SendChatMessage` sends to the **server** (everyone sees it as you) — wrong for
+this. Use a **client-only local message** instead (e.g. `APlayerController::ClientMessage`, or the
+chat widget's local "add message"), so it shows only in your chat, labeled by the feature. This
+pairs with the **`SettingsChanged` payload** item (to know *which* setting/feature changed).
+**Size:** Medium; needs a local-message function + the changed-setting payload.
+
+## Integrations
+
+### Discord Rich Presence tab + richer state
+A dedicated Discord tab to configure presence, and more state: track kills (from the `PlayerKilled`
+event / `PlayerState` score), show the current level/map and elapsed game time, party/mode, etc.,
+updating the RPC `details`/`state`/timestamps periodically. Builds on the existing `discord/` RPC.
+**Size:** Medium (game-state reads + RPC fields + a menu tab).
+
 ## Suggested sequencing
 
 1. **Native WorldToScreen** — biggest standalone perf win, unblocks cheaper drawing everywhere.
