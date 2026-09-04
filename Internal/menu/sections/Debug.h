@@ -97,6 +97,15 @@ namespace Menu
 
 				ImGui::TreePop();
 			}
+
+			if (ImGui::CollapsingHeader("Recent logs"))
+			{
+				ImGui::BeginChild("Logs", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+				for (const auto& line : Logger::Recent())
+					ImGui::TextUnformatted(line.c_str());
+				if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f); // stick to bottom
+				ImGui::EndChild();
+			}
 		}
 	} // namespace Sections
 } // namespace Menu

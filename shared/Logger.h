@@ -11,6 +11,9 @@
 #include <format>
 #include <chrono>
 #include <string>
+#include <deque>
+#include <mutex>
+#include <vector>
 
 // Console-aware logger shared by the launcher and the injected DLL. It supports both
 // consoles: the launcher attaches to the one it already has, while the DLL spawns a fresh
@@ -83,18 +86,33 @@ namespace Shared
 			ShowWindow(consoleWindow, show ? SW_SHOW : SW_HIDE);
 		}
 
-		/// Writes one colored, timestamped `[level] message` line to the console and log file.
+		/// Writes one colored, timestamped `[level] message` line to the console and log file, and
+		/// keeps it in a capped in-memory ring buffer (see recentLog).
 		void log(const std::string& level, const std::string& message)
 		{
 			const std::string time = timestamp();
+			const std::string line = time + " [" + level + "] " + message;
+
+			{
+				std::lock_guard<std::mutex> lock(recentMutex);
+				recentLines.push_back(line);
+				if (recentLines.size() > RecentMax) recentLines.pop_front();
+			}
 
 			setColor(level);
-			std::cout << time << " [" << level << "] " << message << std::endl;
+			std::cout << line << std::endl;
 			resetColor();
 
 			if (!logFile) return;
-			fprintf(logFile, "%s [%s] %s\n", time.c_str(), level.c_str(), message.c_str());
+			fprintf(logFile, "%s\n", line.c_str());
 			fflush(logFile);
+		}
+
+		/// A snapshot of the most recent log lines (oldest first), for showing in the GUI.
+		std::vector<std::string> recentLog()
+		{
+			std::lock_guard<std::mutex> lock(recentMutex);
+			return {recentLines.begin(), recentLines.end()};
 		}
 
 		/// Logs `message` at the ERROR level.
@@ -149,6 +167,10 @@ namespace Shared
 		HWND consoleWindow = nullptr;	///< Only set in the DLL (spawned) path; owned there.
 		FILE* consoleStream = nullptr;	///< Redirected stdio stream from the spawned console.
 		FILE* logFile = nullptr;		///< Mirror file; null when no console was attached/created.
+
+		static constexpr size_t RecentMax = 200; ///< cap on the in-memory ring buffer
+		std::deque<std::string> recentLines;	 ///< recent formatted lines, for the GUI logs panel
+		std::mutex recentMutex;					 ///< guards recentLines (log is called off many threads)
 
 		/// Opens (truncating) the mirror log file at logPath.
 		void openLogFile(const std::string& logPath)

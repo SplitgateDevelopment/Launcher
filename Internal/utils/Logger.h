@@ -52,4 +52,10 @@ namespace Logger
 	{
 		Instance().setConsoleVisibility(show);
 	}
+
+	/// @return a snapshot of the most recent log lines (for the GUI logs panel).
+	inline std::vector<std::string> Recent()
+	{
+		return Instance().recentLog();
+	}
 }; // namespace Logger
