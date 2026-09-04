@@ -45,7 +45,7 @@ intentionally runtime/constant values that cannot be changed through the file.
 Settings live at:
 
 ```
-%USERPROFILE%\Documents\SplitgateInternal\splitgate.settings
+%USERPROFILE%\Documents\SplitgateInternal\settings\internal.settings
 ```
 
 resolved via `SHGetKnownFolderPath(FOLDERID_Documents, ...)`. The directory is

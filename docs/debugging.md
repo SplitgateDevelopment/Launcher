@@ -16,9 +16,11 @@ Both components log to a **console** and to a **file**:
 
 Both logs live together under the app folder's `logs\` subfolder.
 
-The DLL's app folder — `Documents\SplitgateInternal\` — also holds:
+The `logs\` subfolder also holds `http.log` (the optional HTTP-call log). The DLL's app folder —
+`Documents\SplitgateInternal\` — also holds:
 
-- `splitgate.settings` — the saved settings JSON ([settings.md](settings.md)).
+- `settings\internal.settings` — the DLL's saved settings JSON ([settings.md](settings.md)); the
+  launcher's settings live beside it as `settings\launcher.settings`.
 - `Crashes\<timestamp>\StackTrace.log` — one folder per crash (below).
 - `Dumps\GObjects.txt` — the object dump from **Debug → Dump GObjects**.
 

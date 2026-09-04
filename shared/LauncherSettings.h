@@ -68,7 +68,7 @@ namespace Shared
 	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(LauncherSettings, MITMPROXY)
 
 	/// The launcher's settings file name (lives in the same app folder as the DLL settings).
-	inline constexpr const char* LauncherSettingsFileName = "launcher.settings";
+	inline constexpr const char* LauncherSettingsFileName = "settings/launcher.settings";
 } // namespace Shared
 
 /// std::format support so `std::format("{}", mode)` works (scoped enums have no default one).

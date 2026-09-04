@@ -202,7 +202,7 @@ namespace SettingsHelper
 	/// App-data folder and settings file name. Single source of truth — the DLL owns the file,
 	/// the launcher reads it (Launcher/utils/ProxyConfig.h), so both reference these.
 	inline constexpr const char* AppFolder = "SplitgateInternal";
-	inline constexpr const char* SettingsFileName = "splitgate.settings";
+	inline constexpr const char* SettingsFileName = "settings/internal.settings";
 
 	/// The settings file bound to the global @ref Settings (lazily created on first use). Use
 	/// its `Load()` / `Save()` / `Reset()` / `Remove()` for persistence and `Path()` for its path.
