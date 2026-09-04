@@ -50,6 +50,45 @@ class Esp : public Feature
 		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, color);
 	}
 
+	// A true 3D box: project the 8 corners of a world-space box centred on the actor and connect
+	// them. Extents are approximate character half-sizes (cm) and may want in-game tuning.
+	void DrawBox3D(APlayerController* controller, const FVector& origin, const FLinearColor& color)
+	{
+		static constexpr float ex = 34.f, ey = 34.f, ez = 92.f; // half-extents (x, y, z)
+
+		const FVector world[8] = {
+			{origin.X - ex, origin.Y - ey, origin.Z - ez},
+			{origin.X + ex, origin.Y - ey, origin.Z - ez},
+			{origin.X + ex, origin.Y + ey, origin.Z - ez},
+			{origin.X - ex, origin.Y + ey, origin.Z - ez},
+			{origin.X - ex, origin.Y - ey, origin.Z + ez},
+			{origin.X + ex, origin.Y - ey, origin.Z + ez},
+			{origin.X + ex, origin.Y + ey, origin.Z + ez},
+			{origin.X - ex, origin.Y + ey, origin.Z + ez},
+		};
+
+		FVector2D screen[8];
+		for (int i = 0; i < 8; i++)
+			if (!controller->ProjectWorldLocationToScreen(world[i], screen[i], false)) return; // a corner behind the camera
+
+		static constexpr int edges[][2] = {
+			{0, 1},
+			{1, 2},
+			{2, 3},
+			{3, 0}, // bottom face
+			{4, 5},
+			{5, 6},
+			{6, 7},
+			{7, 4}, // top face
+			{0, 4},
+			{1, 5},
+			{2, 6},
+			{3, 7}, // verticals
+		};
+		for (const auto& e : edges)
+			Globals::Canvas->K2_DrawLine(screen[e[0]], screen[e[1]], 1.f, color);
+	}
+
 	// Vertical health bar just left of the box; green (full) to red (empty).
 	void DrawHealth(const FVector2D& head, const FVector2D& feet, float health, float maxHealth)
 	{
@@ -212,7 +251,9 @@ class Esp : public Feature
 				if (visuals.Snaplines)
 					Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
 
-				if (visuals.Box && !OffScreen(head))
+				if (visuals.Box3D)
+					DrawBox3D(controller, Character->K2_GetActorLocation(), boxC);
+				else if (visuals.Box && !OffScreen(head))
 					DrawBox(head, feet, boxC);
 
 				if (visuals.Health && !OffScreen(head))
