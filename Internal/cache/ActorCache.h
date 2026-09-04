@@ -18,8 +18,17 @@
 /// Shared, once-per-frame view of the world's actors.
 namespace ActorCache
 {
-	inline std::vector<APortalWarsCharacter*> players; ///< valid characters this frame (incl. the local player)
-	inline UObject* characterClass = nullptr;		   ///< resolved PortalWarsCharacter class (once)
+	/// A character plus the per-frame values every visual feature needs, each resolved with a
+	/// ProcessEvent — cached here so ESP and radar don't each re-fetch them.
+	struct Player
+	{
+		APortalWarsCharacter* character;
+		FVector location; ///< K2_GetActorLocation, once
+		char team;		  ///< GetTeamNum, once (-1 if unknown)
+	};
+
+	inline std::vector<Player> players;		  ///< cached characters this frame (incl. the local player)
+	inline UObject* characterClass = nullptr; ///< resolved PortalWarsCharacter class (once)
 
 	/// A cached actor is still safe to use while it isn't hidden or being torn down (the flags UE
 	/// sets before destroying an actor).
@@ -28,12 +37,14 @@ namespace ActorCache
 		return actor && actor->RootComponent && !actor->bHidden && !actor->bActorIsBeingDestroyed;
 	}
 
-	/// Rebuild the cache: one pass over every level's actors, keeping valid PortalWarsCharacters.
-	/// Call once per frame (from PostRender) before the features run.
+	/// Rebuild the cache: one pass over every level's actors, keeping valid PortalWarsCharacters and
+	/// caching their location + team. Call once per frame (from PostRender) before the features run.
+	/// Skips the work entirely when nothing consumes it (ESP and radar both off).
 	inline void Update()
 	{
 		players.clear();
 
+		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar) return;
 		if (!Globals::World) return;
 		if (!characterClass) characterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
@@ -55,13 +66,14 @@ namespace ActorCache
 				if (!IsValid(actor)) continue;
 				if (!actor->IsA(characterClass)) continue;
 
-				players.push_back(reinterpret_cast<APortalWarsCharacter*>(actor));
+				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
+				players.push_back({character, character->K2_GetActorLocation(), character->GetTeamNum()});
 			}
 		}
 	}
 
 	/// The characters cached this frame. Includes the local player — skip it at the call site.
-	inline const std::vector<APortalWarsCharacter*>& Players()
+	inline const std::vector<Player>& Players()
 	{
 		return players;
 	}

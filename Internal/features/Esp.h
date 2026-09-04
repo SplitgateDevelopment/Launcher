@@ -209,14 +209,16 @@ class Esp : public Feature
 		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
 			localTeam = localChar->GetTeamNum();
 
-		// One shared actor pass built this frame in ActorCache; iterate the cached characters.
-		for (auto* Character : ActorCache::Players())
+		// One shared actor pass built this frame in ActorCache; iterate the cached characters
+		// (location + team already resolved there, so no per-feature ProcessEvent for them).
+		for (const auto& cached : ActorCache::Players())
 		{
+			auto* Character = cached.character;
 			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
 
 			// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
 			// in FriendColor when shown.
-			const char team = Character->GetTeamNum();
+			const char team = cached.team;
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !visuals.ShowFriendly) continue;
 
@@ -235,7 +237,7 @@ class Esp : public Feature
 				Globals::Canvas->K2_DrawLine({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
 
 			if (visuals.Box3D)
-				DrawBox3D(controller, Character->K2_GetActorLocation(), boxC);
+				DrawBox3D(controller, cached.location, boxC);
 			else if (visuals.Box && !OffScreen(head))
 				DrawBox(head, feet, boxC);
 
@@ -255,7 +257,7 @@ class Esp : public Feature
 
 			if (visuals.Distance && hasPlayer)
 			{
-				std::string text = std::to_string((int)Distance(playerPos, Character->K2_GetActorLocation())) + "m";
+				std::string text = std::to_string((int)Distance(playerPos, cached.location)) + "m";
 				Globals::Canvas->K2_DrawText(0, FString(text), {feet.X, feet.Y + 14.f}, {visuals.FontScale, visuals.FontScale}, nameC, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
 			}
 		}

@@ -107,17 +107,17 @@ class Radar : public Feature
 		Globals::Canvas->K2_DrawLine(bl, tl, 1.f, border);
 		Cross(cx, cy, 3.f, 1.f, border);
 
-		// Shared per-frame actor pass (ActorCache), the same list the ESP uses.
-		for (auto* Character : ActorCache::Players())
+		// Shared per-frame actor pass (ActorCache); location + team already resolved there.
+		for (const auto& cached : ActorCache::Players())
 		{
-			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
+			if (reinterpret_cast<AActor*>(cached.character) == reinterpret_cast<AActor*>(localPawn)) continue;
 
-			const char team = Character->GetTeamNum();
+			const char team = cached.team;
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !showFriendly) continue;
 			const FLinearColor color = friendly ? friendColor : dot;
 
-			const FVector enemyPos = Character->K2_GetActorLocation();
+			const FVector enemyPos = cached.location;
 			const float dx = enemyPos.X - playerPos.X;
 			const float dy = enemyPos.Y - playerPos.Y;
 
