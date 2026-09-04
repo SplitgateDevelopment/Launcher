@@ -65,8 +65,13 @@ namespace Menu
 			{
 				ImGui::Text("%d match(es)%s", nameTotal, nameTotal > (int)nameResults.size() ? " (first 1000)" : "");
 				ImGui::BeginChild("NameResults", ImVec2(0, 180), true, ImGuiWindowFlags_HorizontalScrollbar);
-				for (const auto& row : nameResults)
-					ImGui::Text("[%d] %s", row.index, row.name.c_str());
+				// Only lay out the rows actually on screen (a fixed-height Text list), so a 1000-row
+				// result doesn't cost 1000 widgets every frame.
+				ImGuiListClipper clipper;
+				clipper.Begin(static_cast<int>(nameResults.size()));
+				while (clipper.Step())
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+						ImGui::Text("[%d] %s", nameResults[i].index, nameResults[i].name.c_str());
 				ImGui::EndChild();
 			}
 
@@ -113,8 +118,11 @@ namespace Menu
 			if (!instanceResults.empty())
 			{
 				ImGui::BeginChild("InstanceResults", ImVec2(0, 180), true, ImGuiWindowFlags_HorizontalScrollbar);
-				for (const auto& row : instanceResults)
-					ImGui::Text("[%d] 0x%llx %s", row.index, static_cast<unsigned long long>(row.address), row.name.c_str());
+				ImGuiListClipper clipper;
+				clipper.Begin(static_cast<int>(instanceResults.size()));
+				while (clipper.Step())
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+						ImGui::Text("[%d] 0x%llx %s", instanceResults[i].index, static_cast<unsigned long long>(instanceResults[i].address), instanceResults[i].name.c_str());
 				ImGui::EndChild();
 			}
 
