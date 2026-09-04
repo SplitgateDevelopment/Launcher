@@ -72,21 +72,35 @@ namespace Menu
 			// scanned from GObjects, plus a Spawn button that spawns the selection in front of you.
 			{
 				static std::vector<std::string> spawnClasses;
+				static std::vector<int> filtered;			 // indices into spawnClasses matching the search
 				static char search[128] = "";
+				static std::string lastSearch = "\x01";		 // sentinel: forces the first filter build
 				static std::string selected;
+				static bool scanned = false;
 
 				const auto scan = []
 				{
 					spawnClasses.clear();
 					static const char* keywords[] = {"Bot", "Pawn", "Gun", "Weapon", "Character", "Projectile", "Grenade", "Vehicle"};
+
+					// Identify class objects by their class pointer (the Class / BlueprintGeneratedClass
+					// meta-class) so GetFullName() — which allocates and walks the outer chain — is only
+					// paid on the handful of class objects, not on every one of the ~100k GObjects.
+					UObject* classMeta = ObjObjects->FindObject("Class CoreUObject.Class");
+					UObject* bgcMeta = ObjObjects->FindObject("Class Engine.BlueprintGeneratedClass");
+					const bool fast = (classMeta || bgcMeta);
+
 					const auto count = ObjObjects->NumElements;
 					for (auto i = 0u; i < count; i++)
 					{
 						auto* obj = ObjObjects->GetObjectPtr(i);
 						if (!obj) continue;
+						auto* cls = reinterpret_cast<UObject*>(obj->ClassPrivate);
+						if (fast && cls != classMeta && cls != bgcMeta) continue;
+
 						std::string full = obj->GetFullName();
-						// classes only (a class object's full name starts with "Class " / "BlueprintGeneratedClass ")
-						if (full.rfind("Class ", 0) != 0 && full.rfind("BlueprintGeneratedClass ", 0) != 0) continue;
+						if (!fast && full.rfind("Class ", 0) != 0 && full.rfind("BlueprintGeneratedClass ", 0) != 0) continue;
+
 						for (const char* kw : keywords)
 							if (full.find(kw) != std::string::npos)
 							{
@@ -94,21 +108,38 @@ namespace Menu
 								break;
 							}
 					}
+					scanned = true;
+					lastSearch = "\x01"; // re-filter against the fresh list
 				};
 
 				ImGui::SetNextItemWidth(240.f);
 				if (ImGui::BeginCombo("##spawnclass", selected.empty() ? "Spawn class..." : selected.c_str()))
 				{
-					if (spawnClasses.empty()) scan();
+					if (!scanned) scan(); // once, not every frame the combo is open
+
 					ImGui::SetNextItemWidth(-1.f);
 					ImGui::InputTextWithHint("##spawnsearch", "filter: bot, gun, pawn...", search, sizeof(search));
-					const std::string needle = search;
-					ImGui::BeginChild("##spawnlist", ImVec2(320, 220));
-					for (const auto& name : spawnClasses)
+
+					// Rebuild the filtered index list only when the search text changes.
+					if (search != lastSearch)
 					{
-						if (!needle.empty() && name.find(needle) == std::string::npos) continue;
-						if (ImGui::Selectable(name.c_str(), name == selected)) selected = name;
+						lastSearch = search;
+						filtered.clear();
+						for (int i = 0; i < static_cast<int>(spawnClasses.size()); i++)
+							if (lastSearch.empty() || spawnClasses[i].find(lastSearch) != std::string::npos)
+								filtered.push_back(i);
 					}
+
+					// Clip to the visible rows so a few-thousand-class list isn't laid out in full each frame.
+					ImGui::BeginChild("##spawnlist", ImVec2(340, 220));
+					ImGuiListClipper clipper;
+					clipper.Begin(static_cast<int>(filtered.size()));
+					while (clipper.Step())
+						for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+						{
+							const std::string& name = spawnClasses[filtered[r]];
+							if (ImGui::Selectable(name.c_str(), name == selected)) selected = name;
+						}
 					ImGui::EndChild();
 					ImGui::EndCombo();
 				}
