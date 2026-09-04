@@ -105,39 +105,57 @@ experimentation.
 
 ---
 
-## Python scripting expansion
+## Python scripting expansion — DONE (scripting API v2)
 
-Today `scripting/` exposes `SplitgateInternal.{Logger, Settings, Events}`. These add powerful, and
-dangerous, surface — everything runs on the game thread, actor pointers are valid only for the current
-frame, and raw UE calls can crash the game, so each binding needs guard rails and clear docs.
+`scripting/` now exposes `SplitgateInternal.{Logger, Settings, Events, Actors, Player, Engine,
+Render, Input}`. Everything runs on the game thread (script `main()` from the render loop, and
+`Events` handlers from their dispatch site), so game calls are safe; snapshots hold plain values, not
+raw pointers, to stay frame-safe. Documented with examples in [scripting.md](scripting.md).
 
-### Read actors from scripts
-**Goal.** `SplitgateInternal.Actors.players()` → a list of lightweight wrappers (`location`, `team`,
-`name`, `health`, `is_local`). **Approach.** A pybind `Actors` submodule that reads from `ActorCache`
-(so scripts share the one cached pass); wrappers hold plain values snapshotted for the frame, not raw
-pointers, to keep scripts safe. **Files.** `scripting/modules/Actors.h`, `Scripts.h`, `docs/scripting.md`.
+### Read actors from scripts — DONE
+`SplitgateInternal.Actors.players()` / `.enemies()` / `.count()` → snapshot `Player` objects
+(`x/y/z`, `location`, `team`, `health`, `max_health`, `name`, `is_local`, `address`). Rebuilds the
+shared `ActorCache` unconditionally so scripts see actors regardless of the ESP/aim toggles.
+**Files.** `scripting/modules/Actors.h`, `cache/ActorCache.h` (`Rebuild()`), `Scripts.h`.
 
-### Control / influence the local character
-**Goal.** `SplitgateInternal.Player.teleport(x,y,z)`, `.location`, `.set_health(h)`, `.controller`.
-**Approach.** A `Player` submodule wrapping the local character/controller UE calls (`K2_SetActorLocation`,
-health field writes, `SendToConsole`). Guard every call on a valid, in-game controller. **Files.**
-`scripting/modules/Player.h`, `Scripts.h`.
+### Control / influence the local character — DONE
+`SplitgateInternal.Player.{is_in_game, location, teleport(x,y,z), health, set_health, view_rotation,
+set_view_rotation, console(cmd), chat(msg)}`. Wraps the local character/controller UE calls
+(`K2_TeleportTo`, the `Health` field, `ControlRotation`/`SetControlRotation`, `SendToConsole`,
+`SendChatMessage`), each guarded on a valid controller/pawn. **Files.** `scripting/modules/Player.h`.
 
-### Access UE utils from scripts
-**Goal.** `SplitgateInternal.Engine.find_object(name)`, world/globals access, math helpers.
-**Approach.** An `Engine` submodule exposing a curated, safe subset (object lookup by name, `FVector`
-math, world/local-player accessors) — not the raw SDK. **Files.** `scripting/modules/Engine.h`.
+### Access UE utils from scripts — DONE
+`SplitgateInternal.Engine.{find_object(name), world_to_screen(x,y,z), canvas_size(), distance(...)}`
+— a curated safe subset (object lookup, native projection, viewport size, cm→m distance), not the raw
+SDK. **Files.** `scripting/modules/Engine.h`.
 
-### Draw from scripts
-**Goal.** `SplitgateInternal.Render.line(a, b, color)`, `.text(pos, text, color)` from a per-frame
-script hook. **Approach.** A `Render` submodule that forwards to the drawing layer (the feature-6
-`Render` abstraction, so scripts get canvas or ImGui automatically). Requires exposing a per-frame
-`Render` callback to scripts (a Python function invoked each frame, akin to the event bus). Coordinates
-via the native/existing WorldToScreen. **Files.** `scripting/modules/Render.h`, `Scripts.h`, and the
-render loop. **Depends on:** feature 6 (renderer) for the backend, ideally native WorldToScreen.
+### Draw from scripts — DONE
+`SplitgateInternal.Render.{line, text, circle, world_line, world_text}` forward to the `Render`
+abstraction (canvas/ImGui automatically) and project via the native WorldToScreen. Call them from a
+handler subscribed to `Events.Render` (already dispatched each frame by the UserScripts feature).
+**Files.** `scripting/modules/Render.h`.
 
-**Overall size (the four).** Large; best delivered as one "scripting API v2" pass with a documented,
-safe surface and examples in `docs/scripting.md`.
+### Extras shipped alongside
+- **`Input`** — `is_key_down(vk)` / `is_key_pressed(vk)` so scripts can gate on a key.
+- **Generic settings bridge** — `Settings.get(path)` / `set(path, value)` / `toggle(path)` with
+  dotted paths (e.g. `"VISUALS.Esp"`, `"AIM.AimFov"`, `"MENU.Rgb"`), JSON-backed off the same
+  serialization the config uses, so it covers **every** setting — current and future — for free, and
+  dispatches `SettingsChanged` like the menu. This is how scripts drive the program's latest features
+  (RGB, aim visibility check, FOV circle, SSL bypass, ...).
+
+### Further ideas (not built)
+- **`Actors` extras:** per-bone world positions (`bone(index)`), `visible` (via `WasRecentlyRendered`),
+  distance-to-local convenience, weapon/loadout fields once RE'd.
+- **`Player` extras:** velocity read/write, `set_location` without teleport semantics, ammo/loadout,
+  `respawn()` / `suicide()` via console, aim-at(actor) helper.
+- **`Game` module:** map name, mode, score/round state, FPS, match timer (some already on the event
+  bus — expose as reads).
+- **`Render` extras:** filled rect / gradient, `bone_skeleton(actor)` one-call ESP, per-frame text
+  anchored to an actor.
+- **`Events` extras:** more game events (weapon fire, portal spawned, pickup) as the fire/trace RE
+  lands; a way for scripts to *dispatch* custom events.
+- **Hot-reload** of user scripts from the menu (re-import without a relaunch), and a scripts panel
+  (list/enable/run/errors) in the GUI.
 
 ---
 

@@ -18,10 +18,18 @@ SplitgateInternal.Settings.Save()
 It is assembled in [`Scripts.h`](../Internal/scripting/Scripts.h) from submodules
 under [`scripting/modules/`](../Internal/scripting/modules/):
 
-| Submodule  | Exposes                                  |
-| ---------- | ---------------------------------------- |
-| `Logger`   | `Log(level, message)`                    |
-| `Settings` | `Save()`, `Reset()`                      |
+| Submodule  | Exposes                                                                 |
+| ---------- | ----------------------------------------------------------------------- |
+| `Logger`   | `Log(level, message)`                                                   |
+| `Settings` | `Save()`, `Reset()`, `get(path)`, `set(path, value)`, `toggle(path)`    |
+| `Events`   | `on(event, handler)`, the `Type` enum, and `Payload`                    |
+| `Actors`   | `players()`, `enemies()`, `count()` → `Player` snapshots               |
+| `Player`   | `location`, `teleport`, `health`, `set_health`, `view_rotation`, `console`, `chat`, `is_in_game` |
+| `Engine`   | `find_object`, `world_to_screen`, `canvas_size`, `distance`             |
+| `Render`   | `line`, `text`, `circle`, `world_line`, `world_text`                    |
+| `Input`    | `is_key_down(vk)`, `is_key_pressed(vk)`                                 |
+
+See **[API reference](#api-reference)** below for signatures and examples.
 
 Each submodule is a `void Scripts::Modules::X(py::module_& m)` that calls
 `m.def_submodule(...)` and binds functions — the pattern to copy when adding a
@@ -136,6 +144,92 @@ The registry lives in [`scripting/Events.h`](../Internal/scripting/Events.h)
 submodule](../Internal/scripting/modules/Events.h) bridges Python callables onto
 it. Dispatch happens on the game/render thread inside the hooks, so handlers must
 stay quick — the same constraint as features.
+
+## API reference
+
+All game-touching calls run on the game thread (from `main()` or an `Events` handler), so they're
+safe to make from a script. Actor data is **snapshotted** to plain values each call — don't cache a
+`Player` across frames (positions/health go stale; `address` may dangle).
+
+### `Actors` — read the world
+
+```python
+import SplitgateInternal as SG
+
+def main():
+    for p in SG.Actors.enemies():          # or .players() for everyone incl. you
+        x, y, z = p.location               # world position (cm)
+        SG.Logger.Log("INFO", f"{p.name} team={p.team} hp={p.health}/{p.max_health}")
+```
+
+A `Player` has: `x`, `y`, `z`, `location` (tuple), `team`, `health`, `max_health`, `name`,
+`is_local`, `address`. `enemies()` drops you and same-team players; `count()` is the total.
+
+### `Player` — control the local character
+
+```python
+def main():
+    if not SG.Player.is_in_game():
+        return
+    x, y, z = SG.Player.location()
+    SG.Player.teleport(x, y, z + 500)      # hop up 5m (keeps your view rotation)
+    SG.Player.set_health(100.0)
+    pitch, yaw, roll = SG.Player.view_rotation()
+    SG.Player.set_view_rotation(pitch, yaw)
+    SG.Player.console("stat fps")          # SendToConsole
+    SG.Player.chat("gg")                    # SendChatMessage (goes to the server)
+```
+
+### `Engine` — utilities
+
+```python
+addr = SG.Engine.find_object("Class PortalWars.PortalWarsCharacter")   # 0 if not found
+pos  = SG.Engine.world_to_screen(x, y, z)   # (sx, sy) or None if behind the camera
+size = SG.Engine.canvas_size()              # (w, h) or None
+d    = SG.Engine.distance(x1, y1, z1, x2, y2, z2)   # metres
+```
+
+### `Render` — draw (from an `Events.Render` handler)
+
+Drawing must happen while the frame's render backend is active, so subscribe to `Events.Render`:
+
+```python
+def draw():
+    w, h = SG.Engine.canvas_size() or (0, 0)
+    SG.Render.circle(w/2, h/2, 100, color=(1, 0, 0, 1))           # crosshair FOV ring
+    for p in SG.Actors.enemies():
+        SG.Render.world_text(p.x, p.y, p.z, p.name, color=(1, 1, 0, 1))
+
+SG.Events.on(SG.Events.Render, draw)
+```
+
+`line(x1,y1,x2,y2,color,thickness)`, `text(x,y,text,color,scale)`, `circle(x,y,radius,color,
+segments,thickness)`, `world_line(x1,y1,z1,x2,y2,z2,color,thickness)`, `world_text(x,y,z,text,color,
+scale)`. `color` is an `(r, g, b, a)` 0-1 tuple (defaults to white); the `world_*` helpers return
+`False` when the point is off-screen.
+
+### `Input` — keys
+
+```python
+if SG.Input.is_key_down(0x02):     # right mouse held (VK_RBUTTON)
+    ...
+if SG.Input.is_key_pressed(0x74):  # F5 tapped
+    ...
+```
+
+### `Settings` — read/write any setting
+
+Dotted paths mirror the settings sections; `set`/`toggle` also fire `SettingsChanged` (so features
+refresh and autosave runs), exactly like changing it in the menu. Works for **every** setting,
+including new ones:
+
+```python
+SG.Settings.get("VISUALS.Esp")            # -> True/False
+SG.Settings.set("AIM.AimFov", 250.0)
+SG.Settings.toggle("MENU.Rgb")            # -> the new bool value
+SG.Settings.set("AIM.AimVisibleCheck", True)
+SG.Settings.Save()                         # persist to disk
+```
 
 ## Requirements
 
