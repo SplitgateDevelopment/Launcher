@@ -32,7 +32,10 @@ namespace GUI
 	bool InitializeImGui(IDXGISwapChain* swapChain)
 	{
 		Window::WindowHandle = FindWindow((L"UnrealWindow"), (L"PortalWars  "));
-		Window::SwapChain = swapChain; // the real game swap chain, needed to recreate the RTV on resize
+		// Keep the real game swap chain so CreateRenderTarget can rebuild the RTV on resize. AddRef
+		// so the matching Release in Window::Destroy() is balanced (we don't own the game's chain).
+		Window::SwapChain = swapChain;
+		swapChain->AddRef();
 
 		if (!SUCCEEDED(swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&Window::Device)))
 		{
