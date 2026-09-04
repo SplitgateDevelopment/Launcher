@@ -161,19 +161,25 @@ projection.
 **Goal.** A `Settings.VISUALS.Renderer` enum (`Canvas` default, `ImGui`), switchable live from the
 Visuals tab, that chooses how the ESP/radar/debug overlays are drawn.
 
-**Approach.**
-- A thin `Render` abstraction (`menu/Render.h` or `cache/`-adjacent): `Render::Line(a, b, color,
-  thickness)`, `Render::Text(pos, text, color, scale)`, `Render::Box(...)`. Each dispatches on the
-  setting to either the canvas backend (`Globals::Canvas->K2_Draw*`) or the ImGui backend
-  (`ImGui::GetBackgroundDrawList()->Add*`). The features call `Render::*` instead of the canvas
-  directly, so they're backend-agnostic.
+**Approach — yes, an OOP abstract renderer is exactly right.** A `render/` module with an abstract
+base `class Renderer { virtual void Line(a, b, thickness, color) = 0; virtual void Text(pos, text,
+scale, color) = 0; };` and **two concrete implementations** — `CanvasRenderer` (`Globals::Canvas->
+K2_Draw*`) and `ImGuiRenderer` (`ImDrawList::Add*`). A single `Render::active` pointer (swapped from
+the setting, live) is what the features call, so ESP/radar/debug are backend-agnostic and build
+their boxes/skeletons out of `Render::active->Line(...)`. Classic strategy pattern.
 - **The timing gotcha to design around:** canvas draws happen in **PostRender** (the UE hook);
   ImGui draws must happen during the **ImGui frame in the Present hook** (between `NewFrame()` and
-  `Render()`), and its draw lists reset each frame. Two options: (a) in ImGui mode, run the visual
-  features from `GUI::Overlay` (inside the ImGui frame) instead of from `Features::Execute` in
-  PostRender; or (b) have the features, in PostRender, record draw commands into a per-frame buffer
-  that `GUI::Overlay` replays into the ImGui draw list. (a) is cleaner; (b) keeps one code path for
-  feature logic. Coordinates come from the cached `ProjectWorldLocationToScreen` in both modes.
+  `Render()`), and its draw lists reset each frame. Cleanest fit for this OOP split: `ImGuiRenderer`
+  **records** each `Line`/`Text` into a per-frame command buffer during PostRender, and
+  `GUI::Overlay` replays that buffer into `GetBackgroundDrawList()` after `NewFrame()`, then clears
+  it — so feature logic stays in one place (PostRender) and only the *backend* differs.
+  `CanvasRenderer` draws immediately. Coordinates come from the cached `ProjectWorldLocationToScreen`
+  in both modes.
+- **This also fixes streamproof properly.** `WDA_EXCLUDEFROMCAPTURE` on the *game* window hides the
+  whole game from capture (the current bug). To hide only the overlay, `ImGuiRenderer` renders into
+  a separate, transparent, click-through, top-most overlay window that has the exclude-from-capture
+  affinity, while the game window stays captured. So streamproof implies the ImGui renderer — the
+  two ship together.
 - **Color/coords** already exist as `FLinearColor` + `FVector2D`; the ImGui backend converts to
   `ImU32` / `ImVec2`.
 - A **native WorldToScreen** (matrix math from the camera POV, no `ProcessEvent`) is a further,
