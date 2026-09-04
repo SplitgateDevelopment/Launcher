@@ -91,6 +91,11 @@ against [game-dump.md](game-dump.md).
 **Goal.** A team-colored glow around characters, with an independent enable + color for enemies and
 teammates.
 
+**Dump-confirmed hooks:** `Function Engine.PrimitiveComponent.SetRenderCustomDepth`,
+`SetCustomDepthStencilValue`, `SetCustomDepthStencilWriteMask`, and `Enum Engine.ECustomDepthStencil`
+all exist — so the stencil path below is wrappable. The remaining risk stays the post-process color
+mapping (whether the stock outline exposes arbitrary colors), which needs in-game experimentation.
+
 **Approach.**
 - Splitgate already outlines players via stencil — the SDK shows `AlphaTeamStencilValue` /
   `BravoTeamStencilValue`. Reuse that path: for each cached character, `Mesh->SetRenderCustomDepth(true)`
@@ -331,8 +336,10 @@ selected target before the original runs, leaving `ControlRotation` untouched.
 **Why it isn't built yet.** The SDK dump exposes no clean hook point: the shot's trace is computed in
 the `Gun`'s **native** fire code, and the plausible reflected sources (`APlayerController::StartFire`,
 `APawn::GetBaseAimRotation`) are called *natively*, so the `ProcessEvent` hook — which only sees
-reflected/Blueprint calls (as `EnableAllInput` does) — never observes them. Redirecting the shot
-therefore needs a **MinHook on the native function**, which can't be found/verified blind.
+reflected/Blueprint calls (as `EnableAllInput` does) — never observes them. (A dump search confirms
+this: the only reflected `Gun` fire-path entry is `Function PortalWars.Gun.ServerGoToState`, no
+`Fire`/`HitScan`/`ProcessHit` UFunction.) Redirecting the shot therefore needs a **MinHook on the
+native function**, which can't be found/verified blind.
 
 **Next step (one in-game pass unblocks it).** Enable **Debug → Log ProcessEvent** and fire: if *any*
 reflected fire/hit event appears (e.g. a `Server*Fire` / `ProcessHit` / weapon-fire UFunction), hook
@@ -380,7 +387,11 @@ offset); if a per-frame, ProcessEvent-free version is ever wanted, those offsets
 `UPrimitiveComponent->BoundsScale` (0x284) are the path (see
 [ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour)).
 
-### Per-bone visibility check (LineTraceSingle)
+### Per-bone visibility check (LineTraceSingle) — UNBLOCKED (trace function confirmed)
+
+**Confirmed in the dump:** `Function Engine.KismetSystemLibrary.LineTraceSingle` (and
+`LineTraceSingleByChannel` / `...ByProfile` / `...ForObjects`) exist — so the trace wrapper is
+buildable; only the exact visibility channel/profile still needs a quick in-game check.
 
 **Goal.** A stricter visibility test than the current whole-actor `WasRecentlyRendered` — decide
 per *bone* whether that exact point is in line of sight, so the aimbot can pick a visible bone (e.g.
