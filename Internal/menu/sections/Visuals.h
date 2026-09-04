@@ -20,7 +20,7 @@ namespace Menu
 			auto& v = Settings.VISUALS;
 
 			ImGui::SeparatorText("Renderer");
-			const char* renderers[] = {"UE Canvas", "ImGui (faster)"};
+			const char* renderers[] = {"UE Canvas", "ImGui (faster)", "None"};
 			int renderer = static_cast<int>(v.Renderer);
 			if (ImGui::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
 			{

@@ -71,6 +71,7 @@
     <ClInclude Include="render\Renderer.h" />
     <ClInclude Include="render\CanvasRenderer.h" />
     <ClInclude Include="render\ImGuiRenderer.h" />
+    <ClInclude Include="render\NullRenderer.h" />
     <ClInclude Include="render\Render.h" />
     <ClInclude Include="features\Feature.h" />
     <ClInclude Include="network\Network.h" />

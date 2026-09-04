@@ -7,18 +7,21 @@
 
 #include "CanvasRenderer.h"
 #include "ImGuiRenderer.h"
+#include "NullRenderer.h"
 #include "../settings/Settings.h"
 
 namespace Render
 {
 	inline CanvasRenderer canvas;
 	inline ImGuiRenderer imgui;
+	inline NullRenderer null;
 
 	/// The backends, indexed by RendererMode (order must match the enum). Adding a renderer is a new
 	/// enum value + a new entry here — no branching at the call site.
 	inline Renderer* const Backends[] = {
 		&canvas, // RendererMode::Canvas
 		&imgui,	 // RendererMode::ImGui
+		&null,	 // RendererMode::Null
 	};
 
 	inline Renderer* active = Backends[0];

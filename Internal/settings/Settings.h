@@ -100,11 +100,13 @@ enum class RendererMode
 {
 	Canvas,
 	ImGui,
+	Null,
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
 											   {RendererMode::Canvas, "canvas"},
 											   {RendererMode::ImGui, "imgui"},
+											   {RendererMode::Null, "null"},
 										   })
 
 /// ESP element toggles and colors (the Visuals tab), plus the separate radar toggle.
