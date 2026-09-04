@@ -49,9 +49,6 @@ namespace Menu
 				Globals::PlayerController->SendToConsole(FString(std::string(consoleBuffer)));
 			}
 
-			ImGui::SeparatorText("Actions");
-			ImGui::TextDisabled("Summon Bot -> Misc tab. GObjects dump + SDK viewer -> SDK tab.");
-
 			if (ImGui::TreeNode("Loaded Features"))
 			{
 				for (const auto& Feature : Features::Features)
