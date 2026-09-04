@@ -61,6 +61,14 @@ namespace Menu
 				}
 				Logger::Log("INFO", std::format("[SDK] {} objects match \"{}\" ({} shown)", nameTotal, needle, nameResults.size()));
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("Copy##names"))
+			{
+				std::string out;
+				for (const auto& row : nameResults) out += std::format("[{}] {}\n", row.index, row.name);
+				ImGui::SetClipboardText(out.c_str());
+			}
+			ImGui::Tooltip("Copy the listed results to the clipboard.");
 
 			if (!nameResults.empty())
 			{
@@ -87,6 +95,16 @@ namespace Menu
 			ImGui::InputText("##classfilter", classFilter, sizeof(classFilter));
 			ImGui::SameLine();
 			if (ImGui::Button("Refresh##classes")) ClassCache::Rebuild();
+			ImGui::SameLine();
+			if (ImGui::Button("Copy##classes"))
+			{
+				std::string out;
+				const std::string needle = classFilter;
+				for (const auto& entry : ClassCache::Get())
+					if (needle.empty() || entry.name.find(needle) != std::string::npos) out += entry.name + "\n";
+				ImGui::SetClipboardText(out.c_str());
+			}
+			ImGui::Tooltip("Copy the filtered class names to the clipboard.");
 			{
 				const auto& classes = ClassCache::Get();
 				if (classFilter != lastClassKey || classes.size() != lastClassCacheSize)
@@ -152,6 +170,14 @@ namespace Menu
 				}
 				Logger::Log("INFO", "[SDK] " + classStatus);
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("Copy##instances"))
+			{
+				std::string out;
+				for (const auto& row : instanceResults) out += std::format("[{}] 0x{:x} {}\n", row.index, row.address, row.name);
+				ImGui::SetClipboardText(out.c_str());
+			}
+			ImGui::Tooltip("Copy the listed instances (index, address, name) to the clipboard.");
 			if (!classStatus.empty()) ImGui::TextUnformatted(classStatus.c_str());
 			if (!instanceResults.empty())
 			{
