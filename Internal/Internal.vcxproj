@@ -140,6 +140,7 @@
     <ClInclude Include="hook\functions\ProcessEvent.h" />
     <ClInclude Include="settings\Settings.h" />
     <ClInclude Include="utils\Globals.h" />
+    <ClInclude Include="utils\Input.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="..\shared\Ipc.h" />
     <ClInclude Include="..\shared\Logger.h" />

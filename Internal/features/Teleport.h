@@ -6,8 +6,8 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../utils/Input.h"
 
-#include <Windows.h>
 #include <cmath>
 
 class Teleport : public Feature
@@ -46,7 +46,7 @@ class Teleport : public Feature
 
 	void Run()
 	{
-		const bool down = (GetAsyncKeyState(Settings.EXPLOITS.TeleportKey) & 0x8000) != 0;
+		const bool down = Input::Down(Settings.EXPLOITS.TeleportKey);
 		if (down && !wasDown)
 		{
 			auto* pawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);

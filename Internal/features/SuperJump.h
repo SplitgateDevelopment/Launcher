@@ -5,8 +5,7 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
-
-#include <Windows.h>
+#include "../utils/Input.h"
 
 class SuperJump : public Feature
 {
@@ -44,7 +43,7 @@ class SuperJump : public Feature
 
 	void Run()
 	{
-		const bool down = (GetAsyncKeyState(Settings.EXPLOITS.SuperJumpKey) & 0x8000) != 0;
+		const bool down = Input::Down(Settings.EXPLOITS.SuperJumpKey);
 		if (down && !wasDown)
 			if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
 				character->LaunchCharacter(FVector{0.f, 0.f, Settings.EXPLOITS.SuperJumpForce}, false, true);

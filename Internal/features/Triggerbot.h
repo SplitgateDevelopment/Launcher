@@ -12,6 +12,7 @@
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"
+#include "../utils/Input.h"
 
 #include <Windows.h>
 #include <chrono>
@@ -87,7 +88,7 @@ class Triggerbot : public Feature
 	void Run()
 	{
 		const auto& aim = Settings.AIM;
-		if (!(GetAsyncKeyState(aim.TriggerKey) & 0x8000))
+		if (!Input::Down(aim.TriggerKey))
 		{
 			Release();
 			onTarget = false;

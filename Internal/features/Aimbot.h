@@ -12,6 +12,7 @@
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"
+#include "../utils/Input.h"
 
 #include <Windows.h>
 #include <cmath>
@@ -104,7 +105,7 @@ class Aimbot : public Feature
 		// Silent aim engages while firing (left click) and snaps instantly; otherwise it engages on
 		// the aim key with the configured smoothing. (This is a snap-on-fire silent aim, not a
 		// trace-redirect one — the view still moves; see docs/roadmap.md.)
-		const bool engaged = aim.SilentAim ? (GetAsyncKeyState(VK_LBUTTON) & 0x8000) : (GetAsyncKeyState(aim.AimKey) & 0x8000);
+		const bool engaged = aim.SilentAim ? Input::Down(VK_LBUTTON) : Input::Down(aim.AimKey);
 		if (!engaged) return;
 
 		auto* controller = Globals::PlayerController;
