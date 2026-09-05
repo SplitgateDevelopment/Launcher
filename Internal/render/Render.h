@@ -43,6 +43,11 @@ namespace Render
 		active->Text(pos, text, scale, color);
 	}
 
+	inline float Measure(const std::string& text, float scale)
+	{
+		return active->Measure(text, scale);
+	}
+
 	inline void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color)
 	{
 		active->RectFilled(min, max, color);

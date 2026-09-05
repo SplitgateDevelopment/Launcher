@@ -65,6 +65,13 @@ class ImGuiRenderer : public Renderer
 		texts.push_back({ImVec2(pos.X, pos.Y), text, scale, ToU32(color)});
 	}
 
+	float Measure(const std::string& text, float scale) override
+	{
+		ImFont* font = ImGui::GetFont();
+		if (!font) return text.length() * scale * 7.f;
+		return font->CalcTextSizeA(font->FontSize * scale, FLT_MAX, 0.f, text.c_str()).x;
+	}
+
 	void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color) override
 	{
 		rects.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(color)});

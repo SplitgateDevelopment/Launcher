@@ -278,7 +278,8 @@ class Esp : public Feature
 				DrawSkeleton(Mesh, controller, bonesC);
 
 			// Name line: "[BOT] Name" — the "[BOT]" tag (bots only, when enabled) in BotTagColor, the
-			// player name (when enabled and present) in the name color, on one row at the feet.
+			// player name (when enabled and present) in the name color, centered together at the feet.
+			// Render::Text centers on its x, so measure each part and place them side by side.
 			{
 				const bool showTag = visuals.BotTag && cached.isBot;
 				std::string playerName;
@@ -286,14 +287,22 @@ class Esp : public Feature
 					if (auto* state = Character->PlayerState)
 						playerName = state->PlayerNamePrivate.ToString();
 
-				float nx = feet.X;
-				if (showTag)
+				if (showTag || !playerName.empty())
 				{
-					Render::Text({nx, feet.Y}, "[BOT]", visuals.FontScale, ToColor(visuals.BotTagColor));
-					nx += visuals.FontScale * 48.f; // approx width of "[BOT] " (no text-measure API)
+					const float gap = 4.f * visuals.FontScale;
+					const float wTag = showTag ? Render::Measure("[BOT]", visuals.FontScale) : 0.f;
+					const float wName = playerName.empty() ? 0.f : Render::Measure(playerName, visuals.FontScale);
+					const float total = (showTag ? wTag + gap : 0.f) + wName;
+
+					float left = feet.X - total * 0.5f; // left edge of the whole label
+					if (showTag)
+					{
+						Render::Text({left + wTag * 0.5f, feet.Y}, "[BOT]", visuals.FontScale, ToColor(visuals.BotTagColor));
+						left += wTag + gap;
+					}
+					if (!playerName.empty())
+						Render::Text({left + wName * 0.5f, feet.Y}, playerName, visuals.FontScale, nameC);
 				}
-				if (!playerName.empty())
-					Render::Text({nx, feet.Y}, playerName, visuals.FontScale, nameC);
 			}
 
 			// Sub-labels stack downward below the name (which sits at `feet`).

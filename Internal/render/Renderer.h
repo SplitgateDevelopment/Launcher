@@ -21,6 +21,10 @@ class Renderer
 	/// Draw text centred horizontally at @p pos. @p scale is relative to the base font size.
 	virtual void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color) = 0;
 
+	/// Pixel width of @p text at @p scale, for laying out adjacent labels. This base is a rough
+	/// approximation; the ImGui backend overrides it with the exact font metric.
+	virtual float Measure(const std::string& text, float scale) { return text.length() * scale * 7.f; }
+
 	/// Fill the axis-aligned rectangle from @p min (top-left) to @p max (bottom-right). ImGui fills
 	/// natively; the canvas backend approximates it with (bounded) horizontal lines.
 	virtual void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color) = 0;
