@@ -41,8 +41,10 @@ namespace ActorCache
 		return p.health <= 0.f;
 	}
 
-	inline std::vector<Player> players;		  ///< cached characters this frame (incl. the local player)
-	inline UObject* characterClass = nullptr; ///< resolved PortalWarsCharacter class (once)
+	inline std::vector<Player> players;			///< cached characters this frame (incl. the local player)
+	inline std::vector<AActor*> projectiles;	///< live projectiles this frame (for BulletTraces / BulletTp)
+	inline UObject* characterClass = nullptr;	///< resolved PortalWarsCharacter class (once)
+	inline UObject* projectileClass = nullptr;	///< resolved PortalWars.Projectile class (once)
 
 	/// A cached actor is still safe to use while it isn't hidden or being torn down (the flags UE
 	/// sets before destroying an actor).
@@ -57,10 +59,15 @@ namespace ActorCache
 	inline void Rebuild()
 	{
 		players.clear();
+		projectiles.clear();
 
 		if (!Globals::World) return;
 		if (!characterClass) characterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
+
+		// Collect projectiles in the same pass only when a projectile feature needs them.
+		const bool wantProjectiles = Settings.VISUALS.BulletTraces || Settings.EXPLOITS.BulletTp;
+		if (wantProjectiles && !projectileClass) projectileClass = ObjObjects->FindObject("Class PortalWars.Projectile");
 
 		auto& Levels = Globals::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
@@ -76,6 +83,15 @@ namespace ActorCache
 				if (!Actors.IsValidIndex(a)) continue;
 
 				AActor* actor = Actors[a];
+				if (!actor || actor->bActorIsBeingDestroyed) continue;
+
+				// Projectiles (a projectile isn't a character, so classify and move on).
+				if (wantProjectiles && projectileClass && actor->RootComponent && actor->IsA(projectileClass))
+				{
+					projectiles.push_back(actor);
+					continue;
+				}
+
 				if (!IsValid(actor)) continue;
 				if (!actor->IsA(characterClass)) continue;
 
@@ -114,12 +130,16 @@ namespace ActorCache
 		if (!pc || !pc->IsInGame() || IsPostGameController(reinterpret_cast<UObject*>(pc)))
 		{
 			players.clear();
+			projectiles.clear();
 			return;
 		}
 
-		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.VISUALS.GlowEnemy && !Settings.VISUALS.GlowFriendly && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot && !Settings.EXPLOITS.BulletTp)
+		const auto& v = Settings.VISUALS;
+		const auto& aim = Settings.AIM;
+		if (!v.Esp && !v.Radar && !v.GlowEnemy && !v.GlowFriendly && !v.BulletTraces && !aim.Aimbot && !aim.Triggerbot && !Settings.EXPLOITS.BulletTp)
 		{
 			players.clear();
+			projectiles.clear();
 			return;
 		}
 		Rebuild();
@@ -129,5 +149,11 @@ namespace ActorCache
 	inline const std::vector<Player>& Players()
 	{
 		return players;
+	}
+
+	/// The live projectiles cached this frame (only populated when BulletTraces / BulletTp is on).
+	inline const std::vector<AActor*>& Projectiles()
+	{
+		return projectiles;
 	}
 } // namespace ActorCache

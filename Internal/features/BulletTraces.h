@@ -7,8 +7,8 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
+#include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
-#include "../native/ActorLocation.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 
@@ -25,7 +25,6 @@ class BulletTraces : public Feature
 		float time; ///< seconds (steady clock) when recorded
 	};
 
-	UObject* projectileClass = nullptr;
 	std::unordered_map<void*, std::vector<Point>> trails; ///< keyed by actor pointer
 
 	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
@@ -34,12 +33,6 @@ class BulletTraces : public Feature
 	{
 		using namespace std::chrono;
 		return duration<float>(steady_clock::now().time_since_epoch()).count();
-	}
-
-	/// A projectile actor is still safe to read while it has a root component and isn't being torn down.
-	static bool Alive(AActor* actor)
-	{
-		return actor && actor->RootComponent && !actor->bActorIsBeingDestroyed;
 	}
 
   public:
@@ -58,7 +51,6 @@ class BulletTraces : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!projectileClass) return false;
 		if (!Globals::PlayerController || !Globals::PlayerController->IsInGame()) return false;
 		if (!Globals::World || !Globals::Canvas) return false;
 		return true;
@@ -66,7 +58,6 @@ class BulletTraces : public Feature
 
 	void Init()
 	{
-		projectileClass = ObjObjects->FindObject("Class PortalWars.Projectile");
 		Initialized = true;
 		Log("Initialized");
 	};
@@ -82,27 +73,11 @@ class BulletTraces : public Feature
 		const float now = Now();
 		const float duration = Settings.VISUALS.BulletTraceDuration;
 
-		// 1. Append the current position of every live projectile.
-		auto& levels = Globals::World->Levels;
-		for (int l = 0, levelCount = levels.Num(); l < levelCount; l++)
-		{
-			if (!levels.IsValidIndex(l)) continue;
-			ULevel* level = levels[l];
-			if (!level) continue;
-
-			auto& actors = level->Actors;
-			for (int a = 0, actorCount = actors.Num(); a < actorCount; a++)
-			{
-				if (!actors.IsValidIndex(a)) continue;
-				AActor* actor = actors[a];
-				if (!Alive(actor) || !actor->IsA(projectileClass)) continue;
-
-				// Projectiles move via a ProjectileMovementComponent, so RootComponent->RelativeLocation
-				// (the offset path) is often stale/relative for them — use the reliable UFunction. Only a
-				// handful of projectiles are live at once, so the per-projectile ProcessEvent is cheap.
-				trails[actor].push_back({actor->K2_GetActorLocation(), now});
-			}
-		}
+		// 1. Append the current position of every live projectile (from the shared actor pass).
+		// Projectiles move via a ProjectileMovementComponent, so the offset location can be stale — use
+		// the reliable UFunction (only a handful are live, so the per-projectile ProcessEvent is cheap).
+		for (AActor* actor : ActorCache::Projectiles())
+			trails[actor].push_back({actor->K2_GetActorLocation(), now});
 
 		// 2. Prune expired points, draw the rest (fading by age), and drop empty trails.
 		const FLinearColor base = ToColor(Settings.MENU.Rgb ? Rgb::Current() : Settings.VISUALS.BulletTraceColor);
