@@ -226,6 +226,14 @@ namespace Hook
 
 	bool isKeyPressed(UCHAR key)
 	{
-		return GetAsyncKeyState(key) & 1 && GetAsyncKeyState(key) & 0x8000;
+		// Own edge detection (high bit + previous state) rather than GetAsyncKeyState's `& 1`
+		// "pressed since last call" bit: that low bit is cleared by ANY GetAsyncKeyState caller
+		// (e.g. Input::DispatchHotKeys polls every key each frame), which made the menu toggle
+		// need several presses before one registered.
+		static bool prev[256] = {};
+		const bool down = (GetAsyncKeyState(key) & 0x8000) != 0;
+		const bool pressed = down && !prev[key];
+		prev[key] = down;
+		return pressed;
 	};
 }; // namespace Hook
