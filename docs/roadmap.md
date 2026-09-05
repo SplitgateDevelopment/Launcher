@@ -74,8 +74,10 @@ removes per-actor/per-bone call cost entirely.
   and `double` `FMatrix` on UE5) rather than the AOB `GetBoneMatrix` — no signature to maintain and no
   call per bone. Keep the AOB path as a fallback (a Debug toggle, like the existing native/UFunction
   ones).
-- **Visibility:** the `LastRenderTimeOnScreen` / `LastSubmitTime` pair (both off `BoundsScale`) → a
-  trace-free `IsVisible` shared by the aimbot visibility check and, later, a "visible only" ESP.
+- **Visibility — DONE:** `utils/Visibility.h::IsVisible()` reads `LastRenderTimeOnScreen` (0x290) vs
+  `LastSubmitTime` (0x288) off the mesh — no ProcessEvent — shared by the ESP visibility recolor and
+  the aimbot/triggerbot visible check; falls back to `WasRecentlyRendered` behind the Debug **Native
+  visibility** toggle.
 - **Actor id:** `Actor + 0x18` for a stable per-actor key (useful for the spawn/despawn-diff cache and
   any per-actor state).
 **Files.** `ue/Engine.*` (offset accessors), `cache/ActorCache.h`, `features/Esp.h` /
@@ -358,10 +360,16 @@ shows, RE the `Gun` native fire (an AOB like the `curl_easy_setopt` one in
 **Files.** the fire hook, `settings/Settings.h`, `menu/sections/Aim.h`. **Size:** Medium; **depends
 on:** identifying the fire/trace function in-game.
 
-### Phasing bullets (wallbang) toggle
+### Phasing bullets (wallbang) toggle — Approach A DONE
 
 **Goal.** Let the local player's shots register through world geometry, so a target behind cover
 can still be hit.
+
+**Shipped (Approach A):** [`features/Phasing.h`](../Internal/features/Phasing.h) walks the actor list
+and `SetActorEnableCollision(false)` on every `CullableActor` (cover), scoped so the floor/BSP keeps
+colliding and `ABaseGun` pickups are skipped; rescans every 30 frames; `Destroy()` re-enables via a
+live actor walk. Toggle in Exploits > Weapon. Server may still validate hits (private-backend best);
+verify in-game. Approach B (native trace redirect) stays blocked on the fire function.
 
 **Approach A — disable wall collision (no native hook needed, worth trying first).** Cycle the actor
 list (like `ActorCache`), and for every world/geometry actor call
@@ -609,7 +617,11 @@ New entries from a survey of `APortalWarsCharacter`, `UPortalWarsLocalPlayer`,
 server-side — most of these only take effect against the [private emulator backend](backend-redirect.md),
 not a real match; each entry says whether it's client-only (always works) or server-gated.
 
-### ESP: player state read-through (K/D, rank, killstreak, bot flag) — Small
+### ESP: player state read-through (K/D, rank, killstreak, bot flag) — PARTIAL (bot flag done)
+
+**Bot flag shipped:** `ActorCache` caches `PlayerState->bIsABot`; ESP has a **Bot tag** and the
+aimbot/triggerbot an **Ignore bots** filter. K/D / rank / killstreak read-through below is still open.
+
 
 **Goal.** Richer ESP labels and target filtering from the player state, no extra calls.
 **Approach.** Each character caches `LastPlayerState` (`APortalWarsCharacter` +0xdc0, Engine.h L1022)
