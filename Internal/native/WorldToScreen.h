@@ -22,9 +22,12 @@ namespace Projection
 	{
 		if (!Globals::PlayerController || !Globals::Canvas) return false;
 
-		// Fallback path: the game's projection UFunction (a ProcessEvent per point).
+		// Fallback path: the game's projection UFunction (a ProcessEvent per point). CustomProjection
+		// selects PortalWars' own ProjectWorldLocationToScreenCustom over the stock engine one.
 		if (!Settings.DEBUG.NativeWorldToScreen)
-			return Globals::PlayerController->ProjectWorldLocationToScreen(world, out, false);
+			return Settings.DEBUG.CustomProjection
+					   ? Globals::PlayerController->ProjectWorldLocationToScreenCustom(world, out, false)
+					   : Globals::PlayerController->ProjectWorldLocationToScreen(world, out, false);
 
 		auto* manager = Globals::PlayerController->PlayerCameraManager;
 		if (!manager) return false;

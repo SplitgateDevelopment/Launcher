@@ -32,6 +32,11 @@ namespace Menu
 			ImGui::SeparatorText("Performance");
 			changed |= ImGui::ToggleButton("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
 			ImGui::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
+			if (!Settings.DEBUG.NativeWorldToScreen)
+			{
+				changed |= ImGui::ToggleButton("Custom projection", &Settings.DEBUG.CustomProjection);
+				ImGui::Tooltip("With native off: use PortalWars' ProjectWorldLocationToScreenCustom instead of the stock UFunction.");
+			}
 			changed |= ImGui::ToggleButton("Native bones", &Settings.DEBUG.NativeBones);
 			ImGui::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
 			changed |= ImGui::ToggleButton("Native actor location", &Settings.DEBUG.NativeActorLocation);
