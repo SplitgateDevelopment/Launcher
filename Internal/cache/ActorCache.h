@@ -96,13 +96,27 @@ namespace ActorCache
 				if (!actor->IsA(characterClass)) continue;
 
 				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
-				// PlayerState is an APortalWarsPlayerState at runtime; cast up for the bot flag + stats.
-				auto* state = reinterpret_cast<APortalWarsPlayerState*>(character->PlayerState);
+
+				// PlayerState should be an APortalWarsPlayerState, but verify with IsA before reading
+				// its derived fields — a base or partly-constructed player state read at those offsets
+				// (esp. PlayerRanks at 0x8e8) is an access violation. state stays null otherwise.
+				APortalWarsPlayerState* state = nullptr;
+				{
+					static UObject* stateClass = nullptr;
+					if (!stateClass) stateClass = ObjObjects->FindObject("Class PortalWars.PortalWarsPlayerState");
+					auto* ps = character->PlayerState;
+					if (ps && stateClass && reinterpret_cast<UObject*>(ps)->IsA(stateClass))
+						state = reinterpret_cast<APortalWarsPlayerState*>(ps);
+				}
 
 				int rank = 0;
 				if (state && Settings.VISUALS.Rank) // only pay the PlayerRanks read when the ESP rank label is on
-					for (int r = 0, rn = state->PlayerRanks.Num(); r < rn; r++)
-						if (state->PlayerRanks[r].RankLevel > rank) rank = state->PlayerRanks[r].RankLevel;
+				{
+					const int rn = state->PlayerRanks.Num();
+					if (rn > 0 && rn <= 16) // a huge/garbage count means the array isn't replicated yet — skip
+						for (int r = 0; r < rn; r++)
+							if (state->PlayerRanks[r].RankLevel > rank) rank = state->PlayerRanks[r].RankLevel;
+				}
 
 				players.push_back({character,
 								   ActorLocation(reinterpret_cast<AActor*>(character)),
