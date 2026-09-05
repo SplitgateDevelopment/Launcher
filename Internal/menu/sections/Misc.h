@@ -57,17 +57,12 @@ namespace Menu
 
 			ImGui::SeparatorText("Game");
 
-			// "Load into map" is only usable out of a game, and only once per session — it disables
-			// itself after the first use.
-			static bool loadUsed = false;
-			const bool loadDisabled = isInGame || loadUsed;
-			if (loadDisabled) ImGui::BeginDisabled();
+			// "Load into map" is usable whenever you're out of a game (e.g. back in the menu after a
+			// match), disabled only while already in one.
+			if (isInGame) ImGui::BeginDisabled();
 			if (ImGui::Button("Load into map"))
-			{
 				Events::Dispatch(Events::Type::LoadIntoMap);
-				loadUsed = true;
-			};
-			if (loadDisabled) ImGui::EndDisabled();
+			if (isInGame) ImGui::EndDisabled();
 
 			ImGui::SameLine();
 			if (!isInGame) ImGui::BeginDisabled();
