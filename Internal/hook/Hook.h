@@ -216,6 +216,12 @@ namespace Hook
 			UnhookWindowsHookEx(g_hook);
 			g_hook = nullptr;
 		}
+
+		// Reset the module state so a later re-injection re-runs Init cleanly instead of the callback
+		// bailing on a stale g_initialized (or re-registering features/handlers on top of the old set).
+		Features::Features.clear();
+		Events::Clear();
+		g_initialized = false;
 	}
 
 	bool isKeyPressed(UCHAR key)

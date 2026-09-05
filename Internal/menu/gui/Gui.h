@@ -177,5 +177,6 @@ namespace GUI
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 		Window::Destroy();
+		initialized = false; // so a re-inject re-runs InitializeImGui instead of assuming it's set up
 	};
 } // namespace GUI
