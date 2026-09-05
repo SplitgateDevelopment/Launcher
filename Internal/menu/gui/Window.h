@@ -150,14 +150,6 @@ namespace Window
 		pBackBuffer->Release();
 	}
 
-	/// @brief Toggles whether the overlay window is excluded from screen capture (OBS, Discord,
-	/// Game Bar). WDA_EXCLUDEFROMCAPTURE needs Windows 10 2004+; no-op until WindowHandle is set.
-	/// @param enabled true to hide from capture, false to show normally.
-	void SetStreamproof(bool enabled)
-	{
-		if (WindowHandle) SetWindowDisplayAffinity(WindowHandle, enabled ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
-	}
-
 	/// @brief Releases the render target view if present.
 	void CleanupRenderTarget()
 	{

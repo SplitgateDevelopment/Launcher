@@ -22,6 +22,7 @@ namespace Render
 		&canvas, // RendererMode::Canvas
 		&imgui,	 // RendererMode::ImGui
 		&null,	 // RendererMode::Null
+		&imgui,	 // RendererMode::External — same recorder; replayed into the external overlay window
 	};
 
 	inline Renderer* active = Backends[0];

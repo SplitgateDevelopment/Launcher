@@ -42,11 +42,10 @@ struct MenuSettings
 	bool ShowWatermark = true;
 	std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
 	int ShowHotkey = VK_INSERT; ///< virtual-key code toggling the GUI (default Insert)
-	bool Streamproof = false;	///< hide the overlay from screen capture (SetWindowDisplayAffinity)
 	bool Rgb = false;			///< cycle the watermark, menu accent, and radar self-icon through a rainbow; off = their defaults (red / white)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof, Rgb)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Rgb)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 /// Which camera the Camera feature drives. First person is the game default (no override).
@@ -135,12 +134,14 @@ enum class RendererMode
 	Canvas,
 	ImGui,
 	Null,
+	External, ///< ImGui recorder, replayed into a separate capture-excluded overlay window (streamproof)
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
 											   {RendererMode::Canvas, "canvas"},
 											   {RendererMode::ImGui, "imgui"},
 											   {RendererMode::Null, "null"},
+											   {RendererMode::External, "external"},
 										   })
 
 /// ESP element toggles and colors (the Visuals tab), plus the separate radar toggle.

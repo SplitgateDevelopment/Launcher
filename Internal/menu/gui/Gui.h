@@ -77,9 +77,6 @@ namespace GUI
 		ImGui::GetMainViewport()->PlatformHandleRaw = Window::WindowHandle;
 		Window::OldWindowProcess = (WNDPROC)SetWindowLongPtr(Window::WindowHandle, GWLP_WNDPROC, (__int3264)(LONG_PTR)Window::WndProc);
 
-		// Apply the persisted streamproof setting now that the real game window is known.
-		Window::SetStreamproof(Settings.MENU.Streamproof);
-
 		initialized = true;
 		return true;
 	}
@@ -93,6 +90,17 @@ namespace GUI
 		if (!initialized)
 			InitializeImGui(pSwapChain);
 		if (!initialized) return;
+
+		// Streamproof (External) mode: a separate, capture-excluded window owns the menu + ESP. Make
+		// sure that overlay thread is running and draw nothing on the (captured) game window - so the
+		// ESP command buffer is consumed only by the external window and the menu isn't drawn twice.
+		if (Settings.VISUALS.Renderer == RendererMode::External)
+		{
+			ExternalWindow::Start();
+			return;
+		}
+		// Any other renderer: if we were in External mode, tear that overlay window down.
+		if (ExternalWindow::Active()) ExternalWindow::Stop();
 
 		// Skip rendering into a degenerate target: minimized, or a zero-sized client area (which is
 		// also true during the minimize/restore transition, before IsIconic flips). Running ImGui at
@@ -174,6 +182,7 @@ namespace GUI
 	/// @brief Tears down the ImGui backends and context and releases the window/D3D resources.
 	void Destroy()
 	{
+		ExternalWindow::Stop(); // stop and tear down the streamproof overlay thread, if running
 		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();

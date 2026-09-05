@@ -141,7 +141,7 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields)
 	Settings.MENU.ShowMenu = false;
 	Settings.MENU.ShowWatermark = false;
 	Settings.MENU.ShowHotkey = VK_END;
-	Settings.MENU.Streamproof = true;
+	Settings.MENU.Rgb = true;
 
 	Settings.EXPLOITS.FOV = 120.f;
 	Settings.EXPLOITS.GodMode = true;
@@ -171,7 +171,7 @@ TEST_F(SettingsFileTest, SaveThenLoadRoundTripsPersistedFields)
 	EXPECT_FALSE(Settings.MENU.ShowMenu);
 	EXPECT_FALSE(Settings.MENU.ShowWatermark);
 	EXPECT_EQ(VK_END, Settings.MENU.ShowHotkey);
-	EXPECT_TRUE(Settings.MENU.Streamproof);
+	EXPECT_TRUE(Settings.MENU.Rgb);
 
 	EXPECT_FLOAT_EQ(120.f, Settings.EXPLOITS.FOV);
 	EXPECT_TRUE(Settings.EXPLOITS.GodMode);

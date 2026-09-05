@@ -11,7 +11,6 @@
 #include "../../scripting/Events.h"
 #include "../../cache/ClassCache.h" // shared class list for the spawn picker
 #include "../../utils/Logger.h"		// Logger::SetConsoleVisibility
-#include "../gui/Window.h"			// Window::SetStreamproof
 
 // Forward-declared instead of including hook/Hook.h: that header transitively includes this menu
 // (via Features -> GUI -> Menu), so including it here would be circular. The inline definition in
@@ -236,14 +235,6 @@ namespace Menu
 					}
 				}
 				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
-			}
-
-			ImGui::SeparatorText("Overlay");
-			ImGui::Tooltip("Hide the overlay from screen capture (OBS, Discord, Game Bar). Needs Windows 10 2004+.");
-			if (ImGui::ToggleButton("Streamproof", &Settings.MENU.Streamproof))
-			{
-				Window::SetStreamproof(Settings.MENU.Streamproof);
-				Events::Dispatch(Events::Type::SettingsChanged);
 			}
 
 			ImGui::SeparatorText("Program");
