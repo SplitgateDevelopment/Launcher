@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string_view>
 #include <vector>
 
@@ -167,5 +168,48 @@ namespace Memory
 		while (dispOffset < static_cast<int>(size) && sig.mask[dispOffset]) dispOffset++;
 
 		return Relative(at, dispOffset) + addition;
+	}
+
+	/// First occurrence of the null-terminated ASCII string @p str within [begin, end), or nullptr.
+	/// Matches the bytes AND the trailing '\0' so it doesn't hit a substring of a longer string.
+	inline uint8_t* FindString(uint8_t* begin, uint8_t* end, std::string_view str)
+	{
+		const size_t n = str.size();
+		if (n == 0 || !begin || end <= begin) return nullptr;
+		if (static_cast<size_t>(end - begin) < n + 1) return nullptr;
+
+		for (uint8_t* at = begin; at <= end - (n + 1); at++)
+			if (std::memcmp(at, str.data(), n) == 0 && at[n] == '\0') return at;
+		return nullptr;
+	}
+
+	/// First `lea reg, [rip+disp]` (REX.W 8D, mod=00 rm=101) in [begin, end) whose resolved target is
+	/// @p target, or nullptr. Used to find the instruction that references a located string.
+	inline uint8_t* FindLeaTo(uint8_t* begin, uint8_t* end, uint8_t* target)
+	{
+		if (!begin || !target || end <= begin) return nullptr;
+
+		for (uint8_t* at = begin; at + 7 <= end; at++)
+		{
+			if ((at[0] & 0xF8) != 0x48) continue; // REX prefix (0x48-0x4F)
+			if (at[1] != 0x8D) continue;		  // lea
+			if ((at[2] & 0xC7) != 0x05) continue; // mod=00, rm=101 → rip-relative disp32
+			if (Relative(at, 3) == target) return at;
+		}
+		return nullptr;
+	}
+
+	/// Locate a string in @p module, then the `lea` that references it (the string-ref discovery
+	/// pattern — far more update-stable than a raw byte prologue). Returns the lea, or nullptr.
+	inline uint8_t* FindStringRef(std::string_view str, HMODULE module = nullptr)
+	{
+		uint8_t* base = ModuleBase(module);
+		const size_t size = ModuleSize(module);
+		if (!base || size == 0) return nullptr;
+
+		uint8_t* stringAddr = FindString(base, base + size, str);
+		if (!stringAddr) return nullptr;
+
+		return FindLeaTo(base, base + size, stringAddr);
 	}
 } // namespace Memory

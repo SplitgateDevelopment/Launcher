@@ -87,6 +87,29 @@ TEST(MemoryTest, RelativeHandlesNegativeDisplacement)
 	EXPECT_EQ(target, buffer + 3 + 4 - 4);
 }
 
+TEST(MemoryTest, FindStringMatchesNullTerminated)
+{
+	uint8_t buf[] = {0x00, 'h', 'i', 0x00, 'a', 'b', 'c', 0x00};
+	EXPECT_EQ(Memory::FindString(buf, buf + sizeof(buf), "abc"), buf + 4);
+	EXPECT_EQ(Memory::FindString(buf, buf + sizeof(buf), "hi"), buf + 1);
+	EXPECT_EQ(Memory::FindString(buf, buf + sizeof(buf), "zz"), nullptr);
+	// "ab" must NOT match inside "abc" (the trailing NUL guard).
+	EXPECT_EQ(Memory::FindString(buf, buf + sizeof(buf), "ab"), nullptr);
+}
+
+TEST(MemoryTest, FindLeaToResolvesRipRelative)
+{
+	uint8_t buf[32] = {0};
+	buf[0] = 0x48; // REX.W
+	buf[1] = 0x8D; // lea
+	buf[2] = 0x05; // mod=00, reg=000, rm=101 (rip-relative)
+	const int32_t disp = 16 - 7; // target = at+7+disp = 16
+	std::memcpy(buf + 3, &disp, sizeof(disp));
+
+	EXPECT_EQ(Memory::FindLeaTo(buf, buf + sizeof(buf), buf + 16), buf);
+	EXPECT_EQ(Memory::FindLeaTo(buf, buf + sizeof(buf), buf + 20), nullptr);
+}
+
 TEST(MemoryTest, FindThenRelativeReproducesPointerLookup)
 {
 	// The FindPointer path: a "mov reg, [rip+disp]" (48 8B 05 ?? ?? ?? ??) somewhere in a buffer.
