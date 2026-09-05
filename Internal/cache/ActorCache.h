@@ -66,7 +66,7 @@ namespace ActorCache
 		if (!characterClass) return;
 
 		// Collect projectiles in the same pass only when a projectile feature needs them.
-		const bool wantProjectiles = Settings.VISUALS.BulletTraces || Settings.EXPLOITS.BulletTp;
+		const bool wantProjectiles = Settings.VISUALS.BulletTraces || Settings.EXPLOITS.BulletTp || Settings.EXPLOITS.BulletSpeed;
 		if (wantProjectiles && !projectileClass) projectileClass = ObjObjects->FindObject("Class PortalWars.Projectile");
 
 		auto& Levels = Globals::World->Levels;
@@ -150,7 +150,7 @@ namespace ActorCache
 
 		const auto& v = Settings.VISUALS;
 		const auto& aim = Settings.AIM;
-		if (!v.Esp && !v.Radar && !v.GlowEnemy && !v.GlowFriendly && !v.BulletTraces && !aim.Aimbot && !aim.Triggerbot && !Settings.EXPLOITS.BulletTp)
+		if (!v.Esp && !v.Radar && !v.GlowEnemy && !v.GlowFriendly && !v.BulletTraces && !aim.Aimbot && !aim.Triggerbot && !Settings.EXPLOITS.BulletTp && !Settings.EXPLOITS.BulletSpeed)
 		{
 			players.clear();
 			projectiles.clear();
