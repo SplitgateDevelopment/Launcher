@@ -36,6 +36,8 @@ namespace Menu
 			ImGui::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
 			changed |= ImGui::ToggleButton("Native actor location", &Settings.DEBUG.NativeActorLocation);
 			ImGui::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
+			changed |= ImGui::ToggleButton("Native visibility", &Settings.DEBUG.NativeVisibility);
+			ImGui::Tooltip("Trace-free visibility from the mesh's render timestamps (no ProcessEvent). Off uses WasRecentlyRendered.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 

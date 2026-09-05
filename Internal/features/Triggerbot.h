@@ -11,6 +11,7 @@
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../utils/WorldToScreen.h"
+#include "../utils/Visibility.h"
 
 #include <Windows.h>
 #include <chrono>
@@ -92,7 +93,7 @@ class Triggerbot : public Feature
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
 			if (ActorCache::IsDead(cached)) continue; // don't fire at a dead body
 			if (aim.TriggerTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
-			if (aim.AimVisibleCheck && !character->WasRecentlyRendered(0.1f)) continue; // only visible targets
+			if (aim.AimVisibleCheck && !Visibility::IsVisible(character, 0.1f)) continue; // only visible targets
 
 			auto* mesh = character->Mesh;
 			if (!mesh) continue;

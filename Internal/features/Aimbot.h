@@ -11,6 +11,7 @@
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../utils/WorldToScreen.h"
+#include "../utils/Visibility.h"
 
 #include <Windows.h>
 #include <cmath>
@@ -136,7 +137,7 @@ class Aimbot : public Feature
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
 			if (ActorCache::IsDead(cached)) continue; // don't lock onto a dead body
 			if (aim.AimTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
-			if (aim.AimVisibleCheck && !perBone && !character->WasRecentlyRendered(0.1f)) continue; // only visible targets
+			if (aim.AimVisibleCheck && !perBone && !Visibility::IsVisible(character, 0.1f)) continue; // only visible targets
 
 			auto* mesh = character->Mesh;
 			if (!mesh) continue;

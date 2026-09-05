@@ -2387,7 +2387,10 @@ struct UPrimitiveComponent : USceneComponent
 	float LpvBiasMultiplier;											  // 0x278(0x04)
 	char pad_27C[0x8];													  // 0x27c(0x08)
 	float BoundsScale;													  // 0x284(0x04)
-	char pad_288[0x10];													  // 0x288(0x10)
+	float LastSubmitTime;												  // 0x288(0x04) time the component was last submitted for rendering
+	float LastRenderTime;												  // 0x28c(0x04)
+	float LastRenderTimeOnScreen;										  // 0x290(0x04) time it last actually rendered on screen; vs LastSubmitTime = a trace-free visibility test
+	char pad_294[0x4];													  // 0x294(0x04)
 	struct TArray<struct AActor*> MoveIgnoreActors;						  // 0x298(0x10)
 	struct TArray<struct UPrimitiveComponent*> MoveIgnoreComponents;	  // 0x2a8(0x10)
 	char pad_2B8[0x10];													  // 0x2b8(0x10)

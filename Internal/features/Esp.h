@@ -9,6 +9,7 @@
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../utils/WorldToScreen.h"
+#include "../utils/Visibility.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 
@@ -235,7 +236,7 @@ class Esp : public Feature
 			// Visibility recolor: an enemy that was recently rendered (not occluded) is drawn in
 			// VisibleColor; occluded enemies keep the normal box/bone/snapline colors. One
 			// ProcessEvent per enemy, so only paid when the check is on and the enemy isn't a teammate.
-			const bool visible = (visuals.EspVisibleCheck && !friendly) ? Character->WasRecentlyRendered(0.06f) : false;
+			const bool visible = (visuals.EspVisibleCheck && !friendly) ? Visibility::IsVisible(Character, 0.06f) : false;
 			const FLinearColor enemyBox = visible ? visibleColor : boxColor;
 			const FLinearColor enemyBones = visible ? visibleColor : bonesColor;
 			const FLinearColor enemySnap = visible ? visibleColor : snaplineColor;
