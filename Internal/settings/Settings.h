@@ -77,9 +77,13 @@ struct ExploitsSettings
 
 	bool SpectatorCam = false;		 ///< detached fly-camera via ClientSetSpectatorCamera (WASD + Space/Ctrl)
 	float SpectatorCamSpeed = 15.f;	 ///< fly speed per frame (cm)
+
+	bool ThirdPersonCam = false;	  ///< over-the-shoulder camera behind the pawn (ClientSetSpectatorCamera)
+	float ThirdPersonDistance = 250.f; ///< how far behind the pawn (cm)
+	float ThirdPersonHeight = 60.f;	  ///< camera height above the pawn eye (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance, SpectatorCam, SpectatorCamSpeed)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance, SpectatorCam, SpectatorCamSpeed, ThirdPersonCam, ThirdPersonDistance, ThirdPersonHeight)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
@@ -109,9 +113,10 @@ struct DebugSettings
 	bool NativeWorldToScreen = true; ///< project overlays with math; off falls back to the ProjectWorldLocationToScreen UFunction
 	bool NativeBones = true;		 ///< project the ESP skeleton via native GetBoneMatrix + math; off uses the game's bone projection
 	bool NativeActorLocation = true; ///< read actor location from RootComponent->RelativeLocation (no ProcessEvent); off uses K2_GetActorLocation
+	bool CustomProjection = false;	 ///< when the native math W2S is off, use ProjectWorldLocationToScreenCustom instead of the stock UFunction
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones, NativeActorLocation)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones, NativeActorLocation, CustomProjection)
 
 /// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
 /// ImGui/DX11 (near-free). Switchable live from the Visuals tab.
