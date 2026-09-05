@@ -103,6 +103,13 @@ namespace Menu
 				ImGui::ColorEdit4("Teammate glow", &v.GlowFriendlyColor.R);
 				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
+			changed |= ImGui::ToggleButton("Glow self", &v.GlowSelf);
+			ImGui::Tooltip("Outline your own pawn - only visible in third person.");
+			if (v.GlowSelf)
+			{
+				ImGui::ColorEdit4("Self glow", &v.GlowSelfColor.R);
+				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+			}
 
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);

@@ -25,6 +25,17 @@ class Glow : public Feature
 	/// Convert a settings Color (0-1 RGBA) into the engine FLinearColor.
 	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
 
+	/// Force the through-wall outline on @p character's mesh with the given stencil value + color.
+	static void Apply(APortalWarsCharacter* character, int stencil, const FLinearColor& color)
+	{
+		auto* mesh = character->Mesh;
+		if (!mesh) return;
+		mesh->SetRenderCustomDepth(true);
+		mesh->CustomDepthStencilValue = stencil;
+		character->BlueOutlineColor = color;
+		character->RedOutlineColor = color;
+	}
+
   public:
 	Glow()
 	{
@@ -36,7 +47,7 @@ class Glow : public Feature
 
 	void UpdateEnabled()
 	{
-		Enabled = Settings.VISUALS.GlowEnemy || Settings.VISUALS.GlowFriendly;
+		Enabled = Settings.VISUALS.GlowEnemy || Settings.VISUALS.GlowFriendly || Settings.VISUALS.GlowSelf;
 	};
 
 	bool Check()
@@ -60,6 +71,10 @@ class Glow : public Feature
 	{
 		for (const auto& cached : ActorCache::Players())
 			if (auto* mesh = cached.character->Mesh)
+				mesh->SetRenderCustomDepth(false);
+
+		if (auto* self = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
+			if (auto* mesh = self->Mesh)
 				mesh->SetRenderCustomDepth(false);
 	};
 
@@ -87,15 +102,13 @@ class Glow : public Feature
 			const bool friendly = (localTeam >= 0 && cached.team == localTeam);
 			if (!(friendly ? v.GlowFriendly : v.GlowEnemy)) continue; // this team's glow is off
 
-			auto* mesh = character->Mesh;
-			if (!mesh) continue;
-
-			mesh->SetRenderCustomDepth(true);
-			mesh->CustomDepthStencilValue = friendly ? character->FriendlyStencilValue : character->EnemyStencilValue;
-
 			const FLinearColor color = rgb ? rgbColor : ToColor(friendly ? v.GlowFriendlyColor : v.GlowEnemyColor);
-			character->BlueOutlineColor = color;
-			character->RedOutlineColor = color;
+			Apply(character, friendly ? character->FriendlyStencilValue : character->EnemyStencilValue, color);
 		}
+
+		// The local player's own pawn (its 3P mesh — only visible in third person).
+		if (v.GlowSelf)
+			if (auto* self = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
+				Apply(self, self->FriendlyStencilValue, rgb ? rgbColor : ToColor(v.GlowSelfColor));
 	};
 };

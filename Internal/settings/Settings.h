@@ -161,11 +161,13 @@ struct VisualsSettings
 
 	bool GlowEnemy = false;						  ///< force a custom-depth outline (chams) on enemies, visible through walls
 	bool GlowFriendly = false;					  ///< same for teammates
+	bool GlowSelf = false;						  ///< same for the local player's own pawn (only visible in third person)
 	Color GlowEnemyColor{1.f, 0.f, 0.f, 1.f};	  ///< enemy glow color (overridden by RGB when on)
 	Color GlowFriendlyColor{0.f, 0.f, 1.f, 1.f};  ///< teammate glow color (overridden by RGB when on)
+	Color GlowSelfColor{0.f, 1.f, 0.f, 1.f};	  ///< own-pawn glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, MaxDistance, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, MaxDistance, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings
