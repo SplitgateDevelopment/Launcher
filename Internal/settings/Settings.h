@@ -154,9 +154,14 @@ struct VisualsSettings
 	bool BulletTraces = false;					   ///< draw fading trails behind projectiles
 	float BulletTraceDuration = 2.f;			   ///< seconds a trail lingers
 	Color BulletTraceColor{1.f, 0.5f, 0.f, 1.f};   ///< trail color (overridden by RGB when on)
+
+	bool GlowEnemy = false;						  ///< force a custom-depth outline (chams) on enemies, visible through walls
+	bool GlowFriendly = false;					  ///< same for teammates
+	Color GlowEnemyColor{1.f, 0.f, 0.f, 1.f};	  ///< enemy glow color (overridden by RGB when on)
+	Color GlowFriendlyColor{0.f, 0.f, 1.f, 1.f};  ///< teammate glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, EspVisibleCheck, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, EspVisibleCheck, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

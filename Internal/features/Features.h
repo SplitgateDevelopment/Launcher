@@ -27,6 +27,7 @@
 #include "AnnounceToggles.h"
 #include "Crosshair.h"
 #include "BulletTraces.h"
+#include "Glow.h"
 #include "DiscordPresence.h"
 #include "../network/Network.h"
 
@@ -55,6 +56,7 @@ namespace Features
 		Features.push_back(std::make_unique<AnnounceToggles>());
 		Features.push_back(std::make_unique<Crosshair>());
 		Features.push_back(std::make_unique<BulletTraces>());
+		Features.push_back(std::make_unique<Glow>());
 		Features.push_back(std::make_unique<DiscordPresence>());
 
 		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install

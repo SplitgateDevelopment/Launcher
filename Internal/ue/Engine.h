@@ -2408,6 +2408,8 @@ struct UPrimitiveComponent : USceneComponent
 	char OnInputTouchLeave[0x01];										  // 0x42d(0x01)
 	char pad_42E[0x1a];													  // 0x42e(0x1a)
 	struct UPrimitiveComponent* LODParentPrimitive;						  // 0x448(0x08)
+
+	void SetRenderCustomDepth(bool bValue); // Function Engine.PrimitiveComponent.SetRenderCustomDepth // (Final|Native|Public|BlueprintCallable)
 };
 
 // Class Engine.MeshComponent

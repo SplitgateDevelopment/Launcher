@@ -81,6 +81,21 @@ namespace Menu
 				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
 
+			ImGui::SeparatorText("Glow / chams");
+			changed |= ImGui::ToggleButton("Glow enemies", &v.GlowEnemy);
+			ImGui::Tooltip("Force a custom-depth outline on enemies, visible through walls.\nRides on the game's team-outline post-process (verify color mapping in-game).");
+			if (v.GlowEnemy)
+			{
+				ImGui::ColorEdit4("Enemy glow", &v.GlowEnemyColor.R);
+				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+			}
+			changed |= ImGui::ToggleButton("Glow teammates", &v.GlowFriendly);
+			if (v.GlowFriendly)
+			{
+				ImGui::ColorEdit4("Teammate glow", &v.GlowFriendlyColor.R);
+				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+			}
+
 			ImGui::SeparatorText("Colors");
 			ImGui::ColorEdit4("Name", &v.NameColor.R);
 			ImGui::ColorEdit4("Box", &v.BoxColor.R);

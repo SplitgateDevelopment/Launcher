@@ -770,6 +770,20 @@ AActor* SpawnActor(UObject* worldContextObject, UClass* actorClass, FVector loca
 	return gameplayStatics->FinishSpawningActor(deferred, transform);
 }
 
+void UPrimitiveComponent::SetRenderCustomDepth(bool bValue)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.PrimitiveComponent.SetRenderCustomDepth");
+	if (!Function) return;
+
+	struct
+	{
+		bool bValue;
+	} Parameters;
+	Parameters.bValue = bValue;
+
+	ProcessEvent(Function, &Parameters);
+}
+
 bool LineTraceVisible(UObject* worldContext, const FVector& start, const FVector& end, AActor* ignoreActor)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.KismetSystemLibrary.LineTraceSingle");

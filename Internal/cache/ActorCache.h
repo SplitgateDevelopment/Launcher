@@ -85,7 +85,7 @@ namespace ActorCache
 	/// before the features run. Skips the pass entirely when nothing needs it.
 	inline void Update()
 	{
-		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot)
+		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.VISUALS.GlowEnemy && !Settings.VISUALS.GlowFriendly && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot)
 		{
 			players.clear();
 			return;
