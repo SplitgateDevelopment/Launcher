@@ -132,6 +132,7 @@ struct VisualsSettings
 	bool Distance = false;
 
 	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
+	bool BotTag = false;			///< draw a "BOT" label on AI-bot players
 
 	bool Radar = false;				///< separate 2D radar feature
 	bool ShowFriendly = false;		///< ESP: also draw teammates, in FriendColor
@@ -163,7 +164,7 @@ struct VisualsSettings
 	Color GlowFriendlyColor{0.f, 0.f, 1.f, 1.f};  ///< teammate glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, EspVisibleCheck, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings
@@ -177,6 +178,7 @@ struct AimSettings
 	bool SilentAim = false;	  ///< snap to target only while firing (left click), instead of the aim key
 	bool AimVisibleCheck = false;			 ///< only lock onto targets that were recently rendered (visible); also used by the triggerbot
 	bool AimVisiblePerBone = false;			 ///< strict per-bone line trace: aim at the first bone in line of sight, skip targets with none
+	bool IgnoreBots = false;				 ///< aimbot/triggerbot skip AI bots (target only real players)
 	bool DrawAimFov = false;				 ///< draw the aim FOV circle at the crosshair
 	Color AimFovColor{1.f, 1.f, 1.f, 1.f};	 ///< aim FOV circle color
 
@@ -187,7 +189,7 @@ struct AimSettings
 	bool TriggerTeamCheck = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, IgnoreBots, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode

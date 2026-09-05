@@ -137,6 +137,7 @@ class Aimbot : public Feature
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
 			if (ActorCache::IsDead(cached)) continue; // don't lock onto a dead body
 			if (aim.AimTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
+			if (aim.IgnoreBots && cached.isBot) continue; // target only real players
 			if (aim.AimVisibleCheck && !perBone && !Visibility::IsVisible(character, 0.1f)) continue; // only visible targets
 
 			auto* mesh = character->Mesh;

@@ -25,6 +25,8 @@ namespace Menu
 			const char* bones[] = {"Head", "Chest", "Pelvis"};
 			changed |= ImGui::Combo("Bone", &a.AimBone, bones, IM_ARRAYSIZE(bones));
 			changed |= ImGui::ToggleButton("Team check##aim", &a.AimTeamCheck);
+			changed |= ImGui::ToggleButton("Ignore bots", &a.IgnoreBots);
+			ImGui::Tooltip("Aimbot and triggerbot target only real players, never AI bots.");
 			changed |= ImGui::ToggleButton("Silent aim", &a.SilentAim);
 			ImGui::Tooltip("Snap to the target only while firing (left click), ignoring the aim key.");
 			changed |= ImGui::ToggleButton("Visibility check", &a.AimVisibleCheck);

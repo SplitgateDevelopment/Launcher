@@ -27,6 +27,7 @@ namespace ActorCache
 		FVector location; ///< K2_GetActorLocation, once
 		char team;		  ///< GetTeamNum, once (-1 if unknown)
 		float health;	  ///< Health field, once (<= 0 = dead body on the ground)
+		bool isBot;		  ///< PlayerState->bIsABot, once (an AI bot, not a real player)
 	};
 
 	/// A cached player is dead (a corpse on the ground) once its health drops to zero. Features that
@@ -75,7 +76,8 @@ namespace ActorCache
 				if (!actor->IsA(characterClass)) continue;
 
 				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
-				players.push_back({character, ActorLocation(reinterpret_cast<AActor*>(character)), character->GetTeamNum(), character->Health});
+				const auto* state = character->PlayerState;
+				players.push_back({character, ActorLocation(reinterpret_cast<AActor*>(character)), character->GetTeamNum(), character->Health, state && state->bIsABot});
 			}
 		}
 	}

@@ -279,6 +279,9 @@ class Esp : public Feature
 				std::string text = std::to_string((int)Distance(playerPos, cached.location)) + "m";
 				Render::Text({feet.X, feet.Y + 14.f}, text, visuals.FontScale, nameC);
 			}
+
+			if (visuals.BotTag && cached.isBot)
+				Render::Text({feet.X, feet.Y + (visuals.Distance ? 28.f : 14.f)}, "BOT", visuals.FontScale, nameC);
 		}
 	};
 };
