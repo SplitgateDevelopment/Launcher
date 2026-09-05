@@ -274,14 +274,28 @@ class Esp : public Feature
 					Render::Text(feet, state->PlayerNamePrivate.ToString(), visuals.FontScale, nameC);
 			}
 
+			// Sub-labels stack downward below the name (which sits at `feet`).
+			float ty = feet.Y + 14.f;
+
 			if (visuals.Distance && hasPlayer)
 			{
-				std::string text = std::to_string((int)Distance(playerPos, cached.location)) + "m";
-				Render::Text({feet.X, feet.Y + 14.f}, text, visuals.FontScale, nameC);
+				Render::Text({feet.X, ty}, std::to_string((int)Distance(playerPos, cached.location)) + "m", visuals.FontScale, nameC);
+				ty += 14.f;
+			}
+
+			if (visuals.KD)
+			{
+				std::string text = std::to_string(cached.kills) + "/" + std::to_string(cached.deaths);
+				if (cached.killstreak > 0) text += " [" + std::to_string(cached.killstreak) + "]";
+				Render::Text({feet.X, ty}, text, visuals.FontScale, nameC);
+				ty += 14.f;
 			}
 
 			if (visuals.BotTag && cached.isBot)
-				Render::Text({feet.X, feet.Y + (visuals.Distance ? 28.f : 14.f)}, "BOT", visuals.FontScale, nameC);
+			{
+				Render::Text({feet.X, ty}, "BOT", visuals.FontScale, nameC);
+				ty += 14.f;
+			}
 		}
 	};
 };

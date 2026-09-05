@@ -28,6 +28,9 @@ namespace ActorCache
 		char team;		  ///< GetTeamNum, once (-1 if unknown)
 		float health;	  ///< Health field, once (<= 0 = dead body on the ground)
 		bool isBot;		  ///< PlayerState->bIsABot, once (an AI bot, not a real player)
+		int kills;		  ///< PlayerState->PlayerStats.Kills, once (0 if no player state)
+		int deaths;		  ///< PlayerState->PlayerStats.Deaths, once
+		int killstreak;	  ///< PlayerState->KillStreak, once (current life's streak)
 	};
 
 	/// A cached player is dead (a corpse on the ground) once its health drops to zero. Features that
@@ -76,8 +79,16 @@ namespace ActorCache
 				if (!actor->IsA(characterClass)) continue;
 
 				auto* character = reinterpret_cast<APortalWarsCharacter*>(actor);
-				const auto* state = character->PlayerState;
-				players.push_back({character, ActorLocation(reinterpret_cast<AActor*>(character)), character->GetTeamNum(), character->Health, state && state->bIsABot});
+				// PlayerState is an APortalWarsPlayerState at runtime; cast up for the bot flag + stats.
+				auto* state = reinterpret_cast<APortalWarsPlayerState*>(character->PlayerState);
+				players.push_back({character,
+								   ActorLocation(reinterpret_cast<AActor*>(character)),
+								   character->GetTeamNum(),
+								   character->Health,
+								   state && state->bIsABot,
+								   state ? state->PlayerStats.Kills : 0,
+								   state ? state->PlayerStats.Deaths : 0,
+								   state ? static_cast<int>(state->KillStreak) : 0});
 			}
 		}
 	}

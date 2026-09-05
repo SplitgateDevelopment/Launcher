@@ -40,6 +40,8 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Snaplines", &v.Snaplines);
 			changed |= ImGui::ToggleButton("Health", &v.Health);
 			changed |= ImGui::ToggleButton("Distance", &v.Distance);
+			changed |= ImGui::ToggleButton("K/D", &v.KD);
+			ImGui::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
 
 			ImGui::SeparatorText("Visibility");
 			changed |= ImGui::ToggleButton("Visibility check", &v.EspVisibleCheck);
