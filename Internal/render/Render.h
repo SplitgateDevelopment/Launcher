@@ -63,10 +63,18 @@ namespace Render
 		active->RectGradient(min, max, top, bottom);
 	}
 
-	/// Replay the ImGui backend's per-frame command buffer (no-op in canvas mode — the buffer is
-	/// empty). Call once per frame from the Present hook after ImGui::NewFrame().
+	/// Replay the ImGui backend's per-frame command buffer into the current context's background draw
+	/// list (no-op in canvas mode — the buffer is empty). Call once per frame from the Present hook
+	/// after ImGui::NewFrame().
 	inline void Flush()
 	{
 		imgui.Flush();
+	}
+
+	/// Replay the ImGui backend's per-frame command buffer into an explicit draw list — used by the
+	/// streamproof external overlay window, which has its own ImGui context. @see ImGuiRenderer::Flush.
+	inline void Flush(ImDrawList* drawList, ImFont* font, float baseSize)
+	{
+		imgui.Flush(drawList, font, baseSize);
 	}
 } // namespace Render

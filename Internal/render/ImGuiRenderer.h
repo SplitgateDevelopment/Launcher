@@ -100,11 +100,23 @@ class ImGuiRenderer : public Renderer
 		gradients.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(top), ToU32(bottom)});
 	}
 
-	/// Replay this frame's recorded commands into the background draw list. Call once per frame from
-	/// the Present hook, after ImGui::NewFrame(). Swaps the recorded commands out under the lock into a
-	/// local snapshot, then replays that — so it never iterates a buffer the game thread is appending
-	/// to. No-op when nothing was recorded.
+	/// Replay this frame's recorded commands into the current ImGui context's background draw list.
+	/// Call once per frame from the Present hook, after ImGui::NewFrame(). Delegates to the explicit
+	/// overload with this context's draw list/font. No-op when nothing was recorded.
 	void Flush()
+	{
+		Flush(ImGui::GetBackgroundDrawList(), ImGui::GetFont(), ImGui::GetFontSize());
+	}
+
+	/// Replay this frame's recorded commands into an explicitly supplied draw list. Lets a second
+	/// ImGui context (the streamproof external overlay window) replay the same recorded commands into
+	/// its own draw list; the no-arg overload targets the current context. Swaps the recorded commands
+	/// out under the lock into a local snapshot, then replays that — so it never iterates a buffer the
+	/// game thread is appending to. No-op when nothing was recorded or the draw list/font isn't ready.
+	/// @param drawList target draw list (e.g. the target context's background draw list); may be null.
+	/// @param font     font to lay text out with; may be null (whole call becomes a no-op).
+	/// @param baseSize the target context's base font size, scaled per Text command.
+	void Flush(ImDrawList* drawList, ImFont* font, float baseSize)
 	{
 		// Snapshot this frame's commands and reset the recording buffers, holding the lock only for the
 		// (O(1)) swaps.
@@ -122,10 +134,7 @@ class ImGuiRenderer : public Renderer
 			g.swap(gradients);
 		}
 
-		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
-		ImFont* font = ImGui::GetFont();
 		if (!drawList || !font) return; // atlas/draw list not ready (e.g. mid device reset)
-		const float baseSize = ImGui::GetFontSize();
 
 		// Fills first so lines/text draw on top.
 		for (const auto& gr : g)
