@@ -6,9 +6,10 @@ marked **DONE** / **PARTIAL** have been built (kept for reference). Grouped by t
 approach, the files it touches, a rough size, and dependencies. "Forbidden files" =
 `Internal/dllmain.cpp` / `Launcher/Launcher.cpp`, whose edits go to `TODO.md`.
 
-**Still outstanding (need RE / in-game / a separate render pipeline, so not done blind):** the glow /
-chams, the streamproof separate-overlay window, and the custom third-person camera. The
-spawn/despawn-diff cache was analysed and intentionally skipped — see its note.
+**Still outstanding (need RE / in-game / a separate render pipeline, so not done blind):** the
+streamproof separate-overlay window and the custom third-person camera. The glow / chams shipped
+(built on the game's own team-outline post-process; the arbitrary-color mapping still wants an
+in-game check). The spawn/despawn-diff cache was analysed and intentionally skipped — see its note.
 
 ---
 
@@ -86,10 +87,18 @@ against [game-dump.md](game-dump.md).
 
 ## Visuals
 
-### Glow / chams (per-team color + per-team toggle)
+### Glow / chams (per-team color + per-team toggle) — DONE (in-game color mapping still to verify)
 
 **Goal.** A team-colored glow around characters, with an independent enable + color for enemies and
 teammates.
+
+**Shipped as** [`features/Glow.h`](../Internal/features/Glow.h): the approach below was built as
+described — `Mesh->SetRenderCustomDepth(true)` + `CustomDepthStencilValue` from the character's own
+`Enemy`/`FriendlyStencilValue`, colors written into the character's `Blue`/`RedOutlineColor` (both),
+per-team toggle + color, RGB rainbow override, `Destroy()` resetting custom depth on the still-cached
+meshes. `UPrimitiveComponent::SetRenderCustomDepth` is wrapped in the SDK; `ActorCache` rebuilds when
+a glow toggle is on. **Remaining:** confirm in-game whether the stock post-process honors an arbitrary
+color (else a custom outline material keyed on stencil value is needed).
 
 **Dump-confirmed hooks:** `Function Engine.PrimitiveComponent.SetRenderCustomDepth`,
 `SetCustomDepthStencilValue`, `SetCustomDepthStencilWriteMask`, and `Enum Engine.ECustomDepthStencil`
@@ -387,7 +396,16 @@ offset); if a per-frame, ProcessEvent-free version is ever wanted, those offsets
 `UPrimitiveComponent->BoundsScale` (0x284) are the path (see
 [ue4-cheatsheet.md](ue4-cheatsheet.md#offsets-you-derive-from-a-neighbour)).
 
-### Per-bone visibility check (LineTraceSingle) — UNBLOCKED (trace function confirmed)
+### Per-bone visibility check (LineTraceSingle) — DONE (trace channel to verify in-game)
+
+**Shipped:** `LineTraceVisible()` wraps `UKismetSystemLibrary::LineTraceSingle` in
+[Engine.cpp](../Internal/ue/Engine.cpp) (param block laid out to the engine's offsets, guarded by
+`static_assert`s, fails open), and the aimbot gained a **Per-bone visibility** strict sub-mode under
+the visibility check ([Aimbot.h](../Internal/features/Aimbot.h)): it traces the eye→bone ray ignoring
+the target and aims at the first bone in line of sight (configured bone → head → chest → pelvis),
+skipping targets with no visible bone; only traced while aiming. **Remaining:** trace channel 0
+(Visibility) may need an in-game check if the game remaps it. A companion ESP "visibility check"
+(whole-actor recolor via `WasRecentlyRendered`) also shipped in [Esp.h](../Internal/features/Esp.h).
 
 **Confirmed in the dump:** `Function Engine.KismetSystemLibrary.LineTraceSingle` (and
 `LineTraceSingleByChannel` / `...ByProfile` / `...ForObjects`) exist — so the trace wrapper is
