@@ -41,7 +41,7 @@ class BulletTp : public Feature
 
 	void UpdateEnabled()
 	{
-		Enabled = Settings.AIM.BulletTp;
+		Enabled = Settings.EXPLOITS.BulletTp;
 	};
 
 	bool Check()
@@ -121,7 +121,9 @@ class BulletTp : public Feature
 				AActor* actor = actors[a];
 				if (!actor || actor->bActorIsBeingDestroyed) continue;
 				if (!actor->IsA(projectileClass)) continue;
-				if (reinterpret_cast<AActor*>(actor->Instigator) != reinterpret_cast<AActor*>(localPawn)) continue; // only our shots
+				// Only our own shots: the projectile's Instigator (the shooter pawn) or Owner is us.
+				const auto* localActor = reinterpret_cast<AActor*>(localPawn);
+				if (reinterpret_cast<AActor*>(actor->Instigator) != localActor && actor->Owner != localActor) continue;
 
 				FHitResult hit{};
 				actor->K2_SetActorLocation(targetBone, false, hit, true);

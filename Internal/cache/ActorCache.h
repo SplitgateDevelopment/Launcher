@@ -117,7 +117,7 @@ namespace ActorCache
 			return;
 		}
 
-		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.VISUALS.GlowEnemy && !Settings.VISUALS.GlowFriendly && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot && !Settings.AIM.BulletTp)
+		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.VISUALS.GlowEnemy && !Settings.VISUALS.GlowFriendly && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot && !Settings.EXPLOITS.BulletTp)
 		{
 			players.clear();
 			return;

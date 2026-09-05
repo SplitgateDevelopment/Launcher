@@ -65,6 +65,7 @@ struct ExploitsSettings
 	bool FreeCam = false;
 	bool EnableAllInput = false; ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
 	bool PhasingBullets = false; ///< disable collision on cover (CullableActor) so shots pass through it
+	bool BulletTp = false;		 ///< teleport your own projectiles onto the target's aim bone (uses the Aim bone/filters)
 
 	bool SuperJump = false;			 ///< enable the super-jump hotkey
 	int SuperJumpKey = 'V';			 ///< pressed to launch upward
@@ -75,7 +76,7 @@ struct ExploitsSettings
 	float TeleportDistance = 1500.f; ///< how far forward to teleport (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
@@ -193,7 +194,6 @@ struct AimSettings
 	bool AimVisibleCheck = false;			 ///< only lock onto targets that were recently rendered (visible); also used by the triggerbot
 	bool AimVisiblePerBone = false;			 ///< strict per-bone line trace: aim at the first bone in line of sight, skip targets with none
 	bool IgnoreBots = false;				 ///< aimbot/triggerbot skip AI bots (target only real players)
-	bool BulletTp = false;					 ///< teleport the local player's projectiles onto the target's aim bone (projectile aimbot)
 	bool DrawAimFov = false;				 ///< draw the aim FOV circle at the crosshair
 	Color AimFovColor{1.f, 1.f, 1.f, 1.f};	 ///< aim FOV circle color
 
@@ -204,7 +204,7 @@ struct AimSettings
 	bool TriggerTeamCheck = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, IgnoreBots, BulletTp, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, IgnoreBots, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode
