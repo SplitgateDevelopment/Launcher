@@ -89,9 +89,15 @@ class Glow : public Feature
 		auto* controller = Globals::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 
-		char localTeam = -1;
-		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
-			localTeam = localChar->GetTeamNum();
+		// Source the stencil values from the local character: they're reliably populated there, whereas
+		// a freshly-seen enemy's own Enemy/FriendlyStencilValue can still read 0 (→ stencil 0 = no
+		// outline, the "glow doesn't glow" case). These are the values the game's outline post-process
+		// already maps to a through-wall color.
+		auto* self = reinterpret_cast<APortalWarsCharacter*>(controller->Character);
+		if (!self) return;
+		const char localTeam = self->GetTeamNum();
+		const int enemyStencil = self->EnemyStencilValue;
+		const int friendlyStencil = self->FriendlyStencilValue;
 
 		for (const auto& cached : ActorCache::Players())
 		{
@@ -103,12 +109,11 @@ class Glow : public Feature
 			if (!(friendly ? v.GlowFriendly : v.GlowEnemy)) continue; // this team's glow is off
 
 			const FLinearColor color = rgb ? rgbColor : ToColor(friendly ? v.GlowFriendlyColor : v.GlowEnemyColor);
-			Apply(character, friendly ? character->FriendlyStencilValue : character->EnemyStencilValue, color);
+			Apply(character, friendly ? friendlyStencil : enemyStencil, color);
 		}
 
 		// The local player's own pawn (its 3P mesh — only visible in third person).
 		if (v.GlowSelf)
-			if (auto* self = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
-				Apply(self, self->FriendlyStencilValue, rgb ? rgbColor : ToColor(v.GlowSelfColor));
+			Apply(self, friendlyStencil, rgb ? rgbColor : ToColor(v.GlowSelfColor));
 	};
 };
