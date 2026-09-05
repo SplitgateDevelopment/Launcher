@@ -6,8 +6,9 @@ marked **DONE** / **PARTIAL** have been built (kept for reference). Grouped by t
 approach, the files it touches, a rough size, and dependencies. "Forbidden files" =
 `Internal/dllmain.cpp` / `Launcher/Launcher.cpp`, whose edits go to `TODO.md`.
 
-**Still outstanding (need RE / in-game / a separate render pipeline, so not done blind):** the
-streamproof separate-overlay window and the custom third-person camera. The glow / chams shipped
+**Still outstanding (need RE / in-game, so not done blind):** the custom third-person camera. The
+streamproof separate-overlay window **shipped** (`RendererMode::External`; needs in-game capture
+verification). The glow / chams shipped
 (built on the game's own team-outline post-process; the arbitrary-color mapping still wants an
 in-game check). The spawn/despawn-diff cache was analysed and intentionally skipped — see its note.
 
@@ -328,24 +329,32 @@ The `Render::Backends[]` registry makes new backends a new enum value + one arra
 adding:
 - **Null renderer** — draws nothing; a baseline for measuring the ProcessEvent/ImGui cost, and a
   quick global "hide overlays".
-- **External overlay renderer** — draws into a separate, capture-excluded window (the streamproof
-  fix below). It's the natural third backend: `RendererMode::ImGuiStreamproof`.
+- **External overlay renderer** — **DONE** (`RendererMode::External`). Draws into a separate,
+  capture-excluded window (the streamproof fix below).
 
-### Streamproof via a separate excluded overlay window
+### Streamproof via a separate excluded overlay window — DONE
 
-**Why the current one is wrong.** `WDA_EXCLUDEFROMCAPTURE` on the *game* window hides the whole
-game from capture (whole-screen capture included). To hide *only* the overlay it must live in its
-own window.
+**Why the old one was wrong.** `WDA_EXCLUDEFROMCAPTURE` on the *game* window hid the whole game from
+capture (whole-screen capture included). To hide *only* the overlay it must live in its own window.
+That whole-window toggle (`Settings.MENU.Streamproof` / `Window::SetStreamproof`) has been removed.
 
-**Approach.** Create a layered, transparent, click-through, top-most window sized to the game
-(`WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW`, `SetLayeredWindowAttributes`
-or a DWM extend for transparency), set `WDA_EXCLUDEFROMCAPTURE` on it, give it its own D3D11
-device+swapchain and a second ImGui context. The ImGui renderer's `Flush()` targets this window's
-draw list when streamproof is on; drive its Present from the game's Present hook and keep its rect
-synced to the game window. **Input caveat:** click-through means the *menu* isn't interactive there
-— keep the menu on the game window (visible in your own view, not to capture is impossible for an
-interactive window), and route only the ESP/drawings to the excluded window. **Size:** Large; a
-full second render pipeline. This is why it's planned, not done — it's not a small toggle.
+**What shipped.** [`Internal/menu/gui/ExternalWindow.h`](../Internal/menu/gui/ExternalWindow.h): a
+separate top-level window (`WS_POPUP`, `WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE |
+WS_EX_TRANSPARENT | WS_EX_NOREDIRECTIONBITMAP`) with `WDA_EXCLUDEFROMCAPTURE`, its own D3D11 device +
+**DirectComposition** swap chain (`DXGI_ALPHA_MODE_PREMULTIPLIED`, true per-pixel alpha) and a second
+ImGui context. The shared ESP recorder is replayed into its draw list via
+`Render::Flush(drawList, font, size)`; `Menu::Draw` runs on it too.
+
+**Interactive menu (chosen over ESP-only).** The window is click-through while the menu is closed;
+opening the menu drops `WS_EX_TRANSPARENT | WS_EX_NOACTIVATE` and pulls focus, so the menu is usable
+*and* hidden from capture. Because an interactive window needs a Win32 message pump — which the
+game's render thread (where Present runs) doesn't provide for our window — the overlay runs on its
+**own thread** (create window + pipeline + ImGui, then pump + render loop), rather than being driven
+from the game's Present hook. While `External` is selected, `GUI::Overlay` starts that thread and
+draws nothing on the (captured) game window, so nothing is drawn twice.
+
+**Open items:** in-game verification that OBS/Game Bar capture really excludes it; premultiplied-alpha
+ESP blending looks right; focus/alt-tab/resize edge cases.
 
 ## Aim
 

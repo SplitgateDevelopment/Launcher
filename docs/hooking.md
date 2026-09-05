@@ -235,6 +235,24 @@ Both live in `hook/functions/`:
 See [features.md](features.md) for how features subscribe to `Render` vs. specific events,
 and [scripting.md](scripting.md) for the event bus itself.
 
+### The streamproof external overlay (a second render path)
+
+Normally the overlay is drawn on the game's own swap chain from the hooked
+`IDXGISwapChain::Present` (`GUI::Overlay` in `menu/gui/Gui.h`). With the **External** renderer
+(`RendererMode::External`) selected, that path draws nothing and a *separate* window carries the
+overlay instead — see [`menu/gui/ExternalWindow.h`](../Internal/menu/gui/ExternalWindow.h).
+
+That window is a top-level, click-through, top-most, `WDA_EXCLUDEFROMCAPTURE` window with its **own**
+D3D11 device + DirectComposition swap chain (per-pixel alpha) and a **second ImGui context**, so
+screen/window capture sees the game but not the overlay. It runs on its **own thread**: an
+interactive menu needs a Win32 message pump, which the game's render thread doesn't provide for our
+window, so the thread creates the window/pipeline/context and then pumps messages + renders in a
+loop. It replays the shared ESP command buffer into its own draw list via
+`Render::Flush(drawList, font, size)` and draws the menu with `Menu::Draw`. Every ImGui/backend call
+runs under its context (an RAII `ScopedContext` swaps `ImGui::SetCurrentContext` and restores it), so
+the game overlay's context is never disturbed. `GUI::Overlay` starts the thread when `External` is
+selected and stops it (also on `GUI::Destroy`) otherwise.
+
 ---
 
 ## 3. Teardown — `Hook::UnHook()`
