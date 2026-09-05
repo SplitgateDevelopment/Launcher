@@ -69,6 +69,14 @@ namespace Menu
 			};
 			if (loadDisabled) ImGui::EndDisabled();
 
+			ImGui::SameLine();
+			if (!isInGame) ImGui::BeginDisabled();
+			if (ImGui::Button("Respawn"))
+				if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
+					character->RequestSuicide();
+			if (!isInGame) ImGui::EndDisabled();
+			ImGui::Tooltip("Kill your character so it respawns (RequestSuicide).");
+
 			// Spawn picker: a searchable dropdown of spawnable actor classes (bots, pawns, guns, ...)
 			// scanned from GObjects, plus a Spawn button that spawns the selection in front of you.
 			{

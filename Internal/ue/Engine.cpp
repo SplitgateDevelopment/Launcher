@@ -660,6 +660,14 @@ float APlayerCameraManager::GetFOVAngle()
 	return Parameters.ReturnValue;
 };
 
+void APortalWarsCharacter::RequestSuicide()
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.RequestSuicide");
+	if (!Function) return;
+
+	ProcessEvent(Function, nullptr);
+}
+
 char APortalWarsCharacter::GetTeamNum()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.GetTeamNum");
