@@ -110,6 +110,17 @@ TEST(MemoryTest, FindLeaToResolvesRipRelative)
 	EXPECT_EQ(Memory::FindLeaTo(buf, buf + sizeof(buf), buf + 20), nullptr);
 }
 
+TEST(MemoryTest, FunctionStartFromSkipsBackToPrologue)
+{
+	// [0xCC padding][prologue ...][code we point at]
+	uint8_t buf[32] = {0};
+	buf[0] = 0xCC;
+	buf[1] = 0xCC;			 // int3 padding before the function
+	buf[2] = 0x40; buf[3] = 0x55; // a prologue (function start)
+	// pretend some instruction we located is at offset 10
+	EXPECT_EQ(Memory::FunctionStartFrom(buf + 10), buf + 2);
+}
+
 TEST(MemoryTest, FindThenRelativeReproducesPointerLookup)
 {
 	// The FindPointer path: a "mov reg, [rip+disp]" (48 8B 05 ?? ?? ?? ??) somewhere in a buffer.

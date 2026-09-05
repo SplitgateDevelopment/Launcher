@@ -212,4 +212,27 @@ namespace Memory
 
 		return FindLeaTo(base, base + size, stringAddr);
 	}
+
+	/// Walk backward from @p code to the start of its function: the byte right after the run of `0xCC`
+	/// (int3) padding the linker inserts between functions. Returns nullptr if no boundary is found
+	/// within @p maxBack bytes.
+	inline uint8_t* FunctionStartFrom(uint8_t* code, size_t maxBack = 0x1000)
+	{
+		if (!code) return nullptr;
+		for (uint8_t* at = code; at > code - maxBack; at--)
+			if (at[-1] == 0xCC && at[0] != 0xCC) return at; // first byte after the padding gap
+		return nullptr;
+	}
+
+	/// Full string-ref discovery: find the function that references @p str — locate the string, the
+	/// `lea` that loads it, then back-scan to that function's prologue. Update-stable: it survives a
+	/// game patch as long as the string and the reference remain. Returns the function start, or
+	/// nullptr. (No existing hook here references a distinctive string, so this is provided for a
+	/// future target such as the engine's HTTP request function.)
+	inline uint8_t* FindFunctionByString(std::string_view str, HMODULE module = nullptr)
+	{
+		uint8_t* lea = FindStringRef(str, module);
+		if (!lea) return nullptr;
+		return FunctionStartFrom(lea);
+	}
 } // namespace Memory
