@@ -7,6 +7,7 @@
 #include "Config.h"
 #include "Styles.h"
 #include "Custom.h"
+#include "ExternalWindow.h"
 #include "../Menu.h"
 #include "../../render/Render.h"
 
