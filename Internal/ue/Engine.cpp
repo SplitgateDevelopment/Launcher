@@ -697,6 +697,28 @@ void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool 
 	ProcessEvent(Function, &Parameters);
 }
 
+bool APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector WorldLocation, FVector2D& ScreenLocation, bool bPlayerViewportRelative)
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ProjectWorldLocationToScreenCustom");
+	if (!Function) return false;
+
+	struct
+	{
+		FVector WorldLocation;			 // 0x00
+		FVector2D ScreenLocation;		 // 0x0c (out)
+		bool bPlayerViewportRelative;	 // 0x14
+		bool ReturnValue;				 // 0x15
+	} Parameters;
+	Parameters.WorldLocation = WorldLocation;
+	Parameters.ScreenLocation = {};
+	Parameters.bPlayerViewportRelative = bPlayerViewportRelative;
+
+	ProcessEvent(Function, &Parameters);
+
+	ScreenLocation = Parameters.ScreenLocation;
+	return Parameters.ReturnValue;
+}
+
 void APortalWarsPlayerController::ClientSetSpectatorCamera(FVector CameraLocation, FRotator CameraRotation)
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientSetSpectatorCamera");
@@ -716,6 +738,14 @@ void APortalWarsPlayerController::ClientSetSpectatorCamera(FVector CameraLocatio
 void APortalWarsCharacter::UpdateSkins()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.UpdateSkins");
+	if (!Function) return;
+
+	ProcessEvent(Function, nullptr);
+}
+
+void ABaseGun::UpdateSkins()
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.BaseGun.UpdateSkins");
 	if (!Function) return;
 
 	ProcessEvent(Function, nullptr);

@@ -208,7 +208,34 @@ namespace Menu
 						Logger::Log("ERROR", "Apply skin: class not found: " + skinSelected);
 				}
 				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
-				ImGui::Tooltip("Pick a character-skin class and apply it (sets CharacterSkinClass + UpdateSkins).\nClient-side; the server may re-assert your real skin. Refresh rescans classes.");
+				ImGui::Tooltip("Pick a skin class, then apply it to your character, gun or jetpack.\nClient-side (sets the *SkinClass + UpdateSkins); the server may re-assert your real skins. Refresh rescans classes.");
+
+				// Apply the selected class to the gun / jetpack too (they use their own skin types).
+				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
+				if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				{
+					UObject* cls = ObjObjects->FindObject(skinSelected.c_str());
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					if (cls && character && character->CurrentWeapon)
+					{
+						character->CurrentWeapon->WeaponSkinClass = reinterpret_cast<ABaseGunSkin*>(cls);
+						character->CurrentWeapon->UpdateSkins();
+						Logger::Log("SUCCESS", "Applied gun skin: " + skinSelected);
+					}
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				{
+					UObject* cls = ObjObjects->FindObject(skinSelected.c_str());
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					if (cls && character)
+					{
+						character->JetpackSkinClass = reinterpret_cast<AJetpackSkin*>(cls);
+						character->UpdateSkins();
+						Logger::Log("SUCCESS", "Applied jetpack skin: " + skinSelected);
+					}
+				}
+				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
 			}
 
 			ImGui::SeparatorText("Overlay");
