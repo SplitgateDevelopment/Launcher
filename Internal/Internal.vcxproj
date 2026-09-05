@@ -99,6 +99,7 @@
     <ClInclude Include="features\Crosshair.h" />
     <ClInclude Include="features\BulletTraces.h" />
     <ClInclude Include="features\Glow.h" />
+    <ClInclude Include="features\Phasing.h" />
     <ClInclude Include="features\DiscordPresence.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />
