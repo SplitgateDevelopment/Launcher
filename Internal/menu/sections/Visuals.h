@@ -42,6 +42,8 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Distance", &v.Distance);
 			changed |= ImGui::ToggleButton("K/D", &v.KD);
 			ImGui::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
+			changed |= ImGui::ToggleButton("Rank", &v.Rank);
+			ImGui::Tooltip("Draw each player's rank/level (from their player state).");
 
 			ImGui::SeparatorText("Range");
 			changed |= ImGui::SliderFloat("Max distance (m)", &v.MaxDistance, 0.f, 300.f, v.MaxDistance <= 0.f ? "unlimited" : "%.0f");

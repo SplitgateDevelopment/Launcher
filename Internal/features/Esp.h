@@ -321,6 +321,12 @@ class Esp : public Feature
 				Render::Text({feet.X, ty}, text, visuals.FontScale, nameC);
 				ty += 14.f;
 			}
+
+			if (visuals.Rank && cached.rank > 0)
+			{
+				Render::Text({feet.X, ty}, "Lv " + std::to_string(cached.rank), visuals.FontScale, nameC);
+				ty += 14.f;
+			}
 		}
 	};
 };
