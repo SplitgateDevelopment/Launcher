@@ -71,6 +71,7 @@ namespace Scripts
 				.value("SettingsChanged", ::Events::Type::SettingsChanged)
 				.value("MenuOpened", ::Events::Type::MenuOpened)
 				.value("MenuClosed", ::Events::Type::MenuClosed)
+				.value("HotKeyPressed", ::Events::Type::HotKeyPressed)
 				.value("PlayerDeath", ::Events::Type::PlayerDeath)
 				.value("HealthChanged", ::Events::Type::HealthChanged)
 				.value("DamageTaken", ::Events::Type::DamageTaken)

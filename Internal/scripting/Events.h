@@ -31,6 +31,7 @@ namespace Events
 		SettingsChanged, ///< a setting was changed in the menu
 		MenuOpened,		 ///< the GUI was shown
 		MenuClosed,		 ///< the GUI was hidden
+		HotKeyPressed,	 ///< a key/mouse button went down while the game is focused; payload.value = vk code
 
 		// Game events dispatched from ProcessEvent (payload.source = the calling UObject).
 		// UFunction names are wired in ProcessEvent's gameEvents table.

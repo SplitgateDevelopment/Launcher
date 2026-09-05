@@ -14,6 +14,7 @@
 #include "../../cache/ActorCache.h"
 #include "../../render/Render.h"
 #include "../../features/Features.h"
+#include "../../utils/Input.h"
 
 /// @brief Hook code for UGameViewportClient::PostRender.
 namespace PostRender
@@ -46,6 +47,9 @@ namespace PostRender
 			Globals::World = World;
 			Globals::Canvas = Canvas;
 			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+
+			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
+			Input::DispatchHotKeys();
 
 			// One shared actor pass per frame, consumed by the visual features below.
 			ActorCache::Update();
