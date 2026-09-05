@@ -40,7 +40,15 @@ namespace Menu
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
 
-		if ((GetAsyncKeyState(Settings.MENU.ShowHotkey) & 1) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
+		// Edge-detect the toggle key ourselves (high bit + previous state). GetAsyncKeyState's `& 1`
+		// "pressed since last call" bit is unreliable here — Input::DispatchHotKeys polls every key
+		// each frame and clears it, which made the menu need several presses to open.
+		static bool prevToggleDown = false;
+		const bool toggleDown = (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 0x8000) != 0;
+		const bool togglePressed = toggleDown && !prevToggleDown;
+		prevToggleDown = toggleDown;
+
+		if (togglePressed || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
 		{
 			Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 			Events::Dispatch(Settings.MENU.ShowMenu ? Events::Type::MenuOpened : Events::Type::MenuClosed);
