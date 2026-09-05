@@ -616,11 +616,9 @@ from the roadmap since they don't work against a real match.
 **Ignore bots** filter; the scripting `Actors` snapshot exposes `is_bot`/`kills`/`deaths`/
 `killstreak`.
 
-**Last planned ESP label — rank/level (blocked on a struct):** read `PlayerRanks`
-(`TArray<FUserRankInfo>` +0x8e8 on `APortalWarsPlayerState`) and draw the rank/level. Blocked until
-`FUserRankInfo`'s layout (size + the rank/level field offset) is added to the SDK — it isn't in
-`Engine.h`, and the array can't be indexed safely without its element size (pull it from Dumpspace's
-`StructsInfo.json`). **Rank/level is the final ESP label — no further ESP text elements are planned.**
+**Rank/level — DONE (the final ESP label).** `FUserRankInfo` (RankLevel at 0x10, size 0x20) is in the
+SDK; `ActorCache` caches the highest `PlayerRanks[].RankLevel` and ESP draws it as "Lv N" under a
+**Rank** toggle. **No further ESP text elements are planned.**
 
 ### Aim: weapon aim-assist / magnetism boost — Small–medium
 
