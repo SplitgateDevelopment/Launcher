@@ -35,7 +35,12 @@ single biggest projection win, independent of the renderer.
 **Files.** `ue/Engine.*` (WorldToScreen + camera POV read), `features/Esp.h`.
 **Size.** Medium. **Depends on:** confirming the `PlayerCameraManager` POV offset in-game.
 
-### Spawn/despawn-diff actor cache — SKIPPED (analysed, not beneficial yet)
+### Spawn/despawn-diff actor cache — SKIPPED (did the cheaper win instead)
+
+> **Update 2:** rather than the full diff cache, `ActorCache` now does **one shared per-frame walk**
+> that classifies both characters and projectiles, so ESP/aim + BulletTraces + BulletTp no longer each
+> walk the actor list separately (three walks → one). The diff cache itself stays skipped for the
+> reasons below.
 
 > **Update:** measured against reality, this doesn't help here and could hurt. `IsA` is a handful of
 > pointer compares, and the cache must still re-read each player's location/team every frame (they
@@ -584,9 +589,10 @@ utility that replaced both `utils/Util.{h,cpp}` and the earlier third-party-deri
   GObjects/GNames/GWorld locator that reproduces the old `Util::FindPointer`).
 
 `Engine.cpp` (EngineInit) and `network/CurlHook.h` are migrated onto it; the pure core is unit-tested
-against crafted buffers in `Tests/MemoryTests.cpp` (8 tests). **Still open (optional):** string-ref
-discovery (`FindStringRef`: `.rdata` string → the `.text` `lea` that references it → backscan to the
-prologue) for update-stable signatures — mirrors the strategy already in `find_signature.py`.
+against crafted buffers in `Tests/MemoryTests.cpp` (10 tests). String-ref discovery shipped too:
+`FindString` (null-terminated ASCII search), `FindLeaTo` (the rip-relative `lea` that resolves to an
+address) and `FindStringRef` (string → the `lea` referencing it) — update-stable signatures from a
+string rather than a byte prologue. No callers are wired onto FindStringRef yet.
 
 ### Hook `curl_setopt` (Curl_vsetopt) too — DONE
 
@@ -620,7 +626,12 @@ from the roadmap since they don't work against a real match.
 SDK; `ActorCache` caches the highest `PlayerRanks[].RankLevel` and ESP draws it as "Lv N" under a
 **Rank** toggle. **No further ESP text elements are planned.**
 
-### Aim: weapon aim-assist / magnetism boost — Small–medium
+### Aim: weapon aim-assist / magnetism boost — DONE (verify it applies on M&K)
+
+**Shipped:** [`features/AimAssist.h`](../Internal/features/AimAssist.h) scales the equipped weapon's
+`AutoAimConfig` (radius/range/magnetism) by a strength, from a pristine per-weapon baseline (no
+compounding), restored on disable. **Remaining:** confirm in-game whether the game applies aim-assist
+on mouse & keyboard (it may be controller-only).
 
 **Goal.** A soft "legit" aim by amplifying the game's own aim-assist instead of moving the view.
 **Approach.** Each `AGun` carries `FAutoAimData AutoAimConfig` at +0x460 (struct at Engine.h L1669:
