@@ -169,7 +169,8 @@ linked**, so its symbols aren't exported and `GetProcAddress` can't find them. T
 (`CurlHook.h`):
 
 1. **Locate `curl_easy_setopt` by an AOB signature.** Since it isn't exported, we scan the game
-   module for its prologue with `Util.h::FindSignature` (`0x00` bytes are wildcards). The signature
+   module for its prologue with `Memory::Find` (`memory/Memory.h`; `0x00` bytes are wildcards via
+   `Memory::FromBytes`). The signature
    is **build-specific**; it's currently **filled for the shipping build's libcurl 7.55.1** — it was
    found by its call sites (the sole target of dozens of `mov edx, <CURLOPT>; call`), reproducible
    with [`Tools/find_signature.py`](../Tools/find_signature.py):

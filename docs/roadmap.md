@@ -66,7 +66,7 @@ plain field reads, which the [ue4-cheatsheet.md](ue4-cheatsheet.md) collects —
 removes per-actor/per-bone call cost entirely.
 
 **Approach (incremental, confirm each offset against the dump first).**
-- **Location — DONE:** `utils/ActorLocation.h::ActorLocation()` reads
+- **Location — DONE:** `native/ActorLocation.h::ActorLocation()` reads
   `RootComponent->RelativeLocation` (0x130 → 0x11c), used by `ActorCache`; falls back to
   `K2_GetActorLocation` when the root component is missing or the **Native actor location** Debug
   toggle is off.
@@ -74,7 +74,7 @@ removes per-actor/per-bone call cost entirely.
   and `double` `FMatrix` on UE5) rather than the AOB `GetBoneMatrix` — no signature to maintain and no
   call per bone. Keep the AOB path as a fallback (a Debug toggle, like the existing native/UFunction
   ones).
-- **Visibility — DONE:** `utils/Visibility.h::IsVisible()` reads `LastRenderTimeOnScreen` (0x290) vs
+- **Visibility — DONE:** `native/Visibility.h::IsVisible()` reads `LastRenderTimeOnScreen` (0x290) vs
   `LastSubmitTime` (0x288) off the mesh — no ProcessEvent — shared by the ESP visibility recolor and
   the aimbot/triggerbot visible check; falls back to `WasRecentlyRendered` behind the Debug **Native
   visibility** toggle.
@@ -165,8 +165,9 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
 - **`Actors` extras — DONE:** `player.bone(Actors.Bone.*)` world positions, `player.visible()` (via
   `WasRecentlyRendered`), `player.distance()` to local; an `Actors.Bone` enum. (Weapon/loadout fields
   still need RE.)
-- **`Player` extras — DONE:** `velocity()`, `aim_at(x,y,z)`. (Ammo/loadout and `respawn()` still need
-  RE / the fire path.)
+- **`Player` extras — DONE:** `velocity()`, `aim_at(x,y,z)`, `respawn()`. (Ammo/loadout still need RE.)
+- **`Actors` stats — DONE:** the player snapshot now carries `is_bot`, `kills`, `deaths`,
+  `killstreak`, and `visible()` uses the trace-free native check.
 - **`Game` module — DONE:** `fps()`, `map_name()`, `local_name()`. (Mode/score/round/timer need RE —
   some are on the event bus already.)
 - **`Render` extras — DONE:** `rect()` outline and `skeleton(player)` one-call ESP. (Filled rect /
@@ -178,7 +179,7 @@ handler subscribed to `Events.Render` (already dispatched each frame by the User
   custom) are cleared before re-importing, so reloading never stacks duplicates.
 
 ### Still-open scripting ideas
-- Weapon/loadout/ammo reads and `respawn()`/`suicide()` (need the weapon/loadout RE + fire path).
+- Weapon/loadout/ammo reads (need the weapon/loadout RE). `respawn()` shipped.
 - A richer `Game` module (mode, score, round state, match timer) once those reads are located.
 - ~~Filled-rect / circle / gradient draw~~ **DONE** — `Render::RectFilled` / `CircleFilled` /
   `RectGradient` (ImGui `AddRectFilled` / `AddCircleFilled` / `AddRectFilledMultiColor`; canvas
@@ -424,7 +425,7 @@ per *bone* whether that exact point is in line of sight, so the aimbot can pick 
 skip the head when only the feet are exposed) instead of accepting/rejecting the whole target.
 
 **Approach.** For a candidate bone's world position, trace from the camera (`CameraCachePrivate.POV`,
-already read by [WorldToScreen.h](../Internal/utils/WorldToScreen.h)) to the bone with
+already read by [WorldToScreen.h](../Internal/native/WorldToScreen.h)) to the bone with
 `UKismetSystemLibrary::LineTraceSingle` (or `UWorld::LineTraceSingleByChannel`) on the visibility
 channel, ignoring the local pawn; the bone is visible if there's no blocking hit before it (or the hit
 actor is the target). Wrap the trace UFunction in `Engine.cpp`. In the aimbot, prefer the configured
@@ -568,34 +569,24 @@ strategies; masks rel32 + rip-relative with `0x00`, the project's wildcard). `To
 runs every signature the DLL relies on (currently `curl_easy_setopt` and `GetBoneMatrix`) in one pass,
 so re-deriving after a game update is one command. Keep new AOBs in that registry.
 
-### memcury-style AOB engine + string-ref discovery (runtime) — DONE (engine); wiring optional
+### Our own Memory scanner (runtime AOB) — DONE
 
-**Shipped:** `utils/Memcury.h` — IDA `??`-pattern parsing + wildcard `FindPattern`, a `Scanner` with
-`RelativeOffset` (follow a `lea`/`call` disp32 to its target) and `GetAs<T>`, module helpers (`Scan`),
-and `FindStringRef` (string → the `lea` that references it). The pure core is unit-tested against
-crafted buffers in `Tests/MemcuryTests.cpp` (6 tests). **Still optional:** swap `CurlHook` /
-`GetBoneMatrix` resolution onto it (keeping `FindSignature` as the fallback) — the engine is ready;
-this is just a low-risk rewire.
+**Shipped:** [`memory/Memory.h`](../Internal/memory/Memory.h) — an original, header-only signature
+utility that replaced both `utils/Util.{h,cpp}` and the earlier third-party-derived `Memcury.h`
+(dropped so the code is our own). It offers:
 
-**Goal.** The runtime scanner (`Util.cpp::FindSignature`) uses **`0x00` as the wildcard**, so any real
-`0x00` byte in a pattern silently becomes a wildcard — fragile, and it can't follow relative
-instructions. Adopt a small [memcury](https://github.com/projectnovafn/Sinum/blob/main/Windows/Utilities/memcury.h)-style
-API instead (single header, MIT):
+- **IDA-style patterns** — `Memory::Parse("48 8B 05 ? ? ? ? 90")` (`?`/`??` wildcards, distinct from a
+  literal `00`), converted to an explicit bytes+mask `Signature`.
+- **The legacy convention** — `Memory::FromBytes(bytes, len)` treats a `0x00` byte as a wildcard, so
+  the hand-written engine signatures keep working unchanged.
+- **Search + resolution** — `Find`/`Matches`, module helpers (`Scan`/`ModuleBase`/`ModuleSize`),
+  `Relative(at, dispOffset)` to follow a `lea`/`mov [rip+disp]`, and `FindPointer` (the
+  GObjects/GNames/GWorld locator that reproduces the old `Util::FindPointer`).
 
-- **IDA-style patterns** — `"48 8B 45 ?? E8 ?? ?? ?? ??"` with `??` wildcards (distinct from literal
-  `00`), converted to bytes+mask once.
-- **Relative-instruction resolution** — `.RelativeOffset(n)` to follow a `lea`/`call` rip-relative
-  displacement to its target (turns "the call inside curl_easy_setopt" into `Curl_vsetopt`'s address
-  directly, no second scan).
-- **String-ref discovery** — `FindStringRef(L"...")`: locate a `.rdata` string, then the `.text`
-  `lea reg,[rip+disp]` that references it, then scan backward to the function prologue. This is how
-  [Sinum](https://github.com/projectnovafn/Sinum/blob/main/Windows/Core/EOS.cpp) finds its HTTP hook
-  (from the `"ProcessRequest failed. URL '%s' ..."` string) — far more update-stable than a raw byte
-  prologue, and it mirrors the same strategy already added to `find_signature.py`.
-
-Swap `CurlHook` / `GetBoneMatrix` resolution onto it, keeping `FindSignature` as the fallback.
-**Files.** a new `utils/Memcury.h` (or a trimmed vendored copy), `network/CurlHook.h`, `ue/Engine.cpp`.
-**Size.** Medium; pure infrastructure, testable offline against the same signatures.
+`Engine.cpp` (EngineInit) and `network/CurlHook.h` are migrated onto it; the pure core is unit-tested
+against crafted buffers in `Tests/MemoryTests.cpp` (8 tests). **Still open (optional):** string-ref
+discovery (`FindStringRef`: `.rdata` string → the `.text` `lea` that references it → backscan to the
+prologue) for update-stable signatures — mirrors the strategy already in `find_signature.py`.
 
 ### Hook `curl_setopt` (Curl_vsetopt) too — DONE
 
@@ -610,28 +601,21 @@ rewrites are idempotent (a re-checked URL / already-0 verify is a no-op). **File
 
 ## SDK-surfaced ideas (from the PortalWars class survey)
 
-New entries from a survey of `APortalWarsCharacter`, `UPortalWarsLocalPlayer`,
-`APortalWarsPlayerState`, `APortalWarsPlayerController`, `FAutoAimData`, the skin/portal classes, and
-`EReplayCameraMode`. Offsets/signatures are as of the current [Engine.h](../Internal/ue/Engine.h)
-(cited by line). **Backend caveat:** the game is multiplayer, so `Server*` RPCs are validated
-server-side — most of these only take effect against the [private emulator backend](backend-redirect.md),
-not a real match; each entry says whether it's client-only (always works) or server-gated.
+Entries from a survey of `APortalWarsCharacter`, `UPortalWarsLocalPlayer`, `APortalWarsPlayerState`,
+`APortalWarsPlayerController`, `FAutoAimData`, the skin/portal classes, and `EReplayCameraMode`.
+Offsets/signatures are as of the current [Engine.h](../Internal/ue/Engine.h) (cited by line). These
+are all **client-side** — server-driven ideas (things that only take effect through a `Server*` RPC:
+FOV/slomo, chat send, teleport, kick, portal spawn, the `Cheat*` execs, …) were intentionally dropped
+from the roadmap since they don't work against a real match.
 
-### ESP: player state read-through (K/D, rank, killstreak, bot flag) — PARTIAL (bot flag done)
+### ESP: player-state read-through — DONE (rank still open)
 
-**Bot flag shipped:** `ActorCache` caches `PlayerState->bIsABot`; ESP has a **Bot tag** and the
-aimbot/triggerbot an **Ignore bots** filter. K/D / rank / killstreak read-through below is still open.
-
-
-**Goal.** Richer ESP labels and target filtering from the player state, no extra calls.
-**Approach.** Each character caches `LastPlayerState` (`APortalWarsCharacter` +0xdc0, Engine.h L1022)
-— a plain pointer, no ProcessEvent. From it read `PlayerStats` (`FPlayerStatsInfo_InDepth` +0x4f8,
-L1237: kills/deaths/assists/headshots), `KillStreak` (+0x358), and the base `APlayerState` `bIsABot`
-bit (+0x22a) to tag bots. Add ESP text elements (K/D, streak, "BOT") and an aimbot/ESP "ignore bots"
-/ "only bots" filter. Fold the reads into `ActorCache::Player` (one struct grow) so ESP/aim share
-them. **Files.** `cache/ActorCache.h`, `features/Esp.h`, `features/Aimbot.h`, `settings/Settings.h`,
-`menu/sections/Visuals.h`. **Client-only** (pure reads). **Depends on:** confirming the stat/bot
-offsets in-game.
+**Shipped (client-only reads):** `ActorCache` caches `PlayerState->bIsABot`, `PlayerStats.Kills`/
+`Deaths` (+0x4f8) and `KillStreak` (+0x358). ESP has a **Bot tag**, a **K/D** element
+("kills/deaths [streak]") and a **Max distance (m)** range cap; the aimbot/triggerbot have an
+**Ignore bots** filter; the scripting `Actors` snapshot exposes `is_bot`/`kills`/`deaths`/
+`killstreak`. **Still open (also client-only):** rank (`PlayerRanks` +0x8e8) and the richer per-mode
+stats.
 
 ### Aim: weapon aim-assist / magnetism boost — Small–medium
 
@@ -668,57 +652,31 @@ L916) and `JetpackSkin` (+0x9d0); `UpdateSkins()` (L1029) re-applies them; gun h
 (`UPortalWarsSaveGame*` +0x5b0, L1938) with `EquippedCustomizations` (+0x2a0) and
 `LoadUserSaveGame()` (L1945) / `GetUserSaveGame()` (L1946). **Approach.** Resolve a skin class by name
 (the SDK-tab `FindObject`), write it into `CharacterSkinClass` / `WeaponSkin`, call `UpdateSkins()`.
-For persistent loadout, edit `EquippedCustomizations` then `LoadUserSaveGame()`. **Client-only visual**
-if the mesh swap is local; **server-gated** if cosmetics are server-authoritative (test on the private
-backend). Supersedes the approach notes in the Cosmetics changer entry below.
+For persistent loadout, edit `EquippedCustomizations` then `LoadUserSaveGame()`. Local mesh swaps are
+client-side; if the game re-asserts cosmetics from the server they may revert. Supersedes the approach
+notes in the Cosmetics changer entry below.
 
-### Chat: sender + spammer, and an inbound-chat script event — Small–medium
+### Chat: inbound-chat script event — Small (client-only)
 
-**Goal.** Send chat programmatically (spam, callouts, command triggers) and expose incoming chat to
-scripts.
-**Approach.** Outgoing: the hand-added `APortalWarsPlayerController::SendChatMessage(FString, EChatType)`
-helper (L3449, over `ServerBroadcastChatMessage`, L3413) is already used by the announce feature —
-add a manual "send message" box + optional repeat/spam feature. Inbound: `ClientUpdateChat(FTextChatData)`
-(L3424) flows through the existing `ProcessEvent` event bus — match it, parse `FTextChatData`
-(sender/text at L3354) and dispatch a scripting `on_chat` event (ties into the scripting expansion) and
-an optional in-menu chat log. **Files.** a feature / `menu/sections/Misc.h`,
-`scripting/` (`on_chat` event), `hook/functions/ProcessEvent.h`. Outgoing chat is **server-gated**
-(broadcast RPC); inbound read + script event is **client-only**.
+**Goal.** Expose incoming chat to scripts (and an optional in-menu log).
+**Approach.** `ClientUpdateChat(FTextChatData)` (L3424) flows through the existing `ProcessEvent`
+event bus — match it, parse `FTextChatData` (sender/text at L3354) and dispatch a scripting `on_chat`
+event. **Files.** `scripting/` (`on_chat` event), `hook/functions/ProcessEvent.h`,
+`menu/sections/Misc.h` (optional log). **Client-only.** (Outbound chat send was intentionally dropped
+— it's a server RPC.)
 
-### QoL: respawn / suicide button (+ script binding) — Small
+### QoL: respawn / suicide — DONE
 
-**Goal.** The `respawn()` the scripting roadmap left open, plus a menu button.
-**Approach.** `APortalWarsCharacter::RequestSuicide()` (L1048) / `ServerRequestSuicide()` (L1040), or
-controller `CheatRespawn()` (L3444). Wrap one in `Engine.cpp`, add a Misc button and a
-`player.respawn()` script binding. **Files.** `ue/Engine.*`, `menu/sections/Misc.h`,
-`scripting/modules/Player.h`. **Server-gated** (respawn RPC; works on the private backend / when cheats
-are enabled).
+**Shipped:** `APortalWarsCharacter::RequestSuicide()` wrapped in `Engine.cpp`, a **Respawn** button in
+Misc > Game (in-game only), and a `player.respawn()` script binding.
 
-### Exploits: FOV slider + time-dilation (slomo) toggle — Small
-
-**Goal.** Live FOV control and a slomo toggle.
-**Approach.** FOV: `ServerSetFOV(float)` (L3400) or the save-game `FOV` (+0x34) already seeded at
-init — a live slider that re-applies. Slomo: `ServerSlomo(float TimeDilation)` (L3398) /
-`CheatSlowmo(float)` (L3442). Wrap in `Engine.cpp`, add Exploits/Misc controls. **Files.**
-`ue/Engine.*`, `settings/Settings.h`, `menu/sections/Exploits.h`. **Server-gated** (both are `Server*`
-/ cheat RPCs — private-backend only).
-
-### Projection: `ProjectWorldLocationToScreenCustom` as a W2S fallback — Small
+### Projection: `ProjectWorldLocationToScreenCustom` as a W2S fallback — Small (client-only)
 
 **Goal.** A PortalWars-specific projection to cross-check the native math W2S.
 **Approach.** `APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector, FVector2D&, bool)`
 (L3417) — wrap it as an alternative behind the existing `NativeWorldToScreen` Debug toggle chain, useful
-when validating drift. **Files.** `ue/Engine.*`, `utils/WorldToScreen.h`. **Client-only.** Low priority
-(the native math path already works).
-
-### Note — server-gated RPCs and the private backend
-
-Many surfaced actions are `Server*` RPCs (`ServerEquipWeapon`, `ServerTeleport`, `ServerSetFOV`,
-`ServerKickPlayer`, `PortalLauncher::ServerAttemptToSpawnPortal`, …) or `Cheat*` execs gated behind
-`ServerEnableCheats()` (L3412). Against a real match these are validated/rejected; against the
-[self-hosted backend](backend-redirect.md) they're worth trying (and the character/controller `Cheat*`
-execs — `CheatGodMode`, `CheatESP`, `CheatShootThroughWalls`, `CheatSlowmo` — may just work once cheats
-are enabled). Treat each as "private-backend / RE experiment", not a blind-ship feature.
+when validating drift. **Files.** `ue/Engine.*`, `native/WorldToScreen.h`. Low priority (the native
+math path already works).
 
 ## Suggested sequencing
 

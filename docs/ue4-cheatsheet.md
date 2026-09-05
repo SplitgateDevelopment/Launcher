@@ -14,7 +14,7 @@ can see the working version.
 
 | What | Where | In this repo |
 | --- | --- | --- |
-| Camera POV (location/rotation/FOV) | `APlayerCameraManager->CameraCachePrivate` (UE 4.24+; the public `CameraCache` is a deprecated mirror that can be stale) | [WorldToScreen.h](../Internal/utils/WorldToScreen.h) picks the freshest of `CameraCachePrivate` / `CameraCache` by timestamp |
+| Camera POV (location/rotation/FOV) | `APlayerCameraManager->CameraCachePrivate` (UE 4.24+; the public `CameraCache` is a deprecated mirror that can be stale) | [WorldToScreen.h](../Internal/native/WorldToScreen.h) picks the freshest of `CameraCachePrivate` / `CameraCache` by timestamp |
 | Memory (silent) aimbot | write `APlayerController->ControlRotation` | [Aimbot.h](../Internal/features/Aimbot.h) eases `ControlRotation` toward the target |
 | Entity list | `AGameState->PlayerArray` (players) or `ULevel->AActors` (all actors) | [ActorCache.h](../Internal/cache/ActorCache.h) walks `World->Levels[i]->Actors` |
 | Actor id / unique id | `Actor + 0x18` (holds true for ~99% of UE4 games) | — |
