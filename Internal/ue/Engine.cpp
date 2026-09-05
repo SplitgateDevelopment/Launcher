@@ -660,6 +660,24 @@ float APlayerCameraManager::GetFOVAngle()
 	return Parameters.ReturnValue;
 };
 
+void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool bZOverride)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.Character.LaunchCharacter");
+	if (!Function) return;
+
+	struct
+	{
+		FVector LaunchVelocity;
+		bool bXYOverride;
+		bool bZOverride;
+	} Parameters;
+	Parameters.LaunchVelocity = LaunchVelocity;
+	Parameters.bXYOverride = bXYOverride;
+	Parameters.bZOverride = bZOverride;
+
+	ProcessEvent(Function, &Parameters);
+}
+
 void APortalWarsCharacter::RequestSuicide()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.RequestSuicide");

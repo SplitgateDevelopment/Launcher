@@ -65,9 +65,17 @@ struct ExploitsSettings
 	bool FreeCam = false;
 	bool EnableAllInput = false; ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
 	bool PhasingBullets = false; ///< disable collision on cover (CullableActor) so shots pass through it
+
+	bool SuperJump = false;			 ///< enable the super-jump hotkey
+	int SuperJumpKey = 'V';			 ///< pressed to launch upward
+	float SuperJumpForce = 1500.f;	 ///< upward launch velocity (cm/s)
+
+	bool Teleport = false;			 ///< enable the teleport-forward hotkey
+	int TeleportKey = 'F';			 ///< pressed to teleport toward where you're looking
+	float TeleportDistance = 1500.f; ///< how far forward to teleport (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
