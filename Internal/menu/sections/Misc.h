@@ -146,6 +146,71 @@ namespace Menu
 				ImGui::Tooltip("Pick a spawnable class (searchable — bots, pawns, guns, ...) and Spawn it in front\nof you. Refresh rescans GObjects. Uses the deferred SpawnActor.");
 			}
 
+			ImGui::SeparatorText("Cosmetics");
+			{
+				static std::vector<int> skinFiltered; // indices into the shared ClassCache
+				static char skinSearch[128] = "";
+				static std::string skinLastKey = "\x01";
+				static size_t skinLastCacheSize = SIZE_MAX;
+				static std::string skinSelected;
+
+				ImGui::SetNextItemWidth(240.f);
+				if (ImGui::BeginCombo("##skinclass", skinSelected.empty() ? "Skin class..." : skinSelected.c_str()))
+				{
+					const auto& classes = ClassCache::Get();
+
+					ImGui::SetNextItemWidth(-1.f);
+					ImGui::InputTextWithHint("##skinsearch", "filter: skin name...", skinSearch, sizeof(skinSearch));
+
+					if (skinSearch != skinLastKey || classes.size() != skinLastCacheSize)
+					{
+						skinLastKey = skinSearch;
+						skinLastCacheSize = classes.size();
+						skinFiltered.clear();
+						const std::string needle = skinSearch;
+						for (int i = 0; i < static_cast<int>(classes.size()); i++)
+						{
+							const std::string& name = classes[i].name;
+							if (name.find("Skin") == std::string::npos) continue; // skins only
+							if (!needle.empty() && name.find(needle) == std::string::npos) continue;
+							skinFiltered.push_back(i);
+						}
+					}
+
+					ImGui::BeginChild("##skinlist", ImVec2(340, 220));
+					ImGuiListClipper clipper;
+					clipper.Begin(static_cast<int>(skinFiltered.size()));
+					while (clipper.Step())
+						for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+						{
+							const std::string& name = classes[skinFiltered[r]].name;
+							if (ImGui::Selectable(name.c_str(), name == skinSelected)) skinSelected = name;
+						}
+					ImGui::EndChild();
+					ImGui::EndCombo();
+				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Refresh##skin")) ClassCache::Rebuild();
+
+				ImGui::SameLine();
+				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
+				if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				{
+					UObject* cls = ObjObjects->FindObject(skinSelected.c_str());
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					if (cls && character)
+					{
+						character->CharacterSkinClass = reinterpret_cast<ACharacterSkin*>(cls);
+						character->UpdateSkins();
+						Logger::Log("SUCCESS", "Applied skin: " + skinSelected);
+					}
+					else
+						Logger::Log("ERROR", "Apply skin: class not found: " + skinSelected);
+				}
+				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
+				ImGui::Tooltip("Pick a character-skin class and apply it (sets CharacterSkinClass + UpdateSkins).\nClient-side; the server may re-assert your real skin. Refresh rescans classes.");
+			}
+
 			ImGui::SeparatorText("Overlay");
 			ImGui::Tooltip("Hide the overlay from screen capture (OBS, Discord, Game Bar). Needs Windows 10 2004+.");
 			if (ImGui::ToggleButton("Streamproof", &Settings.MENU.Streamproof))

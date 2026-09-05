@@ -697,6 +697,14 @@ void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool 
 	ProcessEvent(Function, &Parameters);
 }
 
+void APortalWarsCharacter::UpdateSkins()
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.UpdateSkins");
+	if (!Function) return;
+
+	ProcessEvent(Function, nullptr);
+}
+
 void APortalWarsCharacter::RequestSuicide()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.RequestSuicide");
