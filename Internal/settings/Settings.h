@@ -74,9 +74,12 @@ struct ExploitsSettings
 	bool Teleport = false;			 ///< enable the teleport-forward hotkey
 	int TeleportKey = 'F';			 ///< pressed to teleport toward where you're looking
 	float TeleportDistance = 1500.f; ///< how far forward to teleport (cm)
+
+	bool SpectatorCam = false;		 ///< detached fly-camera via ClientSetSpectatorCamera (WASD + Space/Ctrl)
+	float SpectatorCamSpeed = 15.f;	 ///< fly speed per frame (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance, SpectatorCam, SpectatorCamSpeed)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.

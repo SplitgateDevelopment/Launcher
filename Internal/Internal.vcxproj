@@ -104,6 +104,7 @@
     <ClInclude Include="features\AimAssist.h" />
     <ClInclude Include="features\SuperJump.h" />
     <ClInclude Include="features\Teleport.h" />
+    <ClInclude Include="features\SpectatorCam.h" />
     <ClInclude Include="features\DiscordPresence.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />

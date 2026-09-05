@@ -697,6 +697,22 @@ void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool 
 	ProcessEvent(Function, &Parameters);
 }
 
+void APortalWarsPlayerController::ClientSetSpectatorCamera(FVector CameraLocation, FRotator CameraRotation)
+{
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientSetSpectatorCamera");
+	if (!Function) return;
+
+	struct
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+	} Parameters;
+	Parameters.CameraLocation = CameraLocation;
+	Parameters.CameraRotation = CameraRotation;
+
+	ProcessEvent(Function, &Parameters);
+}
+
 void APortalWarsCharacter::UpdateSkins()
 {
 	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.UpdateSkins");
