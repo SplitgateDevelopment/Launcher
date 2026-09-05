@@ -200,6 +200,7 @@ class Esp : public Feature
 		const FLinearColor bonesColor = ToColor(visuals.BonesColor);
 		const FLinearColor snaplineColor = ToColor(visuals.SnaplineColor);
 		const FLinearColor friendColor = ToColor(visuals.FriendColor);
+		const FLinearColor visibleColor = ToColor(visuals.VisibleColor);
 
 		// RGB overrides the box/bone/snapline colors (for enemies and teammates alike) with the
 		// cycling rainbow, computed once per frame. Name and health keep their own colors.
@@ -231,9 +232,17 @@ class Esp : public Feature
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !visuals.ShowFriendly) continue;
 
-			const FLinearColor boxC = rgb ? rgbColor : (friendly ? friendColor : boxColor);
-			const FLinearColor bonesC = rgb ? rgbColor : (friendly ? friendColor : bonesColor);
-			const FLinearColor snapC = rgb ? rgbColor : (friendly ? friendColor : snaplineColor);
+			// Visibility recolor: an enemy that was recently rendered (not occluded) is drawn in
+			// VisibleColor; occluded enemies keep the normal box/bone/snapline colors. One
+			// ProcessEvent per enemy, so only paid when the check is on and the enemy isn't a teammate.
+			const bool visible = (visuals.EspVisibleCheck && !friendly) ? Character->WasRecentlyRendered(0.06f) : false;
+			const FLinearColor enemyBox = visible ? visibleColor : boxColor;
+			const FLinearColor enemyBones = visible ? visibleColor : bonesColor;
+			const FLinearColor enemySnap = visible ? visibleColor : snaplineColor;
+
+			const FLinearColor boxC = rgb ? rgbColor : (friendly ? friendColor : enemyBox);
+			const FLinearColor bonesC = rgb ? rgbColor : (friendly ? friendColor : enemyBones);
+			const FLinearColor snapC = rgb ? rgbColor : (friendly ? friendColor : enemySnap);
 			const FLinearColor nameC = friendly ? friendColor : nameColor;
 
 			auto Mesh = Character->Mesh;

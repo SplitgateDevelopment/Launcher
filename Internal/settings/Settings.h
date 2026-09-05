@@ -129,6 +129,8 @@ struct VisualsSettings
 	bool Health = false;
 	bool Distance = false;
 
+	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
+
 	bool Radar = false;				///< separate 2D radar feature
 	bool ShowFriendly = false;		///< ESP: also draw teammates, in FriendColor
 	bool RadarShowFriendly = false; ///< radar: also plot teammates, in FriendColor
@@ -141,6 +143,7 @@ struct VisualsSettings
 	Color BonesColor{0.f, 1.f, 0.f, 1.f};
 	Color SnaplineColor{1.f, 1.f, 0.f, 1.f};
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
+	Color VisibleColor{0.f, 1.f, 0.f, 1.f}; ///< color for visible enemies when EspVisibleCheck is on (default green)
 
 	bool Crosshair = false;					   ///< draw a custom crosshair at screen centre
 	float CrosshairSize = 8.f;				   ///< length of each arm, px
@@ -153,7 +156,7 @@ struct VisualsSettings
 	Color BulletTraceColor{1.f, 0.5f, 0.f, 1.f};   ///< trail color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, EspVisibleCheck, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

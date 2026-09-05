@@ -41,6 +41,10 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Health", &v.Health);
 			changed |= ImGui::ToggleButton("Distance", &v.Distance);
 
+			ImGui::SeparatorText("Visibility");
+			changed |= ImGui::ToggleButton("Visibility check", &v.EspVisibleCheck);
+			ImGui::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
+
 			ImGui::SeparatorText("Teams");
 			changed |= ImGui::ToggleButton("Show teammates", &v.ShowFriendly);
 			ImGui::Tooltip("Also draw teammates (ESP + radar), in the friendly color below.");
@@ -83,6 +87,8 @@ namespace Menu
 			ImGui::ColorEdit4("Bones", &v.BonesColor.R);
 			ImGui::ColorEdit4("Snaplines", &v.SnaplineColor.R);
 			ImGui::ColorEdit4("Friendly", &v.FriendColor.R);
+			ImGui::ColorEdit4("Visible", &v.VisibleColor.R);
+			ImGui::Tooltip("Color for visible enemies when the visibility check is on.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}
