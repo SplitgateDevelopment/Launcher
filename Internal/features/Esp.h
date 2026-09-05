@@ -232,6 +232,7 @@ class Esp : public Feature
 			auto* Character = cached.character;
 			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
 			if (ActorCache::IsDead(cached)) continue; // stop drawing a dead body on the ground
+			if (cached.isBot && visuals.HideBots) continue; // hide AI bots entirely
 
 			// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
 			// in FriendColor when shown.
@@ -276,12 +277,23 @@ class Esp : public Feature
 			if (visuals.Bones)
 				DrawSkeleton(Mesh, controller, bonesC);
 
-			// Player name from the player state (not the UObject name).
-			if (visuals.Name)
+			// Name line: "[BOT] Name" — the "[BOT]" tag (bots only, when enabled) in BotTagColor, the
+			// player name (when enabled and present) in the name color, on one row at the feet.
 			{
-				auto* state = Character->PlayerState;
-				if (state)
-					Render::Text(feet, state->PlayerNamePrivate.ToString(), visuals.FontScale, nameC);
+				const bool showTag = visuals.BotTag && cached.isBot;
+				std::string playerName;
+				if (visuals.Name)
+					if (auto* state = Character->PlayerState)
+						playerName = state->PlayerNamePrivate.ToString();
+
+				float nx = feet.X;
+				if (showTag)
+				{
+					Render::Text({nx, feet.Y}, "[BOT]", visuals.FontScale, ToColor(visuals.BotTagColor));
+					nx += visuals.FontScale * 48.f; // approx width of "[BOT] " (no text-measure API)
+				}
+				if (!playerName.empty())
+					Render::Text({nx, feet.Y}, playerName, visuals.FontScale, nameC);
 			}
 
 			// Sub-labels stack downward below the name (which sits at `feet`).
@@ -298,12 +310,6 @@ class Esp : public Feature
 				std::string text = std::to_string(cached.kills) + "/" + std::to_string(cached.deaths);
 				if (cached.killstreak > 0) text += " [" + std::to_string(cached.killstreak) + "]";
 				Render::Text({feet.X, ty}, text, visuals.FontScale, nameC);
-				ty += 14.f;
-			}
-
-			if (visuals.BotTag && cached.isBot)
-			{
-				Render::Text({feet.X, ty}, "BOT", visuals.FontScale, nameC);
 				ty += 14.f;
 			}
 		}

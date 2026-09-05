@@ -50,8 +50,12 @@ namespace Menu
 			ImGui::SeparatorText("Visibility");
 			changed |= ImGui::ToggleButton("Visibility check", &v.EspVisibleCheck);
 			ImGui::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
+			changed |= ImGui::ToggleButton("Hide bots", &v.HideBots);
+			ImGui::Tooltip("Don't draw AI bots in the ESP at all.");
 			changed |= ImGui::ToggleButton("Bot tag", &v.BotTag);
-			ImGui::Tooltip("Draw a \"BOT\" label on AI-bot players.");
+			ImGui::Tooltip("Prefix an AI bot's name with a colored \"[BOT]\" tag.");
+			if (v.BotTag)
+				ImGui::ColorEdit4("Bot tag color", &v.BotTagColor.R);
 
 			ImGui::SeparatorText("Teams");
 			changed |= ImGui::ToggleButton("Show teammates", &v.ShowFriendly);

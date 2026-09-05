@@ -133,7 +133,8 @@ struct VisualsSettings
 	float MaxDistance = 0.f; ///< only draw enemies within this many metres (0 = unlimited)
 
 	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
-	bool BotTag = false;			///< draw a "BOT" label on AI-bot players
+	bool BotTag = false;			///< draw a "[BOT]" label before an AI-bot player's name
+	bool HideBots = false;			///< don't draw AI bots in the ESP at all
 
 	bool Radar = false;				///< separate 2D radar feature
 	bool ShowFriendly = false;		///< ESP: also draw teammates, in FriendColor
@@ -148,6 +149,7 @@ struct VisualsSettings
 	Color SnaplineColor{1.f, 1.f, 0.f, 1.f};
 	Color FriendColor{0.f, 0.f, 1.f, 1.f}; ///< color for teammates when ShowFriendly is on (default blue)
 	Color VisibleColor{0.f, 1.f, 0.f, 1.f}; ///< color for visible enemies when EspVisibleCheck is on (default green)
+	Color BotTagColor{0.4f, 0.7f, 1.f, 1.f}; ///< color of the "[BOT]" tag (default light blue)
 
 	bool Crosshair = false;					   ///< draw a custom crosshair at screen centre
 	float CrosshairSize = 8.f;				   ///< length of each arm, px
@@ -167,7 +169,7 @@ struct VisualsSettings
 	Color GlowSelfColor{0.f, 1.f, 0.f, 1.f};	  ///< own-pawn glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, MaxDistance, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, MaxDistance, EspVisibleCheck, BotTag, HideBots, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, BotTagColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings
