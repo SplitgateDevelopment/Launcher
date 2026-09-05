@@ -49,6 +49,21 @@ class Aimbot : public Feature
 		return fmodf(to - from + 540.f, 360.f) - 180.f;
 	}
 
+	/// First bone in line of sight from @p eye, trying the configured bone then head/chest/pelvis;
+	/// returns its BoneFNames index, or -1 when none is visible. One line trace per tested bone
+	/// (the target itself is ignored), so only called in the strict per-bone visibility mode.
+	static int FirstVisibleBone(USkeletalMeshComponent* mesh, APortalWarsCharacter* character, const FVector& eye, int selector)
+	{
+		const int candidates[] = {BoneIndex(selector), BoneFNames::head, BoneFNames::spine_03, BoneFNames::pelvis};
+		for (int b : candidates)
+		{
+			const FVector world = mesh->GetBoneMatrix(b);
+			if (LineTraceVisible(Globals::PlayerController, eye, world, reinterpret_cast<AActor*>(character)))
+				return b;
+		}
+		return -1;
+	}
+
   public:
 	Aimbot()
 	{
@@ -102,6 +117,15 @@ class Aimbot : public Feature
 		const int bone = BoneIndex(aim.AimBone);
 		const FVector2D crosshair{Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY * 0.5f};
 
+		// Aim origin: the local pawn's location, roughly at eye height. Also the start point for the
+		// strict per-bone line-of-sight traces below.
+		FVector eye = localPawn->K2_GetActorLocation();
+		eye.Z += 80.f;
+
+		// Strict per-bone visibility: line-trace each bone and aim at the first one in line of sight,
+		// instead of the coarse whole-actor WasRecentlyRendered gate.
+		const bool perBone = aim.AimVisibleCheck && aim.AimVisiblePerBone;
+
 		APortalWarsCharacter* target = nullptr;
 		FVector targetBone{};
 		float best = aim.AimFov;
@@ -112,12 +136,21 @@ class Aimbot : public Feature
 			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
 			if (ActorCache::IsDead(cached)) continue; // don't lock onto a dead body
 			if (aim.AimTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
-			if (aim.AimVisibleCheck && !character->WasRecentlyRendered(0.1f)) continue; // only visible targets
+			if (aim.AimVisibleCheck && !perBone && !character->WasRecentlyRendered(0.1f)) continue; // only visible targets
 
 			auto* mesh = character->Mesh;
 			if (!mesh) continue;
 
-			const FVector2D screen = Projection::Bone(mesh, bone);
+			// Pick the bone to aim at: the configured one, or (strict mode) the first bone in line
+			// of sight; a target with no visible bone is skipped entirely.
+			int useBone = bone;
+			if (perBone)
+			{
+				useBone = FirstVisibleBone(mesh, character, eye, aim.AimBone);
+				if (useBone < 0) continue;
+			}
+
+			const FVector2D screen = Projection::Bone(mesh, useBone);
 			if (!screen.X && !screen.Y) continue; // off-screen / behind camera
 
 			const float dx = screen.X - crosshair.X, dy = screen.Y - crosshair.Y;
@@ -126,15 +159,12 @@ class Aimbot : public Feature
 			{
 				best = d;
 				target = character;
-				targetBone = mesh->GetBoneMatrix(bone); // world position of the same bone
+				targetBone = mesh->GetBoneMatrix(useBone); // world position of the chosen bone
 			}
 		}
 
 		if (!target) return;
 
-		// Aim origin: the local pawn's location, roughly at eye height.
-		FVector eye = localPawn->K2_GetActorLocation();
-		eye.Z += 80.f;
 		const FVector dir{targetBone.X - eye.X, targetBone.Y - eye.Y, targetBone.Z - eye.Z};
 		const FRotator wanted = DirToRotator(dir);
 

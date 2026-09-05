@@ -29,6 +29,11 @@ namespace Menu
 			ImGui::Tooltip("Snap to the target only while firing (left click), ignoring the aim key.");
 			changed |= ImGui::ToggleButton("Visibility check", &a.AimVisibleCheck);
 			ImGui::Tooltip("Only lock onto targets that were recently rendered (visible). Also applies to the triggerbot.");
+			if (a.AimVisibleCheck)
+			{
+				changed |= ImGui::ToggleButton("Per-bone visibility", &a.AimVisiblePerBone);
+				ImGui::Tooltip("Stricter: line-trace each bone and aim at the first one in line of sight\n(e.g. skip the head when only the legs are exposed). Skips targets with no visible bone.");
+			}
 			changed |= ImGui::ToggleButton("Draw FOV circle", &a.DrawAimFov);
 			ImGui::ColorEdit4("FOV circle color", &a.AimFovColor.R);
 

@@ -7,6 +7,7 @@
 #include "Engine.h"
 #include "../utils/Util.h"
 #include <Psapi.h>
+#include <cstddef>
 #include "UObjects.h"
 
 std::string FNameEntry::String()
@@ -767,6 +768,67 @@ AActor* SpawnActor(UObject* worldContextObject, UClass* actorClass, FVector loca
 	if (!deferred) return nullptr;
 
 	return gameplayStatics->FinishSpawningActor(deferred, transform);
+}
+
+bool LineTraceVisible(UObject* worldContext, const FVector& start, const FVector& end, AActor* ignoreActor)
+{
+	static auto Function = ObjObjects->FindObject("Function Engine.KismetSystemLibrary.LineTraceSingle");
+	static auto* library = reinterpret_cast<UObject*>(ObjObjects->FindObject("Class Engine.KismetSystemLibrary"));
+	if (!Function || !library || !worldContext) return true; // fail-open: never block callers if the probe can't run
+
+	// ActorsToIgnore is a real TArray<AActor*>; back it with a stack slot the trace only reads.
+	AActor* ignoreArr[1] = {ignoreActor};
+
+	// UKismetSystemLibrary::LineTraceSingle parameter block. The offsets are the engine's (verified
+	// by the static_asserts below); every member already lands on its natural alignment, so no
+	// packing pragma is needed. FHitResult (0x88) sits 8-aligned at 0x40.
+	struct Params
+	{
+		UObject* WorldContextObject; // 0x00
+		FVector Start;				 // 0x08
+		FVector End;				 // 0x14
+		uint8_t TraceChannel;		 // 0x20  ETraceTypeQuery (0 = Visibility)
+		bool bTraceComplex;			 // 0x21
+		char pad_22[6];				 // 0x22
+		struct
+		{
+			void* Data;
+			int32_t Num;
+			int32_t Max;
+		} ActorsToIgnore;	   // 0x28  TArray<AActor*>
+		uint8_t DrawDebugType; // 0x38  EDrawDebugTrace (0 = None)
+		char pad_39[7];		   // 0x39
+		FHitResult OutHit;	   // 0x40
+		bool bIgnoreSelf;	   // 0xC8
+		char pad_C9[3];		   // 0xC9
+		FLinearColor TraceColor;	// 0xCC
+		FLinearColor TraceHitColor; // 0xDC
+		float DrawTime;				// 0xEC
+		bool ReturnValue;			// 0xF0
+	} p{};
+
+	static_assert(offsetof(Params, ActorsToIgnore) == 0x28, "ActorsToIgnore offset");
+	static_assert(offsetof(Params, DrawDebugType) == 0x38, "DrawDebugType offset");
+	static_assert(offsetof(Params, OutHit) == 0x40, "OutHit offset");
+	static_assert(offsetof(Params, bIgnoreSelf) == 0xC8, "bIgnoreSelf offset");
+	static_assert(offsetof(Params, ReturnValue) == 0xF0, "ReturnValue offset");
+
+	p.WorldContextObject = worldContext;
+	p.Start = start;
+	p.End = end;
+	p.TraceChannel = 0; // Visibility
+	p.bTraceComplex = false;
+	p.ActorsToIgnore.Data = ignoreActor ? ignoreArr : nullptr;
+	p.ActorsToIgnore.Num = ignoreActor ? 1 : 0;
+	p.ActorsToIgnore.Max = ignoreActor ? 1 : 0;
+	p.DrawDebugType = 0; // None
+	p.bIgnoreSelf = true;
+
+	library->ProcessEvent(Function, &p);
+
+	// ReturnValue is bBlockingHit: with the target ignored, a blocking hit means something (a wall)
+	// stands between start and end, i.e. the point is occluded.
+	return !p.ReturnValue;
 }
 
 void APlayerController::ClientMessage(FString S, FName Type, float MsgLifeTime)
