@@ -647,8 +647,10 @@ inflated values.
 
 **Shipped:** [`features/SpectatorCam.h`](../Internal/features/SpectatorCam.h) — a detached fly-camera
 driving `ClientSetSpectatorCamera` each frame from a WASD/Space/Ctrl position with mouse aim (RPC
-wrapped in the SDK). Kept separate from the console-based Free Cam. **Remaining:** confirm the game
-keeps our pose (vs re-asserting its own) and decide whether to freeze pawn input while flying.
+wrapped in the SDK) — and [`features/ThirdPersonCam.h`](../Internal/features/ThirdPersonCam.h), an
+over-the-shoulder follow-cam placed behind the pawn each frame (configurable distance/height). Both
+kept separate from the console-based Free Cam. **Remaining:** confirm the game keeps our pose (vs
+re-asserting its own) and decide whether to freeze pawn input while flying.
 
 **Goal.** The free-cam / custom third-person the Cameras section wants, without RE'ing the native
 camera-update function.
@@ -663,13 +665,13 @@ hook. **Files.** `ue/Engine.*` (wrap `ClientSetSpectatorCamera`), `features/Free
 in-game test that the pose sticks (the game may re-assert its camera each frame — may need a per-frame
 re-apply or a view-target swap). `EReplayCameraMode` values still need an enum dump.
 
-### Cosmetics: skin / loadout changer (refines the existing Large entry) — PARTIAL (character skin done)
+### Cosmetics: skin / loadout changer (refines the existing Large entry) — PARTIAL (skins done, loadout open)
 
-**Shipped:** a Cosmetics section in the Misc tab — a searchable skin-class picker that sets the local
-character's `CharacterSkinClass` and calls `UpdateSkins()` (`ACharacterSkin::GetMesh3P` /
-`APortalWarsCharacter::UpdateSkins` wrapped in the SDK). Client-side; the server may re-assert the
-real skin. **Still open:** gun skins (`WeaponSkinClass` + `ABaseGun::UpdateSkins`), jetpack skin, and
-persistent loadout via `EquippedCustomizations` + `LoadUserSaveGame`.
+**Shipped:** a Cosmetics section in the Misc tab — a searchable skin-class picker with Apply buttons
+for the **character** (`CharacterSkinClass` + `APortalWarsCharacter::UpdateSkins`), the **gun**
+(`WeaponSkinClass` + `ABaseGun::UpdateSkins`) and the **jetpack** (`JetpackSkinClass`), all wrapped in
+the SDK. Client-side; the server may re-assert the real skins. **Still open:** persistent loadout via
+`EquippedCustomizations` + `LoadUserSaveGame` (needs the local-player pointer).
 
 
 **Concrete API found.** Character holds `CharacterSkin` / `CharacterSkinClass` (+0x9b8 / +0x9c0,
@@ -696,13 +698,11 @@ event. **Files.** `scripting/` (`on_chat` event), `hook/functions/ProcessEvent.h
 **Shipped:** `APortalWarsCharacter::RequestSuicide()` wrapped in `Engine.cpp`, a **Respawn** button in
 Misc > Game (in-game only), and a `player.respawn()` script binding.
 
-### Projection: `ProjectWorldLocationToScreenCustom` as a W2S fallback — Small (client-only)
+### Projection: `ProjectWorldLocationToScreenCustom` as a W2S fallback — DONE
 
-**Goal.** A PortalWars-specific projection to cross-check the native math W2S.
-**Approach.** `APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector, FVector2D&, bool)`
-(L3417) — wrap it as an alternative behind the existing `NativeWorldToScreen` Debug toggle chain, useful
-when validating drift. **Files.** `ue/Engine.*`, `native/WorldToScreen.h`. Low priority (the native
-math path already works).
+**Shipped:** `ProjectWorldLocationToScreenCustom` is wrapped in the SDK and used by
+`native/WorldToScreen.h` when the native math W2S is off, selected by a **Custom projection** Debug
+toggle — a cross-check for overlay drift.
 
 ## Suggested sequencing
 
