@@ -25,15 +25,31 @@ class Glow : public Feature
 	/// Convert a settings Color (0-1 RGBA) into the engine FLinearColor.
 	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
 
-	/// Force the through-wall outline on @p character's mesh with the given stencil value + color.
+	/// Turn custom-depth on/off for one mesh at a stencil value.
+	static void SetMesh(USkeletalMeshComponent* mesh, bool on, int stencil)
+	{
+		if (!mesh) return;
+		mesh->SetRenderCustomDepth(on);
+		if (on) mesh->CustomDepthStencilValue = stencil;
+	}
+
+	/// Force the through-wall outline on @p character with the given stencil + color. Applies to the
+	/// base Mesh AND the skin's rendered 3P mesh (the skin's mesh is what's actually drawn, so the
+	/// base mesh alone often doesn't glow).
 	static void Apply(APortalWarsCharacter* character, int stencil, const FLinearColor& color)
 	{
-		auto* mesh = character->Mesh;
-		if (!mesh) return;
-		mesh->SetRenderCustomDepth(true);
-		mesh->CustomDepthStencilValue = stencil;
+		SetMesh(character->Mesh, true, stencil);
+		if (character->CharacterSkin) SetMesh(character->CharacterSkin->GetMesh3P(), true, stencil);
 		character->BlueOutlineColor = color;
 		character->RedOutlineColor = color;
+	}
+
+	/// Reset our forced custom depth on a character's meshes (base + skin).
+	static void Reset(APortalWarsCharacter* character)
+	{
+		if (!character) return;
+		SetMesh(character->Mesh, false, 0);
+		if (character->CharacterSkin) SetMesh(character->CharacterSkin->GetMesh3P(), false, 0);
 	}
 
   public:
@@ -70,12 +86,9 @@ class Glow : public Feature
 	void Destroy()
 	{
 		for (const auto& cached : ActorCache::Players())
-			if (auto* mesh = cached.character->Mesh)
-				mesh->SetRenderCustomDepth(false);
+			Reset(cached.character);
 
-		if (auto* self = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
-			if (auto* mesh = self->Mesh)
-				mesh->SetRenderCustomDepth(false);
+		Reset(reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character));
 	};
 
 	/// Enable the through-wall outline + color for each wanted character. Players that shouldn't

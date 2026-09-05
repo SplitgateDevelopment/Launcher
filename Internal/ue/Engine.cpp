@@ -663,6 +663,22 @@ float APlayerCameraManager::GetFOVAngle()
 	return Parameters.ReturnValue;
 };
 
+USkeletalMeshComponent* ACharacterSkin::GetMesh3P()
+{
+	static UObject* Function = nullptr;
+	if (!Function) Function = ObjObjects->FindObject("Function PortalWars.BaseCharacterSkin.GetMesh3P");
+	if (!Function) Function = ObjObjects->FindObject("Function PortalWars.CharacterSkin.GetMesh3P");
+	if (!Function) return nullptr;
+
+	struct
+	{
+		USkeletalMeshComponent* ReturnValue;
+	} Parameters{};
+
+	ProcessEvent(Function, &Parameters);
+	return Parameters.ReturnValue;
+}
+
 void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool bZOverride)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.Character.LaunchCharacter");
