@@ -163,6 +163,21 @@ namespace ProcessEvent
 			}
 		}
 
+		// Incoming chat: decode ClientUpdateChat's FTextChatData and surface the message text to
+		// scripts (payload.name). Gated on HasHandlers so the params are only read when subscribed.
+		if (Events::HasHandlers(Events::Type::ChatReceived))
+		{
+			static UObject* ClientUpdateChat = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
+
+			if (Function == ClientUpdateChat)
+			{
+				auto* data = reinterpret_cast<FTextChatData*>(Params);
+				std::string text = data->NiceText.ToString(); // usually "Name: message"
+				if (text.empty()) text = data->SenderText.ToString();
+				Events::Dispatch(Events::Type::ChatReceived, {Class, nullptr, 0.f, text.c_str()});
+			}
+		}
+
 		// Dispatch registered game events to their subscribers (features, the shutdown
 		// teardown, and user scripts). Resolve the name->UFunction table once, then a single
 		// map lookup per call; skipped entirely when nothing is subscribed. (No longer gated on

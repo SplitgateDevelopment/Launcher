@@ -40,6 +40,7 @@ namespace Events
 		RoundEnded,	   ///< a round ended (PortalWarsPlayerController.ClientSetRoundResult)
 		MatchEnded,	   ///< the match ended (PortalWarsPlayerController.ClientSetMatchResult)
 		PlayerKilled,  ///< a kill happened; payload carries killer/victim/headshot (see ProcessEvent)
+		ChatReceived,  ///< an incoming chat message; payload.name holds the message text
 	};
 
 	/// Optional data an event can carry. Most events dispatch with a default (empty) payload;

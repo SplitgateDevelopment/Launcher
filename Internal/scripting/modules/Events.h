@@ -77,6 +77,7 @@ namespace Scripts
 				.value("RoundEnded", ::Events::Type::RoundEnded)
 				.value("MatchEnded", ::Events::Type::MatchEnded)
 				.value("PlayerKilled", ::Events::Type::PlayerKilled)
+				.value("ChatReceived", ::Events::Type::ChatReceived)
 				.export_values();
 
 			// Payload exposed to scripts. source/target are raw object addresses (game object
@@ -86,7 +87,9 @@ namespace Scripts
 									   { return reinterpret_cast<uintptr_t>(p.source); })
 				.def_property_readonly("target", [](const ::Events::Payload& p)
 									   { return reinterpret_cast<uintptr_t>(p.target); })
-				.def_readonly("value", &::Events::Payload::value);
+				.def_readonly("value", &::Events::Payload::value)
+					.def_property_readonly("name", [](const ::Events::Payload& p)
+										   { return std::string(p.name ? p.name : ""); }); // e.g. ChatReceived message text
 
 			events.def("on", [](::Events::Type event, py::function callback)
 					   {
