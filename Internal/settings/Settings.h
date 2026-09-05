@@ -130,7 +130,8 @@ struct VisualsSettings
 	bool Snaplines = false;
 	bool Health = false;
 	bool Distance = false;
-	bool KD = false; ///< draw the player's kills/deaths (and killstreak) from their player state
+	bool KD = false;		 ///< draw the player's kills/deaths (and killstreak) from their player state
+	float MaxDistance = 0.f; ///< only draw enemies within this many metres (0 = unlimited)
 
 	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
 	bool BotTag = false;			///< draw a "BOT" label on AI-bot players
@@ -165,7 +166,7 @@ struct VisualsSettings
 	Color GlowFriendlyColor{0.f, 0.f, 1.f, 1.f};  ///< teammate glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, MaxDistance, EspVisibleCheck, BotTag, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowEnemyColor, GlowFriendlyColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings

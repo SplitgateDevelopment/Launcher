@@ -233,6 +233,10 @@ class Esp : public Feature
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !visuals.ShowFriendly) continue;
 
+			// Distance cull: skip players past the configured range (0 = unlimited). Reused below.
+			const float dist = hasPlayer ? Distance(playerPos, cached.location) : 0.f;
+			if (visuals.MaxDistance > 0.f && hasPlayer && dist > visuals.MaxDistance) continue;
+
 			// Visibility recolor: an enemy that was recently rendered (not occluded) is drawn in
 			// VisibleColor; occluded enemies keep the normal box/bone/snapline colors. One
 			// ProcessEvent per enemy, so only paid when the check is on and the enemy isn't a teammate.
@@ -279,7 +283,7 @@ class Esp : public Feature
 
 			if (visuals.Distance && hasPlayer)
 			{
-				Render::Text({feet.X, ty}, std::to_string((int)Distance(playerPos, cached.location)) + "m", visuals.FontScale, nameC);
+				Render::Text({feet.X, ty}, std::to_string((int)dist) + "m", visuals.FontScale, nameC);
 				ty += 14.f;
 			}
 

@@ -43,6 +43,10 @@ namespace Menu
 			changed |= ImGui::ToggleButton("K/D", &v.KD);
 			ImGui::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
 
+			ImGui::SeparatorText("Range");
+			changed |= ImGui::SliderFloat("Max distance (m)", &v.MaxDistance, 0.f, 300.f, v.MaxDistance <= 0.f ? "unlimited" : "%.0f");
+			ImGui::Tooltip("Only draw enemies within this many metres. 0 = unlimited.");
+
 			ImGui::SeparatorText("Visibility");
 			changed |= ImGui::ToggleButton("Visibility check", &v.EspVisibleCheck);
 			ImGui::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
