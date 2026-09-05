@@ -21,17 +21,32 @@ class Triggerbot : public Feature
 {
   private:
 	std::chrono::steady_clock::time_point acquiredAt{}; ///< when the crosshair first landed on a target
+	std::chrono::steady_clock::time_point fireStart{};	///< when the current synthetic click was pressed
 	bool onTarget = false;								///< currently on a target (edge tracking for the delay)
+	bool firing = false;								///< a synthetic left-button press is currently held
 
-	/// Send a single synthetic left mouse click to the focused window (the game).
-	static void Fire()
+	/// How long to hold the synthetic left button down before releasing it. A same-frame down+up is
+	/// often too fast for the game to register as a shot; a short hold makes it a real click.
+	static constexpr int HoldMs = 30;
+
+	static void MouseButton(DWORD flag)
 	{
-		INPUT input[2] = {};
-		input[0].type = INPUT_MOUSE;
-		input[0].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-		input[1].type = INPUT_MOUSE;
-		input[1].mi.dwFlags = MOUSEEVENTF_LEFTUP;
-		SendInput(2, input, sizeof(INPUT));
+		INPUT input{};
+		input.type = INPUT_MOUSE;
+		input.mi.dwFlags = flag;
+		SendInput(1, &input, sizeof(INPUT));
+	}
+	void Press()
+	{
+		MouseButton(MOUSEEVENTF_LEFTDOWN);
+		firing = true;
+		fireStart = std::chrono::steady_clock::now();
+	}
+	void Release()
+	{
+		if (!firing) return;
+		MouseButton(MOUSEEVENTF_LEFTUP);
+		firing = false;
 	}
 
   public:
@@ -64,7 +79,9 @@ class Triggerbot : public Feature
 		Log("Initialized");
 	};
 
-	void Destroy() {
+	void Destroy()
+	{
+		Release(); // don't leave the button stuck down if the feature is disabled mid-click
 	};
 
 	void Run()
@@ -72,6 +89,7 @@ class Triggerbot : public Feature
 		const auto& aim = Settings.AIM;
 		if (!(GetAsyncKeyState(aim.TriggerKey) & 0x8000))
 		{
+			Release();
 			onTarget = false;
 			return;
 		}
@@ -119,8 +137,14 @@ class Triggerbot : public Feature
 		}
 
 		const auto now = std::chrono::steady_clock::now();
+
+		// Release a held click after the hold window (so it reads as a real, separate shot).
+		if (firing && std::chrono::duration_cast<std::chrono::milliseconds>(now - fireStart).count() >= HoldMs)
+			Release();
+
 		if (!nowOnTarget)
 		{
+			Release();
 			onTarget = false;
 			return;
 		}
@@ -131,9 +155,10 @@ class Triggerbot : public Feature
 			acquiredAt = now;
 		}
 
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - acquiredAt).count() >= aim.TriggerDelay)
+		// Press after the delay, once the previous click has been released (edge-triggered).
+		if (!firing && std::chrono::duration_cast<std::chrono::milliseconds>(now - acquiredAt).count() >= aim.TriggerDelay)
 		{
-			Fire();
+			Press();
 			acquiredAt = now; // re-arm the delay before the next shot
 		}
 	};
