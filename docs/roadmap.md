@@ -600,6 +600,114 @@ through curl's internal path, not just the public wrapper. The two hooks coexist
 rewrites are idempotent (a re-checked URL / already-0 verify is a no-op). **Files.**
 `network/CurlHook.h`.
 
+## SDK-surfaced ideas (from the PortalWars class survey)
+
+New entries from a survey of `APortalWarsCharacter`, `UPortalWarsLocalPlayer`,
+`APortalWarsPlayerState`, `APortalWarsPlayerController`, `FAutoAimData`, the skin/portal classes, and
+`EReplayCameraMode`. Offsets/signatures are as of the current [Engine.h](../Internal/ue/Engine.h)
+(cited by line). **Backend caveat:** the game is multiplayer, so `Server*` RPCs are validated
+server-side — most of these only take effect against the [private emulator backend](backend-redirect.md),
+not a real match; each entry says whether it's client-only (always works) or server-gated.
+
+### ESP: player state read-through (K/D, rank, killstreak, bot flag) — Small
+
+**Goal.** Richer ESP labels and target filtering from the player state, no extra calls.
+**Approach.** Each character caches `LastPlayerState` (`APortalWarsCharacter` +0xdc0, Engine.h L1022)
+— a plain pointer, no ProcessEvent. From it read `PlayerStats` (`FPlayerStatsInfo_InDepth` +0x4f8,
+L1237: kills/deaths/assists/headshots), `KillStreak` (+0x358), and the base `APlayerState` `bIsABot`
+bit (+0x22a) to tag bots. Add ESP text elements (K/D, streak, "BOT") and an aimbot/ESP "ignore bots"
+/ "only bots" filter. Fold the reads into `ActorCache::Player` (one struct grow) so ESP/aim share
+them. **Files.** `cache/ActorCache.h`, `features/Esp.h`, `features/Aimbot.h`, `settings/Settings.h`,
+`menu/sections/Visuals.h`. **Client-only** (pure reads). **Depends on:** confirming the stat/bot
+offsets in-game.
+
+### Aim: weapon aim-assist / magnetism boost — Small–medium
+
+**Goal.** A soft "legit" aim by amplifying the game's own aim-assist instead of moving the view.
+**Approach.** Each `AGun` carries `FAutoAimData AutoAimConfig` at +0x460 (struct at Engine.h L1669:
+`AutoAimRadius`, `MagnetismRange`, `MagnetismAngle`, `ShouldUseMagnetism`, `OnTargetTurnRate`, …).
+For `CurrentWeapon` (character +0x800), each frame write enlarged radius/magnetism values (and force
+`ShouldUseMagnetism = true`). Plain field writes, no ProcessEvent. Cache originals; restore on
+`Destroy()`. **Files.** `ue/Engine.h` (`FAutoAimData`/`AGun` already present), a feature,
+`settings/Settings.h`, `menu/sections/Aim.h`. **Client-only for the read; the assist itself runs in
+the client aim path** (server sees only the resulting aim). **Depends on:** in-game tuning of the
+inflated values.
+
+### Camera: spectator-camera free-cam / third-person — Medium (was Large)
+
+**Goal.** The free-cam / custom third-person the Cameras section wants, without RE'ing the native
+camera-update function.
+**Leads found.** `APortalWarsPlayerController::ClientSetSpectatorCamera(FVector, FRotator)` (L3425)
+sets an arbitrary camera pose directly; the character already owns a built `ThirdPersonCamera` /
+`ThirdPersonCameraArm` (+0x798 / +0x7a0, L880–881) and `SpectatorFirstPersonCamera` (+0x7b0); and
+`OnReplayCameraModeChanged(EReplayCameraMode)` (L1052) drives a mode switch. **Approach.** Try
+driving `ClientSetSpectatorCamera` each frame from a free-fly pose (WASD-integrated), or set the local
+player's view target to the character's `ThirdPersonCamera`. Both avoid the blocked native camera
+hook. **Files.** `ue/Engine.*` (wrap `ClientSetSpectatorCamera`), `features/FreeCam.h` /
+`features/ThirdPerson.h`, `settings/Settings.h`. **Client-only** (view is local). **Depends on:**
+in-game test that the pose sticks (the game may re-assert its camera each frame — may need a per-frame
+re-apply or a view-target swap). `EReplayCameraMode` values still need an enum dump.
+
+### Cosmetics: skin / loadout changer (refines the existing Large entry) — Medium–large
+
+**Concrete API found.** Character holds `CharacterSkin` / `CharacterSkinClass` (+0x9b8 / +0x9c0,
+L916) and `JetpackSkin` (+0x9d0); `UpdateSkins()` (L1029) re-applies them; gun holds
+`WeaponSkin` (`ABaseGunSkin*` +0x2a8, L1656). `UPortalWarsLocalPlayer` has `UserSaveGameData`
+(`UPortalWarsSaveGame*` +0x5b0, L1938) with `EquippedCustomizations` (+0x2a0) and
+`LoadUserSaveGame()` (L1945) / `GetUserSaveGame()` (L1946). **Approach.** Resolve a skin class by name
+(the SDK-tab `FindObject`), write it into `CharacterSkinClass` / `WeaponSkin`, call `UpdateSkins()`.
+For persistent loadout, edit `EquippedCustomizations` then `LoadUserSaveGame()`. **Client-only visual**
+if the mesh swap is local; **server-gated** if cosmetics are server-authoritative (test on the private
+backend). Supersedes the approach notes in the Cosmetics changer entry below.
+
+### Chat: sender + spammer, and an inbound-chat script event — Small–medium
+
+**Goal.** Send chat programmatically (spam, callouts, command triggers) and expose incoming chat to
+scripts.
+**Approach.** Outgoing: the hand-added `APortalWarsPlayerController::SendChatMessage(FString, EChatType)`
+helper (L3449, over `ServerBroadcastChatMessage`, L3413) is already used by the announce feature —
+add a manual "send message" box + optional repeat/spam feature. Inbound: `ClientUpdateChat(FTextChatData)`
+(L3424) flows through the existing `ProcessEvent` event bus — match it, parse `FTextChatData`
+(sender/text at L3354) and dispatch a scripting `on_chat` event (ties into the scripting expansion) and
+an optional in-menu chat log. **Files.** a feature / `menu/sections/Misc.h`,
+`scripting/` (`on_chat` event), `hook/functions/ProcessEvent.h`. Outgoing chat is **server-gated**
+(broadcast RPC); inbound read + script event is **client-only**.
+
+### QoL: respawn / suicide button (+ script binding) — Small
+
+**Goal.** The `respawn()` the scripting roadmap left open, plus a menu button.
+**Approach.** `APortalWarsCharacter::RequestSuicide()` (L1048) / `ServerRequestSuicide()` (L1040), or
+controller `CheatRespawn()` (L3444). Wrap one in `Engine.cpp`, add a Misc button and a
+`player.respawn()` script binding. **Files.** `ue/Engine.*`, `menu/sections/Misc.h`,
+`scripting/modules/Player.h`. **Server-gated** (respawn RPC; works on the private backend / when cheats
+are enabled).
+
+### Exploits: FOV slider + time-dilation (slomo) toggle — Small
+
+**Goal.** Live FOV control and a slomo toggle.
+**Approach.** FOV: `ServerSetFOV(float)` (L3400) or the save-game `FOV` (+0x34) already seeded at
+init — a live slider that re-applies. Slomo: `ServerSlomo(float TimeDilation)` (L3398) /
+`CheatSlowmo(float)` (L3442). Wrap in `Engine.cpp`, add Exploits/Misc controls. **Files.**
+`ue/Engine.*`, `settings/Settings.h`, `menu/sections/Exploits.h`. **Server-gated** (both are `Server*`
+/ cheat RPCs — private-backend only).
+
+### Projection: `ProjectWorldLocationToScreenCustom` as a W2S fallback — Small
+
+**Goal.** A PortalWars-specific projection to cross-check the native math W2S.
+**Approach.** `APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector, FVector2D&, bool)`
+(L3417) — wrap it as an alternative behind the existing `NativeWorldToScreen` Debug toggle chain, useful
+when validating drift. **Files.** `ue/Engine.*`, `utils/WorldToScreen.h`. **Client-only.** Low priority
+(the native math path already works).
+
+### Note — server-gated RPCs and the private backend
+
+Many surfaced actions are `Server*` RPCs (`ServerEquipWeapon`, `ServerTeleport`, `ServerSetFOV`,
+`ServerKickPlayer`, `PortalLauncher::ServerAttemptToSpawnPortal`, …) or `Cheat*` execs gated behind
+`ServerEnableCheats()` (L3412). Against a real match these are validated/rejected; against the
+[self-hosted backend](backend-redirect.md) they're worth trying (and the character/controller `Cheat*`
+execs — `CheatGodMode`, `CheatESP`, `CheatShootThroughWalls`, `CheatSlowmo` — may just work once cheats
+are enabled). Treat each as "private-backend / RE experiment", not a blind-ship feature.
+
 ## Suggested sequencing
 
 1. **Native WorldToScreen** — biggest standalone perf win, unblocks cheaper drawing everywhere.
