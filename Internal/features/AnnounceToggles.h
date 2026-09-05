@@ -23,7 +23,7 @@ class AnnounceToggles : public Feature
 		bool* value;
 	};
 
-	static constexpr int Count = 12;
+	static constexpr int Count = 10;
 	std::array<bool, Count> previous{};
 	bool snapshotReady = false; ///< false until the first pass seeds `previous` (so we don't announce on enable)
 
@@ -38,8 +38,6 @@ class AnnounceToggles : public Feature
 			{"Infinite Jetpack", &Settings.EXPLOITS.InfinteJetpack},
 			{"No Recoil", &Settings.EXPLOITS.NoRecoil},
 			{"Spin Bot", &Settings.EXPLOITS.SpinBot},
-			{"Third Person", &Settings.EXPLOITS.ThirdPerson},
-			{"Free Cam", &Settings.EXPLOITS.FreeCam},
 			{"Infinite Ammo", &Settings.EXPLOITS.InfiniteAmmo},
 			{"No Reload", &Settings.EXPLOITS.NoReload},
 		}};

@@ -17,8 +17,7 @@
 #include "UserScripts.h"
 #include "InfiniteJetpack.h"
 #include "WeaponModifications.h"
-#include "ThirdPerson.h"
-#include "FreeCam.h"
+#include "Camera.h"
 #include "Radar.h"
 #include "DebugNames.h"
 #include "Aimbot.h"
@@ -34,8 +33,6 @@
 #include "AimAssist.h"
 #include "SuperJump.h"
 #include "Teleport.h"
-#include "SpectatorCam.h"
-#include "ThirdPersonCam.h"
 #include "DiscordPresence.h"
 #include "../network/Network.h"
 
@@ -54,8 +51,7 @@ namespace Features
 		Features.push_back(std::make_unique<UserScripts>());
 		Features.push_back(std::make_unique<InfiniteJetpack>());
 		Features.push_back(std::make_unique<WeaponModifications>());
-		Features.push_back(std::make_unique<ThirdPerson>());
-		Features.push_back(std::make_unique<FreeCam>());
+		Features.push_back(std::make_unique<Camera>());
 		Features.push_back(std::make_unique<Radar>());
 		Features.push_back(std::make_unique<DebugNames>());
 		Features.push_back(std::make_unique<Aimbot>());
@@ -71,8 +67,6 @@ namespace Features
 		Features.push_back(std::make_unique<AimAssist>());
 		Features.push_back(std::make_unique<SuperJump>());
 		Features.push_back(std::make_unique<Teleport>());
-		Features.push_back(std::make_unique<SpectatorCam>());
-		Features.push_back(std::make_unique<ThirdPersonCam>());
 		Features.push_back(std::make_unique<DiscordPresence>());
 
 		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install

@@ -88,8 +88,7 @@
     <ClInclude Include="features\SpinBot.h" />
     <ClInclude Include="features\UserScripts.h" />
     <ClInclude Include="features\WeaponModifications.h" />
-    <ClInclude Include="features\ThirdPerson.h" />
-    <ClInclude Include="features\FreeCam.h" />
+    <ClInclude Include="features\Camera.h" />
     <ClInclude Include="features\Radar.h" />
     <ClInclude Include="features\DebugNames.h" />
     <ClInclude Include="features\Aimbot.h" />
@@ -105,8 +104,6 @@
     <ClInclude Include="features\AimAssist.h" />
     <ClInclude Include="features\SuperJump.h" />
     <ClInclude Include="features\Teleport.h" />
-    <ClInclude Include="features\SpectatorCam.h" />
-    <ClInclude Include="features\ThirdPersonCam.h" />
     <ClInclude Include="features\DiscordPresence.h" />
     <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />

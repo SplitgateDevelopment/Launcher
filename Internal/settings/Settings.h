@@ -49,6 +49,20 @@ struct MenuSettings
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Streamproof, Rgb)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
+/// Which camera the Camera feature drives. First person is the game default (no override).
+enum class CameraMode
+{
+	FirstPerson, ///< default — no camera override
+	ThirdPerson, ///< the game's built-in third-person camera (ClientSetCameraMode)
+	FreeCam,	 ///< the game's debug free-fly camera (ToggleDebugCamera)
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(CameraMode, {
+											  {CameraMode::FirstPerson, "first"},
+											  {CameraMode::ThirdPerson, "third"},
+											  {CameraMode::FreeCam, "free"},
+										  })
+
 struct ExploitsSettings
 {
 	float FOV = 80.f;
@@ -61,9 +75,8 @@ struct ExploitsSettings
 	bool InfinteJetpack = false;
 	bool InfiniteAmmo = false;
 	bool NoReload = false;
-	bool ThirdPerson = false;
-	bool FreeCam = false;
-	bool EnableAllInput = false; ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
+	CameraMode Camera = CameraMode::FirstPerson; ///< first (default) / third / free camera
+	bool EnableAllInput = false;				 ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
 	bool PhasingBullets = false; ///< disable collision on cover (CullableActor) so shots pass through it
 	bool BulletTp = false;		 ///< teleport your own projectiles onto the target's aim bone (uses the Aim bone/filters)
 	bool BulletSpeed = false;	 ///< push your own projectiles along their velocity each frame (faster bullets)
@@ -76,16 +89,9 @@ struct ExploitsSettings
 	bool Teleport = false;			 ///< enable the teleport-forward hotkey
 	int TeleportKey = 'F';			 ///< pressed to teleport toward where you're looking
 	float TeleportDistance = 1500.f; ///< how far forward to teleport (cm)
-
-	bool SpectatorCam = false;		 ///< detached fly-camera via ClientSetSpectatorCamera (WASD + Space/Ctrl)
-	float SpectatorCamSpeed = 15.f;	 ///< fly speed per frame (cm)
-
-	bool ThirdPersonCam = false;	  ///< over-the-shoulder camera behind the pawn (ClientSetSpectatorCamera)
-	float ThirdPersonDistance = 250.f; ///< how far behind the pawn (cm)
-	float ThirdPersonHeight = 60.f;	  ///< camera height above the pawn eye (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, ThirdPerson, FreeCam, EnableAllInput, PhasingBullets, BulletTp, BulletSpeed, BulletSpeedBoost, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance, SpectatorCam, SpectatorCamSpeed, ThirdPersonCam, ThirdPersonDistance, ThirdPersonHeight)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, Camera, EnableAllInput, PhasingBullets, BulletTp, BulletSpeed, BulletSpeedBoost, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
