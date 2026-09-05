@@ -93,28 +93,38 @@ namespace ImGui
 	/// per-key state is derived from this — NOT a shared keyName string, which previously made every
 	/// hotkey button render identical text and collide on the ImGui id.
 	inline int* g_capturingHotKey = nullptr;
+	inline bool g_hotKeyArmed = false; ///< true once the initiating click is released, so we can bind mouse buttons too
 
 	void HotKeyEx(int* key, const ImVec2& size_arg = ImVec2(0, 0))
 	{
-		static const int ignoredKeys[] = {VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
-
 		const bool capturing = (g_capturingHotKey == key);
 		const std::string keyName = capturing ? "..." : VirtualKeyCodeToString(*key);
 
 		if (ImGui::Button(keyName.c_str(), size_arg))
+		{
 			g_capturingHotKey = key;
+			g_hotKeyArmed = false; // wait for the click to release before capturing
+		}
 
-		if (!capturing) return;
+		if (g_capturingHotKey != key) return;
 
-		for (int ignoredKey : ignoredKeys)
-			if (GetAsyncKeyState(ignoredKey) & 0x8000) return; // ignore mouse buttons while rebinding
+		// Arm only once the mouse buttons from the initiating click are released — then the next
+		// pressed key OR mouse button (left/right/middle/x) is bound.
+		if (!g_hotKeyArmed)
+		{
+			const bool anyMouseDown = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) || (GetAsyncKeyState(VK_RBUTTON) & 0x8000) ||
+									  (GetAsyncKeyState(VK_MBUTTON) & 0x8000);
+			if (!anyMouseDown) g_hotKeyArmed = true;
+			return;
+		}
 
-		for (int code = 0; code < 255; code++)
+		for (int code = 1; code < 256; code++) // VK_LBUTTON..: mouse buttons are now bindable
 		{
 			if (GetAsyncKeyState(code) & 0x8000)
 			{
 				*key = code;
 				g_capturingHotKey = nullptr;
+				g_hotKeyArmed = false;
 				break;
 			}
 		}
