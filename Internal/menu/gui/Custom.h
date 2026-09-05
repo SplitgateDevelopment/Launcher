@@ -89,53 +89,42 @@ namespace ImGui
 	 * @param size_arg Optional button size.
 	 * @note Mouse buttons are ignored during capture so a click cannot bind itself.
 	 */
+	/// Which key pointer is currently being rebound (only one hotkey captures at a time). Shared, but
+	/// per-key state is derived from this — NOT a shared keyName string, which previously made every
+	/// hotkey button render identical text and collide on the ImGui id.
+	inline int* g_capturingHotKey = nullptr;
+
 	void HotKeyEx(int* key, const ImVec2& size_arg = ImVec2(0, 0))
 	{
-		static const std::vector<int> ignoredKeys =
-			{
-				VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
+		static const int ignoredKeys[] = {VK_LBUTTON, VK_RBUTTON, VK_MBUTTON};
 
-		static std::string keyName = VirtualKeyCodeToString(*key);
-		static bool isPressed = false;
+		const bool capturing = (g_capturingHotKey == key);
+		const std::string keyName = capturing ? "..." : VirtualKeyCodeToString(*key);
 
 		if (ImGui::Button(keyName.c_str(), size_arg))
-		{
-			keyName = "...";
-			isPressed = true;
-		}
-		if (isPressed)
-		{
-			bool ignore = false;
-			for (auto ignoredKey : ignoredKeys)
-			{
-				if (GetAsyncKeyState(ignoredKey) & 0x8000)
-				{
-					ignore = true;
-					break;
-				}
-			};
+			g_capturingHotKey = key;
 
-			if (!ignore)
-			{
-				for (int code = 0; code < 255; code++)
-				{
-					if (GetAsyncKeyState(code) & 0x8000)
-					{
-						*key = code;
-						isPressed = false;
-					}
-				}
-			}
-		}
-		else
+		if (!capturing) return;
+
+		for (int ignoredKey : ignoredKeys)
+			if (GetAsyncKeyState(ignoredKey) & 0x8000) return; // ignore mouse buttons while rebinding
+
+		for (int code = 0; code < 255; code++)
 		{
-			keyName = VirtualKeyCodeToString(*key);
+			if (GetAsyncKeyState(code) & 0x8000)
+			{
+				*key = code;
+				g_capturingHotKey = nullptr;
+				break;
+			}
 		}
 	}
 
 	/// @brief Labeled hotkey row: draws @p label on the left and a right-aligned HotKeyEx capture button.
 	void HotKey(const char* label, int* key, float width = 50.0f, float pad = 2.0f)
 	{
+		ImGui::PushID(label); // scope the capture button's id so multiple hotkeys never collide
+
 		ImGuiStyle* style = &ImGui::GetStyle();
 
 		ImGui::BeginGroup();
@@ -151,6 +140,8 @@ namespace ImGui
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(pad, pad));
 		HotKeyEx(key, ImVec2(width, ImGui::GetFontSize() + pad * 2));
 		ImGui::PopStyleVar();
+
+		ImGui::PopID();
 	}
 
 	/**
