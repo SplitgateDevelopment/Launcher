@@ -11,6 +11,7 @@
 
 #include "../../ue/Engine.h"
 #include "../../utils/Globals.h"
+#include "../../utils/Visibility.h"
 #include "../../cache/ActorCache.h"
 
 /**
@@ -35,6 +36,8 @@ namespace Scripts
 			float health = 0.f, maxHealth = 0.f;
 			std::string name;
 			bool isLocal = false;
+			bool isBot = false;
+			int kills = 0, deaths = 0, killstreak = 0;
 			std::uintptr_t address = 0;
 		};
 
@@ -68,6 +71,10 @@ namespace Scripts
 				info.health = p.health;
 				info.maxHealth = p.character ? p.character->MaxHealth : 0.f;
 				info.isLocal = (reinterpret_cast<AActor*>(p.character) == localPawn);
+				info.isBot = p.isBot;
+				info.kills = p.kills;
+				info.deaths = p.deaths;
+				info.killstreak = p.killstreak;
 				info.address = reinterpret_cast<std::uintptr_t>(p.character);
 				if (p.character && p.character->PlayerState)
 					info.name = p.character->PlayerState->PlayerNamePrivate.ToString();
@@ -93,6 +100,10 @@ namespace Scripts
 				.def_readonly("max_health", &PlayerInfo::maxHealth)
 				.def_readonly("name", &PlayerInfo::name)
 				.def_readonly("is_local", &PlayerInfo::isLocal)
+				.def_readonly("is_bot", &PlayerInfo::isBot)
+				.def_readonly("kills", &PlayerInfo::kills)
+				.def_readonly("deaths", &PlayerInfo::deaths)
+				.def_readonly("killstreak", &PlayerInfo::killstreak)
 				.def_readonly("address", &PlayerInfo::address)
 				// Live per-player queries (re-validate the address against the current cache first, so a
 				// stale snapshot can't crash the game). Call players()/enemies() this frame first.
@@ -105,7 +116,7 @@ namespace Scripts
 				.def("visible", [](const PlayerInfo& p)
 					 {
 					auto* c = ResolveLive(p.address);
-					return c && reinterpret_cast<AActor*>(c)->WasRecentlyRendered(0.1f); }, "Whether the character was recently rendered (occlusion-aware).")
+					return c && Visibility::IsVisible(c, 0.1f); }, "Whether the character is currently visible (trace-free render-timestamp check).")
 				.def("distance", [](const PlayerInfo& p) -> py::object
 					 {
 					if (!Globals::PlayerController || !Globals::PlayerController->AcknowledgedPawn) return py::none();

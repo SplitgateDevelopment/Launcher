@@ -113,6 +113,11 @@ namespace Scripts
 			player.def("chat", [](std::string message)
 					   {
 				if (Globals::PlayerController) Globals::PlayerController->SendChatMessage(FString(message)); }, py::arg("message"));
+
+			player.def("respawn", []
+					   {
+				auto* c = LocalCharacter();
+				if (c) c->RequestSuicide(); }, "Kill the local character so it respawns.");
 		}
 	} // namespace Modules
 } // namespace Scripts
