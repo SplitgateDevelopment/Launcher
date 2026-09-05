@@ -1,10 +1,10 @@
 #pragma once
 
 /// @file
-/// The AnnounceToggles feature: when a tracked feature is toggled, post a **client-only** chat
-/// line (SendChatMessage → the local ClientUpdateChat path — shown in your chat box, not sent to the
-/// server) labeled by the feature, e.g. "[ESP] Enabled". Runs on the SettingsChanged event and diffs
-/// a snapshot of the tracked bools, so it reports exactly what changed.
+/// The AnnounceToggles feature: when a tracked feature is toggled, show a **client-only** chat line
+/// by calling ClientUpdateChat locally (the client-receive RPC — it only paints the message in *your*
+/// chat box, nothing is sent to the server or other players), labeled e.g. "[ESP] Enabled". Runs on
+/// the SettingsChanged event and diffs a snapshot of the tracked bools, so it reports what changed.
 
 #include "Feature.h"
 #include "../utils/Globals.h"
@@ -91,7 +91,15 @@ class AnnounceToggles : public Feature
 			if (snapshotReady && current != previous[i] && inGame)
 			{
 				std::string message = std::format("[{}] {}", watched[i].label, current ? "Enabled" : "Disabled");
-				Globals::PlayerController->SendChatMessage(FString(message));
+
+				// Client-only: ClientUpdateChat is the server->client receive RPC; invoking it on our
+				// own controller just displays the line locally (never leaves this client).
+				FTextChatData data{};
+				data.SenderName = FString(std::string("[Splitgate]"));
+				data.SenderText = FString(message);
+				data.NiceText = FString(message);
+				data.ChatType = EChatType::General;
+				Globals::PlayerController->ClientUpdateChat(data);
 			}
 
 			previous[i] = current;
