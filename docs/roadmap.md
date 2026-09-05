@@ -614,8 +614,13 @@ from the roadmap since they don't work against a real match.
 `Deaths` (+0x4f8) and `KillStreak` (+0x358). ESP has a **Bot tag**, a **K/D** element
 ("kills/deaths [streak]") and a **Max distance (m)** range cap; the aimbot/triggerbot have an
 **Ignore bots** filter; the scripting `Actors` snapshot exposes `is_bot`/`kills`/`deaths`/
-`killstreak`. **Still open (also client-only):** rank (`PlayerRanks` +0x8e8) and the richer per-mode
-stats.
+`killstreak`.
+
+**Last planned ESP label — rank/level (blocked on a struct):** read `PlayerRanks`
+(`TArray<FUserRankInfo>` +0x8e8 on `APortalWarsPlayerState`) and draw the rank/level. Blocked until
+`FUserRankInfo`'s layout (size + the rank/level field offset) is added to the SDK — it isn't in
+`Engine.h`, and the array can't be indexed safely without its element size (pull it from Dumpspace's
+`StructsInfo.json`). **Rank/level is the final ESP label — no further ESP text elements are planned.**
 
 ### Aim: weapon aim-assist / magnetism boost — Small–medium
 
