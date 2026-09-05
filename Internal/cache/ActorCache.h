@@ -98,6 +98,17 @@ namespace ActorCache
 	/// before the features run. Skips the pass entirely when nothing needs it.
 	inline void Update()
 	{
+		// Only scan during a live match. Out of a game (menu) or in the post-match lobby
+		// (APortalWarsPostPlayerController) the actor list is large and nothing consumes the cache,
+		// so the per-frame walk is pure cost — this is the post-game FPS drop. Features already skip
+		// via their own IsInGame() Check(), so clearing here is safe.
+		auto* pc = Globals::PlayerController;
+		if (!pc || !pc->IsInGame() || IsPostGameController(reinterpret_cast<UObject*>(pc)))
+		{
+			players.clear();
+			return;
+		}
+
 		if (!Settings.VISUALS.Esp && !Settings.VISUALS.Radar && !Settings.VISUALS.GlowEnemy && !Settings.VISUALS.GlowFriendly && !Settings.AIM.Aimbot && !Settings.AIM.Triggerbot)
 		{
 			players.clear();

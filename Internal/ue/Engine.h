@@ -2886,6 +2886,13 @@ struct AActor* SpawnActor(struct UObject* worldContextObject, struct UClass* act
  */
 bool LineTraceVisible(struct UObject* worldContext, const struct FVector& start, const struct FVector& end, struct AActor* ignoreActor);
 
+/**
+ * Whether @p controller is the post-match lobby controller (`APortalWarsPostPlayerController`).
+ * After a game ends the local player controller becomes this type; the heavy per-frame actor scan
+ * (ActorCache) should stop there to avoid the post-game FPS drop. False for null / not-yet-resolvable.
+ */
+bool IsPostGameController(struct UObject* controller);
+
 // ScriptStruct CoreUObject.SoftObjectPath
 // Size: 0x18 (Inherited: 0x00)
 struct FSoftObjectPath

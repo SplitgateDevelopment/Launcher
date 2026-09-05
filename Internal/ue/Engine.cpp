@@ -792,6 +792,14 @@ void UPrimitiveComponent::SetRenderCustomDepth(bool bValue)
 	ProcessEvent(Function, &Parameters);
 }
 
+bool IsPostGameController(UObject* controller)
+{
+	if (!controller) return false;
+	static UObject* postClass = nullptr;
+	if (!postClass) postClass = ObjObjects->FindObject("Class PortalWars.PortalWarsPostPlayerController");
+	return postClass && controller->IsA(postClass);
+}
+
 bool LineTraceVisible(UObject* worldContext, const FVector& start, const FVector& end, AActor* ignoreActor)
 {
 	static auto Function = ObjObjects->FindObject("Function Engine.KismetSystemLibrary.LineTraceSingle");
