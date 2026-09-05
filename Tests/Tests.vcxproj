@@ -71,6 +71,7 @@
     <ClCompile Include="NetworkTests.cpp" />
     <ClCompile Include="MemoryTests.cpp" />
     <ClCompile Include="Base64Tests.cpp" />
+    <ClCompile Include="RgbTests.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
