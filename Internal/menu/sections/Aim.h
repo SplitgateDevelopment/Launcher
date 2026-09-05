@@ -36,6 +36,11 @@ namespace Menu
 				changed |= ImGui::ToggleButton("Per-bone visibility", &a.AimVisiblePerBone);
 				ImGui::Tooltip("Stricter: line-trace each bone and aim at the first one in line of sight\n(e.g. skip the head when only the legs are exposed). Skips targets with no visible bone.");
 			}
+			changed |= ImGui::ToggleButton("Aim assist", &a.AimAssist);
+			ImGui::Tooltip("Amplify the weapon's built-in aim-assist/magnetism (soft aim, view isn't moved).\nMay only take effect on controller input - verify in-game.");
+			if (a.AimAssist)
+				changed |= ImGui::SliderFloat("Aim assist strength", &a.AimAssistStrength, 1.f, 8.f, "%.1fx");
+
 			changed |= ImGui::ToggleButton("Draw FOV circle", &a.DrawAimFov);
 			ImGui::ColorEdit4("FOV circle color", &a.AimFovColor.R);
 

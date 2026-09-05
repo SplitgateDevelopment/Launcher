@@ -194,6 +194,8 @@ struct AimSettings
 	bool AimVisibleCheck = false;			 ///< only lock onto targets that were recently rendered (visible); also used by the triggerbot
 	bool AimVisiblePerBone = false;			 ///< strict per-bone line trace: aim at the first bone in line of sight, skip targets with none
 	bool IgnoreBots = false;				 ///< aimbot/triggerbot skip AI bots (target only real players)
+	bool AimAssist = false;					 ///< amplify the current weapon's built-in aim-assist/magnetism (soft aim)
+	float AimAssistStrength = 2.f;			 ///< multiplier applied to the weapon's aim-assist radius/magnetism
 	bool DrawAimFov = false;				 ///< draw the aim FOV circle at the crosshair
 	Color AimFovColor{1.f, 1.f, 1.f, 1.f};	 ///< aim FOV circle color
 
@@ -204,7 +206,7 @@ struct AimSettings
 	bool TriggerTeamCheck = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, IgnoreBots, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(AimSettings, Aimbot, AimKey, AimFov, AimSmooth, AimBone, AimTeamCheck, SilentAim, AimVisibleCheck, AimVisiblePerBone, IgnoreBots, AimAssist, AimAssistStrength, DrawAimFov, AimFovColor, Triggerbot, TriggerKey, TriggerFov, TriggerDelay, TriggerTeamCheck)
 
 /// How the game's backend traffic is redirected to the private server.
 enum class ProxyMode

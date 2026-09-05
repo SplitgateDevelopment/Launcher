@@ -30,6 +30,7 @@
 #include "Glow.h"
 #include "Phasing.h"
 #include "BulletTp.h"
+#include "AimAssist.h"
 #include "SuperJump.h"
 #include "Teleport.h"
 #include "DiscordPresence.h"
@@ -63,6 +64,7 @@ namespace Features
 		Features.push_back(std::make_unique<Glow>());
 		Features.push_back(std::make_unique<Phasing>());
 		Features.push_back(std::make_unique<BulletTp>());
+		Features.push_back(std::make_unique<AimAssist>());
 		Features.push_back(std::make_unique<SuperJump>());
 		Features.push_back(std::make_unique<Teleport>());
 		Features.push_back(std::make_unique<DiscordPresence>());

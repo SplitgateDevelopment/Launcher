@@ -101,6 +101,7 @@
     <ClInclude Include="features\Glow.h" />
     <ClInclude Include="features\Phasing.h" />
     <ClInclude Include="features\BulletTp.h" />
+    <ClInclude Include="features\AimAssist.h" />
     <ClInclude Include="features\SuperJump.h" />
     <ClInclude Include="features\Teleport.h" />
     <ClInclude Include="features\DiscordPresence.h" />
