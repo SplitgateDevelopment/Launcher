@@ -87,6 +87,7 @@ namespace Window
 			// menu open (freeze/crash). Previously every message was swallowed, which caused that.
 			switch (msg)
 			{
+			case WM_INPUT: // raw mouse/keyboard — the game reads camera movement from this
 			case WM_MOUSEMOVE:
 			case WM_LBUTTONDOWN:
 			case WM_LBUTTONUP:
@@ -263,6 +264,14 @@ namespace Window
 	/// @brief Releases the render target and the swap chain/device/context held by the overlay.
 	void Destroy()
 	{
+		// Restore the game's original window procedure before we unload — otherwise the window is left
+		// pointing at WndProc in freed DLL memory and all input dies (or crashes) after an unload.
+		if (WindowHandle && OldWindowProcess)
+		{
+			SetWindowLongPtr(WindowHandle, GWLP_WNDPROC, (LONG_PTR)OldWindowProcess);
+			OldWindowProcess = nullptr;
+		}
+
 		CleanupRenderTarget();
 
 		SwapChain->Release();
