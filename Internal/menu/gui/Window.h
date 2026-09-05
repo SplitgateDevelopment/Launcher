@@ -79,8 +79,39 @@ namespace Window
 	{
 		if (Settings.MENU.ShowMenu)
 		{
-			ImGui_ImplWin32_WndProcHandler((HWND)OldWindowProcess, msg, wParam, lParam);
-			return true;
+			ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
+
+			// Swallow only mouse/keyboard input (so the game doesn't also react to it while the menu
+			// has focus). Everything else — resize, activation, system/paint messages — must still
+			// reach the game, or its swap chain desyncs when the window is minimized/restored with the
+			// menu open (freeze/crash). Previously every message was swallowed, which caused that.
+			switch (msg)
+			{
+			case WM_MOUSEMOVE:
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_LBUTTONDBLCLK:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			case WM_RBUTTONDBLCLK:
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+			case WM_MBUTTONDBLCLK:
+			case WM_XBUTTONDOWN:
+			case WM_XBUTTONUP:
+			case WM_XBUTTONDBLCLK:
+			case WM_MOUSEWHEEL:
+			case WM_MOUSEHWHEEL:
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+			case WM_SYSKEYDOWN:
+			case WM_SYSKEYUP:
+			case WM_CHAR:
+			case WM_SETCURSOR:
+				return true; // consumed by the menu
+			default:
+				break; // fall through to the game (resize, focus, sys, ...)
+			}
 		}
 
 		switch (msg)
