@@ -76,6 +76,8 @@ struct ExploitsSettings
 	bool InfiniteAmmo = false;
 	bool NoReload = false;
 	CameraMode Camera = CameraMode::FirstPerson; ///< first (default) / third / free camera
+	float ThirdPersonDistance = 250.f;			 ///< third-person: distance behind the pawn (cm)
+	float ThirdPersonHeight = 60.f;				 ///< third-person: camera height above the pawn eye (cm)
 	bool EnableAllInput = false;				 ///< force IsInputActionEnabled true (un-greys the Play button, etc.)
 	bool PhasingBullets = false; ///< disable collision on cover (CullableActor) so shots pass through it
 	bool BulletTp = false;		 ///< teleport your own projectiles onto the target's aim bone (uses the Aim bone/filters)
@@ -91,7 +93,7 @@ struct ExploitsSettings
 	float TeleportDistance = 1500.f; ///< how far forward to teleport (cm)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, Camera, EnableAllInput, PhasingBullets, BulletTp, BulletSpeed, BulletSpeedBoost, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(ExploitsSettings, FOV, GodMode, SpinBot, NoClip, NoRecoil, GodMelee, PlayerSpeed, InfinteJetpack, InfiniteAmmo, NoReload, Camera, ThirdPersonDistance, ThirdPersonHeight, EnableAllInput, PhasingBullets, BulletTp, BulletSpeed, BulletSpeedBoost, SuperJump, SuperJumpKey, SuperJumpForce, Teleport, TeleportKey, TeleportDistance)
 
 /// Miscellaneous options. Note DiscordAppID and SteamAppId are runtime-only (absent from the
 /// persistence macro below), so they always reset to these defaults.
