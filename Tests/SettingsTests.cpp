@@ -40,6 +40,57 @@ TEST(SettingsSerialization, JsonRoundTripPreservesPersistedFields)
 }
 
 // ---------------------------------------------------------------------------
+// Enum <-> JSON mappings (NLOHMANN_JSON_SERIALIZE_ENUM). These guard the string
+// names the settings file persists against accidental enum/mapping drift, and
+// pin the documented fallback: an unknown string decodes to the first mapped
+// entry.
+// ---------------------------------------------------------------------------
+TEST(SettingsSerialization, RendererModeMapsToNames)
+{
+	EXPECT_EQ(json(RendererMode::Canvas).get<std::string>(), "canvas");
+	EXPECT_EQ(json(RendererMode::ImGui).get<std::string>(), "imgui");
+	EXPECT_EQ(json(RendererMode::Null).get<std::string>(), "null");
+
+	EXPECT_EQ(json("canvas").get<RendererMode>(), RendererMode::Canvas);
+	EXPECT_EQ(json("imgui").get<RendererMode>(), RendererMode::ImGui);
+	EXPECT_EQ(json("null").get<RendererMode>(), RendererMode::Null);
+}
+
+TEST(SettingsSerialization, RendererModeUnknownFallsBackToFirst)
+{
+	// nlohmann's SERIALIZE_ENUM returns the first listed pair for an unmapped value.
+	EXPECT_EQ(json("bogus").get<RendererMode>(), RendererMode::Canvas);
+}
+
+TEST(SettingsSerialization, CameraModeMapsToNames)
+{
+	EXPECT_EQ(json(CameraMode::FirstPerson).get<std::string>(), "first");
+	EXPECT_EQ(json(CameraMode::ThirdPerson).get<std::string>(), "third");
+	EXPECT_EQ(json(CameraMode::FreeCam).get<std::string>(), "free");
+
+	EXPECT_EQ(json("first").get<CameraMode>(), CameraMode::FirstPerson);
+	EXPECT_EQ(json("third").get<CameraMode>(), CameraMode::ThirdPerson);
+	EXPECT_EQ(json("free").get<CameraMode>(), CameraMode::FreeCam);
+}
+
+TEST(SettingsSerialization, CameraModeUnknownFallsBackToFirst)
+{
+	EXPECT_EQ(json("bogus").get<CameraMode>(), CameraMode::FirstPerson);
+}
+
+TEST(SettingsSerialization, RendererAndCameraSurviveSettingsRoundTrip)
+{
+	SETTINGS in{};
+	in.VISUALS.Renderer = RendererMode::ImGui;
+	in.EXPLOITS.Camera = CameraMode::ThirdPerson;
+
+	const auto out = json(in).get<SETTINGS>();
+
+	EXPECT_EQ(out.VISUALS.Renderer, RendererMode::ImGui);
+	EXPECT_EQ(out.EXPLOITS.Camera, CameraMode::ThirdPerson);
+}
+
+// ---------------------------------------------------------------------------
 // Save/Load hit the real Documents\SplitgateInternal\splitgate.settings path
 // (the API exposes no injectable location). This fixture moves any real user
 // settings aside for the duration of each test and restores them afterwards,
