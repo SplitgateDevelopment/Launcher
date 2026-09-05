@@ -654,14 +654,14 @@ For `CurrentWeapon` (character +0x800), each frame write enlarged radius/magneti
 the client aim path** (server sees only the resulting aim). **Depends on:** in-game tuning of the
 inflated values.
 
-### Camera: spectator-camera free-cam / third-person — DONE (verify in-game)
+### Camera: first / third / free selector — DONE
 
-**Shipped:** [`features/SpectatorCam.h`](../Internal/features/SpectatorCam.h) — a detached fly-camera
-driving `ClientSetSpectatorCamera` each frame from a WASD/Space/Ctrl position with mouse aim (RPC
-wrapped in the SDK) — and [`features/ThirdPersonCam.h`](../Internal/features/ThirdPersonCam.h), an
-over-the-shoulder follow-cam placed behind the pawn each frame (configurable distance/height). Both
-kept separate from the console-based Free Cam. **Remaining:** confirm the game keeps our pose (vs
-re-asserting its own) and decide whether to freeze pawn input while flying.
+**Shipped:** a single [`features/Camera.h`](../Internal/features/Camera.h) driven by a `CameraMode`
+enum (First person / Third person / Free cam), shown as one combo in Exploits > Camera — only one
+camera is ever active. Third uses the game's built-in `ClientSetCameraMode`; free uses its debug
+fly-camera (`ToggleDebugCamera`). Replaced the earlier overlapping toggles (ThirdPerson, FreeCam, and
+the short-lived `ClientSetSpectatorCamera`-based SpectatorCam / ThirdPersonCam). **Remaining:** confirm
+the third-person mode name engages in-game.
 
 **Goal.** The free-cam / custom third-person the Cameras section wants, without RE'ing the native
 camera-update function.
