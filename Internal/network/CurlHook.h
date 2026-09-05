@@ -65,6 +65,16 @@ namespace Network::Curl
 		0xEC, 0x28, 0x48, 0x85, 0xC9, 0x75, 0x08, 0x8D, 0x41, 0x2B, 0x48, 0x83, 0xC4, 0x28, 0xC3, 0x4C,
 		0x8D, 0x44, 0x24, 0x40};
 
+	/**
+	 * Optional update-resilience fallback: a string that the target function (or one right next to it)
+	 * references, used via Memory::FindFunctionByString if the byte @ref signature above ever stops
+	 * matching after a game/curl update. Empty by default — the byte signature is exact for the current
+	 * build; set this to a known-referenced string once one is identified in-game and the hook will
+	 * self-heal across the next patch. (curl_easy_setopt itself references no distinctive string, so
+	 * this stays empty for now; wired so the mechanism is in place.)
+	 */
+	inline std::string signatureString = "";
+
 	inline int __cdecl HookedSetOpt(void* handle, int option, void* param)
 	{
 		// TLS bypass: force cert/host verification off so a redirected host can serve a self-signed
@@ -149,6 +159,16 @@ namespace Network::Curl
 
 		auto* base = static_cast<BYTE*>(info.lpBaseOfDll);
 		BYTE* target = Memory::Find(base, base + info.SizeOfImage, Memory::FromBytes(signature.data(), signature.size()));
+
+		// Fallback: if the byte prologue no longer matches (e.g. a game/curl update), resolve the
+		// function from a string it references — far more update-stable. Inert until signatureString
+		// is set (the byte signature is exact for the current build).
+		if (!target && !signatureString.empty())
+		{
+			target = Memory::FindFunctionByString(signatureString);
+			if (target) Logger::Log("INFO", "[Network] curl_easy_setopt resolved via string-ref fallback");
+		}
+
 		if (!target)
 		{
 			Logger::Log("ERROR", "[Network] curl_easy_setopt signature not found");
