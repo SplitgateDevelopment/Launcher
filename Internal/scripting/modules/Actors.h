@@ -116,7 +116,7 @@ namespace Scripts
 				.def("visible", [](const PlayerInfo& p)
 					 {
 					auto* c = ResolveLive(p.address);
-					return c && Visibility::IsVisible(c, 0.1f); }, "Whether the character is currently visible (trace-free render-timestamp check).")
+					return c && Visibility::IsVisible(c, Visibility::LocalEye()); }, "Whether the character is in line of sight from the local player (occlusion trace).")
 				.def("distance", [](const PlayerInfo& p) -> py::object
 					 {
 					if (!Globals::PlayerController || !Globals::PlayerController->AcknowledgedPawn) return py::none();

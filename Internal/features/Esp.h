@@ -212,7 +212,13 @@ class Esp : public Feature
 		auto* localPawn = controller->AcknowledgedPawn;
 		const bool hasPlayer = localPawn != nullptr;
 		FVector playerPos{};
-		if (hasPlayer) playerPos = localPawn->K2_GetActorLocation();
+		FVector eye{};
+		if (hasPlayer)
+		{
+			playerPos = localPawn->K2_GetActorLocation();
+			eye = playerPos;
+			eye.Z += 80.f; // rough eye height, for the visibility line-of-sight trace
+		}
 
 		// The local player's team, so teammates can be filtered/recolored. -1 = unknown (draw all).
 		char localTeam = -1;
@@ -237,10 +243,10 @@ class Esp : public Feature
 			const float dist = hasPlayer ? Distance(playerPos, cached.location) : 0.f;
 			if (visuals.MaxDistance > 0.f && hasPlayer && dist > visuals.MaxDistance) continue;
 
-			// Visibility recolor: an enemy that was recently rendered (not occluded) is drawn in
-			// VisibleColor; occluded enemies keep the normal box/bone/snapline colors. One
-			// ProcessEvent per enemy, so only paid when the check is on and the enemy isn't a teammate.
-			const bool visible = (visuals.EspVisibleCheck && !friendly) ? Visibility::IsVisible(Character, 0.06f) : false;
+			// Visibility recolor: an enemy in line of sight is drawn in VisibleColor; occluded enemies
+			// keep the normal box/bone/snapline colors. One line trace per enemy, so only paid when the
+			// check is on and the enemy isn't a teammate.
+			const bool visible = (visuals.EspVisibleCheck && !friendly && hasPlayer) ? Visibility::IsVisible(Character, eye) : false;
 			const FLinearColor enemyBox = visible ? visibleColor : boxColor;
 			const FLinearColor enemyBones = visible ? visibleColor : bonesColor;
 			const FLinearColor enemySnap = visible ? visibleColor : snaplineColor;

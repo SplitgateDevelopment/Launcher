@@ -86,6 +86,10 @@ class Triggerbot : public Feature
 
 		const FVector2D crosshair{Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY * 0.5f};
 
+		// Eye origin for the visibility line-of-sight trace.
+		FVector eye = localPawn->K2_GetActorLocation();
+		eye.Z += 80.f;
+
 		bool nowOnTarget = false;
 		for (const auto& cached : ActorCache::Players())
 		{
@@ -94,7 +98,7 @@ class Triggerbot : public Feature
 			if (ActorCache::IsDead(cached)) continue; // don't fire at a dead body
 			if (aim.TriggerTeamCheck && localTeam >= 0 && cached.team == localTeam) continue;
 			if (aim.IgnoreBots && cached.isBot) continue; // fire only at real players
-			if (aim.AimVisibleCheck && !Visibility::IsVisible(character, 0.1f)) continue; // only visible targets
+			if (aim.AimVisibleCheck && !Visibility::IsVisible(character, eye)) continue; // only visible targets
 
 			auto* mesh = character->Mesh;
 			if (!mesh) continue;

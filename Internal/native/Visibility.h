@@ -1,33 +1,45 @@
 #pragma once
 
 /// @file
-/// @brief Trace-free visibility test for a character, shared by the ESP visibility recolor and the
-/// aim features. Compares the mesh's LastRenderTimeOnScreen against LastSubmitTime (two field reads,
-/// no ProcessEvent) — if it rendered within a tick of being submitted, it's on screen / visible.
-/// Falls back to the game's WasRecentlyRendered UFunction when the Debug NativeVisibility toggle is
-/// off (or the mesh is missing), so it's always safe.
+/// @brief Line-of-sight visibility for a character, shared by the ESP visibility recolor and the aim
+/// features. Traces from the viewer's eye to the target's chest (ignoring the target) via
+/// LineTraceVisible — a real occlusion test. This deliberately does NOT use WasRecentlyRendered or
+/// the LastRenderTimeOnScreen/LastSubmitTime timestamps: those only tell you the actor is in the view
+/// frustum (they stay "true" through walls), so they can't drive a visible/occluded ESP.
 
 #include "../ue/Engine.h"
-#include "../settings/Settings.h"
+#include "../utils/Globals.h"
+#include "ActorLocation.h"
 
 namespace Visibility
 {
-	/// Whether @p character is currently visible (rendered on screen within @p tolerance seconds).
-	/// Native path: `LastRenderTimeOnScreen + tolerance >= LastSubmitTime` on the character's mesh —
-	/// while off-screen, LastSubmitTime keeps advancing but LastRenderTimeOnScreen stalls, so the sum
-	/// falls behind. Returns false for a null character; falls back to WasRecentlyRendered when the
-	/// native toggle is off or there's no mesh.
+	/// Whether @p target is in line of sight from @p eye (nothing solid between the eye and the
+	/// target's chest). @p eye is the viewer's eye/camera world position — the caller passes it so the
+	/// per-frame POV is computed once. Returns false for a null target.
 	///
-	/// @note "rendered" means drawn anywhere on screen, so it can read as visible through thin
-	/// geometry or at frame edges — the aimbot's per-bone LineTrace mode is the stricter option.
-	inline bool IsVisible(APortalWarsCharacter* character, float tolerance)
+	/// @note One line trace per call (a ProcessEvent), so only invoke it behind a "visibility check"
+	/// gate. Uses trace channel 0 (Visibility) via LineTraceVisible — the one value to verify in-game
+	/// if occlusion looks inverted.
+	inline bool IsVisible(APortalWarsCharacter* target, const FVector& eye)
 	{
-		if (!character) return false;
+		if (!target) return false;
 
-		if (Settings.DEBUG.NativeVisibility)
-			if (auto* mesh = character->Mesh)
-				return mesh->LastRenderTimeOnScreen + tolerance >= mesh->LastSubmitTime;
+		FVector point = target->Mesh ? target->Mesh->GetBoneMatrix(BoneFNames::spine_03)
+									 : ActorLocation(reinterpret_cast<AActor*>(target));
 
-		return reinterpret_cast<AActor*>(character)->WasRecentlyRendered(tolerance);
+		return LineTraceVisible(reinterpret_cast<UObject*>(Globals::PlayerController), eye, point,
+								reinterpret_cast<AActor*>(target));
+	}
+
+	/// The local viewer's eye position (local pawn location at ~eye height), or {0,0,0} if not in a
+	/// game. Convenience so callers that don't already have it can pass a consistent origin.
+	inline FVector LocalEye()
+	{
+		if (!Globals::PlayerController) return FVector{0.f, 0.f, 0.f};
+		auto* pawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+		if (!pawn) return FVector{0.f, 0.f, 0.f};
+		FVector eye = ActorLocation(pawn);
+		eye.Z += 80.f; // rough eye height
+		return eye;
 	}
 } // namespace Visibility
