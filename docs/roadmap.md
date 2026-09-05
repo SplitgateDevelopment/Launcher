@@ -75,7 +75,12 @@ removes per-actor/per-bone call cost entirely.
   `RootComponent->RelativeLocation` (0x130 → 0x11c), used by `ActorCache`; falls back to
   `K2_GetActorLocation` when the root component is missing or the **Native actor location** Debug
   toggle is off.
-- **Bones:** read the bone array directly (`USkeletalMeshComponent->LODData - 0x4` on UE4; `- 0x8`
+- **Bones — deferred (low value, needs an offset):** the bone array is in the SDK
+  (`CachedComponentSpaceTransforms`), but converting a bone to *world* space needs the component's
+  `ComponentToWorld` transform (not in the SDK) plus quaternion composition. Bones are already read
+  natively and cheaply via the AOB `GetBoneMatrix` (which returns the world matrix directly), so this
+  isn't worth the crash risk / RE blind. Original note kept below.
+- **Bones (original plan):** read the bone array directly (`USkeletalMeshComponent->LODData - 0x4` on UE4; `- 0x8`
   and `double` `FMatrix` on UE5) rather than the AOB `GetBoneMatrix` — no signature to maintain and no
   call per bone. Keep the AOB path as a fallback (a Debug toggle, like the existing native/UFunction
   ones).
@@ -451,7 +456,13 @@ through the `Render` abstraction, so it follows whichever renderer is active.
 
 ## Projectiles
 
-### Bullet speed / "bullet TP"
+### Bullet speed / "bullet TP" — DONE
+
+**Shipped:** **Bullet TP** ([`features/BulletTp.h`](../Internal/features/BulletTp.h)) teleports your
+own projectiles onto the target's aim bone; **Bullet speed**
+([`features/BulletSpeed.h`](../Internal/features/BulletSpeed.h)) pushes them further along their
+velocity each frame. Both filter to own shots (Instigator/Owner) and use the shared projectile pass.
+Projectile motion may be partly server-simulated — verify effect in-game.
 
 **Goal.** Change how fast the local player's projectiles travel — slow them down to watch, or crank the
 speed so they hit near-instantly ("bullet teleport").
@@ -665,13 +676,13 @@ hook. **Files.** `ue/Engine.*` (wrap `ClientSetSpectatorCamera`), `features/Free
 in-game test that the pose sticks (the game may re-assert its camera each frame — may need a per-frame
 re-apply or a view-target swap). `EReplayCameraMode` values still need an enum dump.
 
-### Cosmetics: skin / loadout changer (refines the existing Large entry) — PARTIAL (skins done, loadout open)
+### Cosmetics: skin changer — DONE
 
 **Shipped:** a Cosmetics section in the Misc tab — a searchable skin-class picker with Apply buttons
 for the **character** (`CharacterSkinClass` + `APortalWarsCharacter::UpdateSkins`), the **gun**
 (`WeaponSkinClass` + `ABaseGun::UpdateSkins`) and the **jetpack** (`JetpackSkinClass`), all wrapped in
-the SDK. Client-side; the server may re-assert the real skins. **Still open:** persistent loadout via
-`EquippedCustomizations` + `LoadUserSaveGame` (needs the local-player pointer).
+the SDK. Client-side; the server may re-assert the real skins. (Persistent loadout via
+`EquippedCustomizations` + `LoadUserSaveGame` was dropped from scope.)
 
 
 **Concrete API found.** Character holds `CharacterSkin` / `CharacterSkinClass` (+0x9b8 / +0x9c0,
