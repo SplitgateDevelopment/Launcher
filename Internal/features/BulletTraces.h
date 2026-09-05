@@ -7,8 +7,8 @@
 
 #include "Feature.h"
 #include "../utils/Globals.h"
-#include "../utils/WorldToScreen.h"
-#include "../utils/ActorLocation.h"
+#include "../native/WorldToScreen.h"
+#include "../native/ActorLocation.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 

@@ -8,8 +8,8 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../cache/ActorCache.h"
-#include "../utils/WorldToScreen.h"
-#include "../utils/Visibility.h"
+#include "../native/WorldToScreen.h"
+#include "../native/Visibility.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 

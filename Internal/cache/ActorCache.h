@@ -14,7 +14,7 @@
 
 #include "../ue/Engine.h"
 #include "../utils/Globals.h"
-#include "../utils/ActorLocation.h"
+#include "../native/ActorLocation.h"
 
 /// Shared, once-per-frame view of the world's actors.
 namespace ActorCache

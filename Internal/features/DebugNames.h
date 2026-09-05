@@ -9,7 +9,7 @@
 #include "Feature.h"
 #include "../utils/Globals.h"
 #include "../render/Render.h"
-#include "../utils/WorldToScreen.h"
+#include "../native/WorldToScreen.h"
 
 #include <string>
 

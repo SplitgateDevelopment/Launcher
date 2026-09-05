@@ -11,7 +11,7 @@
 
 #include "../../ue/Engine.h"
 #include "../../utils/Globals.h"
-#include "../../utils/Visibility.h"
+#include "../../native/Visibility.h"
 #include "../../cache/ActorCache.h"
 
 /**

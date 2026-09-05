@@ -8,7 +8,7 @@
 
 #include "../../ue/Engine.h"
 #include "../../utils/Globals.h"
-#include "../../utils/WorldToScreen.h"
+#include "../../native/WorldToScreen.h"
 
 /**
  * @file
