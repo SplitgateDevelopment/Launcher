@@ -39,6 +39,10 @@ namespace Menu
 			changed |= ImGui::ToggleButton("Draw FOV circle", &a.DrawAimFov);
 			ImGui::ColorEdit4("FOV circle color", &a.AimFovColor.R);
 
+			ImGui::SeparatorText("Bullet TP");
+			changed |= ImGui::ToggleButton("Bullet TP", &a.BulletTp);
+			ImGui::Tooltip("Teleport your own projectiles onto the aim bone of the enemy nearest the crosshair.\nUses the Bone selection above; respects Team check / Ignore bots.");
+
 			ImGui::SeparatorText("Triggerbot");
 			changed |= ImGui::ToggleButton("Enable##trig", &a.Triggerbot);
 			ImGui::HotKey("Trigger key", &a.TriggerKey);

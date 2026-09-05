@@ -29,6 +29,7 @@
 #include "BulletTraces.h"
 #include "Glow.h"
 #include "Phasing.h"
+#include "BulletTp.h"
 #include "DiscordPresence.h"
 #include "../network/Network.h"
 
@@ -59,6 +60,7 @@ namespace Features
 		Features.push_back(std::make_unique<BulletTraces>());
 		Features.push_back(std::make_unique<Glow>());
 		Features.push_back(std::make_unique<Phasing>());
+		Features.push_back(std::make_unique<BulletTp>());
 		Features.push_back(std::make_unique<DiscordPresence>());
 
 		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install
