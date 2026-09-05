@@ -2,9 +2,9 @@
 
 /// @file
 /// The AnnounceToggles feature: when a tracked feature is toggled, post a **client-only** chat
-/// line (APlayerController::ClientMessage — shown only to you, not sent to the server) labeled by
-/// the feature, e.g. "[ESP] Enabled". Runs on the SettingsChanged event and diffs a snapshot of the
-/// tracked bools, so it reports exactly what changed.
+/// line (SendChatMessage → the local ClientUpdateChat path — shown in your chat box, not sent to the
+/// server) labeled by the feature, e.g. "[ESP] Enabled". Runs on the SettingsChanged event and diffs
+/// a snapshot of the tracked bools, so it reports exactly what changed.
 
 #include "Feature.h"
 #include "../utils/Globals.h"
@@ -91,7 +91,7 @@ class AnnounceToggles : public Feature
 			if (snapshotReady && current != previous[i] && inGame)
 			{
 				std::string message = std::format("[{}] {}", watched[i].label, current ? "Enabled" : "Disabled");
-				Globals::PlayerController->ClientMessage(FString(message), FName{}, 4.f);
+				Globals::PlayerController->SendChatMessage(FString(message));
 			}
 
 			previous[i] = current;
