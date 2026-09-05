@@ -555,7 +555,10 @@ void APlayerController::SendToConsole(FString Command)
 
 bool APlayerController::IsInGame()
 {
-	return (this->AcknowledgedPawn);
+	// A pawn is acknowledged AND we're not in the post-match lobby controller. Excluding the
+	// post-game controller here makes every feature + the actor cache stand down after a match
+	// (they all gate on IsInGame), which is where the post-game FPS drop came from.
+	return this->AcknowledgedPawn && !IsPostGameController(reinterpret_cast<UObject*>(this));
 }
 
 void APortalWarsPlayerController::SendChatMessage(FString Message, enum class EChatType ChatType)
