@@ -84,7 +84,7 @@ namespace ActorCache
 				auto* state = reinterpret_cast<APortalWarsPlayerState*>(character->PlayerState);
 
 				int rank = 0;
-				if (state)
+				if (state && Settings.VISUALS.Rank) // only pay the PlayerRanks read when the ESP rank label is on
 					for (int r = 0, rn = state->PlayerRanks.Num(); r < rn; r++)
 						if (state->PlayerRanks[r].RankLevel > rank) rank = state->PlayerRanks[r].RankLevel;
 
