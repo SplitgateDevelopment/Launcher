@@ -149,16 +149,14 @@
     <ClInclude Include="native\ActorLocation.h" />
     <ClInclude Include="native\Visibility.h" />
     <ClInclude Include="native\WorldToScreen.h" />
-    <ClInclude Include="utils\Memcury.h" />
+    <ClInclude Include="memory\Memory.h" />
     <ClInclude Include="utils\Rgb.h" />
-    <ClInclude Include="utils\Util.h" />
     <ClInclude Include="menu\Menu.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ue\Engine.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
-    <ClCompile Include="utils\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <!-- Shared VERSIONINFO/StringFileInfo; SPLITGATE_DLL selects the DLL variant. -->

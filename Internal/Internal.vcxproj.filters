@@ -60,9 +60,6 @@
     <ClInclude Include="settings\Settings.h">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="utils\Util.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="utils\Rgb.h">
       <Filter>utils</Filter>
     </ClInclude>
@@ -213,9 +210,6 @@
     </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
       <Filter>settings</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\Util.cpp">
-      <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp" />
   </ItemGroup>

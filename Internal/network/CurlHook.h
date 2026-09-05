@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "../utils/Logger.h"
-#include "../utils/Util.h"
+#include "../memory/Memory.h"
 #include "../settings/Settings.h"
 #include "HttpLogger.h"
 #include "Redirect.h"
@@ -41,7 +41,7 @@ namespace Network::Curl
 
 	/**
 	 * AOB signature for `curl_easy_setopt`'s prologue in the game module. `0x00` bytes are
-	 * wildcards for Util's FindSignature; while empty, the libcurl hook stays inert.
+	 * wildcards (Memory::FromBytes convention); while empty, the libcurl hook stays inert.
 	 *
 	 * Derived for the shipping build's statically-linked **libcurl 7.55.1** (Sep 2026). The
 	 * function was located by its call sites — the only target reached by dozens of
@@ -148,7 +148,7 @@ namespace Network::Curl
 		if (!K32GetModuleInformation(GetCurrentProcess(), GetModuleHandleA(nullptr), &info, sizeof(info))) return;
 
 		auto* base = static_cast<BYTE*>(info.lpBaseOfDll);
-		BYTE* target = FindSignature(base, base + info.SizeOfImage, const_cast<BYTE*>(signature.data()), signature.size());
+		BYTE* target = Memory::Find(base, base + info.SizeOfImage, Memory::FromBytes(signature.data(), signature.size()));
 		if (!target)
 		{
 			Logger::Log("ERROR", "[Network] curl_easy_setopt signature not found");

@@ -69,7 +69,7 @@
     <ClCompile Include="LoggerTests.cpp" />
     <ClCompile Include="ExceptionHandlerTests.cpp" />
     <ClCompile Include="NetworkTests.cpp" />
-    <ClCompile Include="MemcuryTests.cpp" />
+    <ClCompile Include="MemoryTests.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
