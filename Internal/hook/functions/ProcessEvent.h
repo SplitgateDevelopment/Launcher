@@ -109,6 +109,16 @@ namespace ProcessEvent
 	{
 		if (Settings.DEBUG.LogProcessEvent) LogProcessEvent(Class, Function);
 
+		// Diagnostic: log the camera-mode FName the game sets (ClientSetCameraMode's param), so a
+		// custom third person can match the game's own mode name. Only while LogProcessEvent is on;
+		// trigger a killcam/spectate (which shows third person natively) and read internal.log.
+		if (Settings.DEBUG.LogProcessEvent && Params)
+		{
+			static UObject* clientSetCameraMode = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+			if (clientSetCameraMode && Function == clientSetCameraMode)
+				Logger::Log("INFO", "[Camera] ClientSetCameraMode -> " + reinterpret_cast<FName*>(Params)->GetName());
+		}
+
 		// Shutdown is no longer special-cased here: it's a normal game event
 		// (Events::Type::Shutdown in the gameEvents table), and the teardown handler is
 		// registered on the event bus in Hook::Init.
