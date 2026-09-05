@@ -97,7 +97,10 @@ class BulletTraces : public Feature
 				AActor* actor = actors[a];
 				if (!Alive(actor) || !actor->IsA(projectileClass)) continue;
 
-				trails[actor].push_back({ActorLocation(actor), now});
+				// Projectiles move via a ProjectileMovementComponent, so RootComponent->RelativeLocation
+				// (the offset path) is often stale/relative for them — use the reliable UFunction. Only a
+				// handful of projectiles are live at once, so the per-projectile ProcessEvent is cheap.
+				trails[actor].push_back({actor->K2_GetActorLocation(), now});
 			}
 		}
 
