@@ -643,7 +643,12 @@ For `CurrentWeapon` (character +0x800), each frame write enlarged radius/magneti
 the client aim path** (server sees only the resulting aim). **Depends on:** in-game tuning of the
 inflated values.
 
-### Camera: spectator-camera free-cam / third-person — Medium (was Large)
+### Camera: spectator-camera free-cam / third-person — DONE (verify in-game)
+
+**Shipped:** [`features/SpectatorCam.h`](../Internal/features/SpectatorCam.h) — a detached fly-camera
+driving `ClientSetSpectatorCamera` each frame from a WASD/Space/Ctrl position with mouse aim (RPC
+wrapped in the SDK). Kept separate from the console-based Free Cam. **Remaining:** confirm the game
+keeps our pose (vs re-asserting its own) and decide whether to freeze pawn input while flying.
 
 **Goal.** The free-cam / custom third-person the Cameras section wants, without RE'ing the native
 camera-update function.
@@ -658,7 +663,14 @@ hook. **Files.** `ue/Engine.*` (wrap `ClientSetSpectatorCamera`), `features/Free
 in-game test that the pose sticks (the game may re-assert its camera each frame — may need a per-frame
 re-apply or a view-target swap). `EReplayCameraMode` values still need an enum dump.
 
-### Cosmetics: skin / loadout changer (refines the existing Large entry) — Medium–large
+### Cosmetics: skin / loadout changer (refines the existing Large entry) — PARTIAL (character skin done)
+
+**Shipped:** a Cosmetics section in the Misc tab — a searchable skin-class picker that sets the local
+character's `CharacterSkinClass` and calls `UpdateSkins()` (`ACharacterSkin::GetMesh3P` /
+`APortalWarsCharacter::UpdateSkins` wrapped in the SDK). Client-side; the server may re-assert the
+real skin. **Still open:** gun skins (`WeaponSkinClass` + `ABaseGun::UpdateSkins`), jetpack skin, and
+persistent loadout via `EquippedCustomizations` + `LoadUserSaveGame`.
+
 
 **Concrete API found.** Character holds `CharacterSkin` / `CharacterSkinClass` (+0x9b8 / +0x9c0,
 L916) and `JetpackSkin` (+0x9d0); `UpdateSkins()` (L1029) re-applies them; gun holds
