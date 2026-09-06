@@ -42,6 +42,8 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dcomp.lib")
 
+#include <format>
+
 #include <imgui.h>
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
@@ -348,8 +350,19 @@ namespace ExternalWindow
 		const float transparent[4] = {0.f, 0.f, 0.f, 0.f};
 		Context->OMSetRenderTargets(1, &Rtv, nullptr);
 		Context->ClearRenderTargetView(Rtv, transparent);
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		ImDrawData* drawData = ImGui::GetDrawData();
+		ImGui_ImplDX11_RenderDrawData(drawData);
 
-		SwapChain->Present(0, 0); // no vsync: we're on the game thread and must not block on it
+		const HRESULT present = SwapChain->Present(0, 0); // no vsync: we're on the game thread, must not block
+
+		// Diagnostic (first frames + periodic): why nothing shows. vtx==0 => the recorded commands
+		// aren't reaching this draw list (recording/drain problem); vtx>0 but nothing on screen =>
+		// the DirectComposition swap chain isn't compositing; present!=0 => the Present itself failed.
+		static int diagFrames = 0;
+		if (diagFrames < 5 || (diagFrames % 600) == 0)
+			Logger::Log(SUCCEEDED(present) ? "INFO" : "ERROR",
+						std::format("[Overlay] render: focused={} size={}x{} vtx={} present=0x{:08X}",
+									focused, Width, Height, drawData ? drawData->TotalVtxCount : -1, static_cast<unsigned int>(present)));
+		diagFrames++;
 	}
 } // namespace ExternalWindow
