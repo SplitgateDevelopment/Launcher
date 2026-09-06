@@ -3,6 +3,7 @@
 #include "../features/Features.h"
 #include "functions/ProcessEvent.h"
 #include "functions/PostRender.h"
+#include "GuardHook.h" // code-patch-free hooking primitive (opt-in; not wired to a live hook yet)
 #include "../menu/gui/Gui.h"
 
 #include <atomic>
