@@ -35,6 +35,7 @@
 #include "imgui_Impl_Win32.h"
 
 #include "Window.h" // Window::WindowHandle (the game window) + the WDA_EXCLUDEFROMCAPTURE fallback
+#include "Styles.h" // GUI::Styles::Init — same theme as the game-window overlay
 #include "../Menu.h"
 #include "../../render/Render.h"
 #include "../../settings/Settings.h"
@@ -301,7 +302,8 @@ namespace ExternalWindow
 	}
 
 	/// @brief Create the overlay's own ImGui context and its DX11/Win32 backends (bound to @ref Hwnd
-	/// and @ref Device). @return true on success.
+	/// and @ref Device). Applies the same theme as the game-window overlay so the two menus match.
+	/// @return true on success.
 	inline bool CreateImGui()
 	{
 		IMGUI_CHECKVERSION();
@@ -309,7 +311,7 @@ namespace ExternalWindow
 		if (!Ctx) return false;
 
 		ScopedContext scoped(Ctx);
-		ImGui::StyleColorsDark();
+		GUI::Styles::Init(); // same cream/red palette + metrics as the internal overlay
 		if (!ImGui_ImplWin32_Init(Hwnd)) return false;
 		if (!ImGui_ImplDX11_Init(Device, Context)) return false;
 		ImGui_ImplDX11_CreateDeviceObjects();
