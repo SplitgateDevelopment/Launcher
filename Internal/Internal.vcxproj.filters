@@ -60,9 +60,6 @@
     <ClInclude Include="ue\custom.h">
       <Filter>ue</Filter>
     </ClInclude>
-    <ClInclude Include="ue\UObjects.h">
-      <Filter>ue</Filter>
-    </ClInclude>
     <ClInclude Include="ue\sdk\AActor.h">
       <Filter>ue\sdk</Filter>
     </ClInclude>
@@ -509,9 +506,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
-      <Filter>ue</Filter>
-    </ClCompile>
-    <ClCompile Include="ue\UObjects.cpp">
       <Filter>ue</Filter>
     </ClCompile>
     <ClCompile Include="ue\Globals.cpp">

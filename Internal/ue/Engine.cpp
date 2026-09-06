@@ -8,7 +8,6 @@
 #include "../memory/Memory.h"
 #include <Psapi.h>
 #include <cstddef>
-#include "UObjects.h"
 
 // The engine globals/UFunctions now live in namespace Engine; pull them into scope
 // so the out-of-line SDK bodies below keep referencing them unqualified.
@@ -43,6 +42,5 @@ bool Engine::Init()
 		if (!GetBoneMatrixF) return false;
 	}
 
-	UObjects::Init();
 	return true;
 }

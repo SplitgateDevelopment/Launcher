@@ -2,7 +2,6 @@
 /// @brief Out-of-line UFunction wrappers for USceneComponent.
 
 #include "../Engine.h"
-#include "../UObjects.h"
 
 using namespace Engine;
 
@@ -20,5 +19,6 @@ void USceneComponent::K2_SetRelativeRotation(struct FRotator NewRotation, bool b
 	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
-	ProcessEvent(UObjects::K2_SetRelativeRotationUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.SceneComponent.K2_SetRelativeRotation");
+	ProcessEvent(Function, &Parameters);
 }

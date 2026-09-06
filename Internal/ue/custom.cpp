@@ -3,7 +3,6 @@
 /// member methods added onto the generated SDK types (accessors, name lookup, spawn).
 
 #include "Engine.h"
-#include "UObjects.h"
 
 using namespace Engine;
 
@@ -116,7 +115,8 @@ UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame()
 		UPortalWarsSaveGame* ReturnValue;
 	} Parameters;
 
-	ProcessEvent(UObjects::GetSaveGameUFUnc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsLocalPlayer.GetUserSaveGame");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
 struct UClass* UEngine::StaticClass()

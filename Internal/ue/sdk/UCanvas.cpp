@@ -2,7 +2,6 @@
 /// @brief Out-of-line UFunction wrappers for UCanvas.
 
 #include "../Engine.h"
-#include "../UObjects.h"
 
 using namespace Engine;
 
@@ -21,7 +20,8 @@ void UCanvas::K2_DrawLine(FVector2D ScreenPositionA, FVector2D ScreenPositionB, 
 	Parameters.Thickness = Thickness;
 	Parameters.Color = Color;
 
-	ProcessEvent(UObjects::K2_DrawLineUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawLine");
+	ProcessEvent(Function, &Parameters);
 }
 void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, struct FVector2D ScreenPosition, struct FVector2D Scale, struct FLinearColor RenderColor, float Kerning, struct FLinearColor ShadowColor, struct FVector2D ShadowOffset, bool bCentreX, bool bCentreY, bool bOutlined, struct FLinearColor OutlineColor)
 {
@@ -41,7 +41,8 @@ void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, s
 		FLinearColor OutlineColor;
 	} Parameters;
 
-	Parameters.RenderFont = RenderFont ? RenderFont : (UFont*)UObjects::Font;
+	static auto FontObj = ObjObjects->FindObject("Font Roboto.Roboto");
+	Parameters.RenderFont = RenderFont ? RenderFont : (UFont*)FontObj;
 	Parameters.RenderText = RenderText;
 	Parameters.ScreenPosition = ScreenPosition;
 	Parameters.Scale = Scale;
@@ -53,5 +54,6 @@ void UCanvas::K2_DrawText(struct UFont* RenderFont, struct FString RenderText, s
 	Parameters.bCentreY = bCentreY;
 	Parameters.bOutlined = bOutlined;
 
-	ProcessEvent(UObjects::K2_DrawTextUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Canvas.K2_DrawText");
+	ProcessEvent(Function, &Parameters);
 };

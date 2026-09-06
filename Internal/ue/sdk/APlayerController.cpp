@@ -2,7 +2,6 @@
 /// @brief Out-of-line UFunction wrappers for APlayerController.
 
 #include "../Engine.h"
-#include "../UObjects.h"
 
 using namespace Engine;
 
@@ -14,7 +13,8 @@ void APlayerController::SwitchLevel(FString URL)
 	} Parameters;
 	Parameters.URL = URL;
 
-	ProcessEvent(UObjects::SwitchLevelUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
+	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::FOV(float NewFOV)
 {
@@ -24,7 +24,8 @@ void APlayerController::FOV(float NewFOV)
 	} Parameters;
 	Parameters.NewFOV = NewFOV;
 
-	ProcessEvent(UObjects::FOVUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
+	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::SetName(FString S)
 {
@@ -34,7 +35,8 @@ void APlayerController::SetName(FString S)
 	} Parameters;
 	Parameters.S = S;
 
-	ProcessEvent(UObjects::SetNameUFunc, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
+	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::ConsoleKey(struct FKey Key)
 {

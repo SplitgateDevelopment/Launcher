@@ -2,7 +2,6 @@
 /// @brief Out-of-line UFunction wrappers for AActor.
 
 #include "../Engine.h"
-#include "../UObjects.h"
 
 using namespace Engine;
 
@@ -17,7 +16,8 @@ bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRota
 	Parameters.DestLocation = DestLocation;
 	Parameters.DestRotation = DestRotation;
 
-	ProcessEvent(UObjects::K2_TeleportTo, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_TeleportTo");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
 FVector AActor::K2_GetActorLocation()
@@ -27,7 +27,8 @@ FVector AActor::K2_GetActorLocation()
 		FVector ReturnValue;
 	} Parameters;
 
-	ProcessEvent(UObjects::K2_GetActorLocation, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorLocation");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
 FRotator AActor::K2_GetActorRotation()
@@ -37,7 +38,8 @@ FRotator AActor::K2_GetActorRotation()
 		FRotator ReturnValue;
 	} Parameters;
 
-	ProcessEvent(UObjects::K2_GetActorRotation, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorRotation");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
 void AActor::SetActorEnableCollision(bool bNewActorEnableCollision)
@@ -48,7 +50,8 @@ void AActor::SetActorEnableCollision(bool bNewActorEnableCollision)
 	} Parameters;
 	Parameters.bNewActorEnableCollision = bNewActorEnableCollision;
 
-	ProcessEvent(UObjects::SetActorEnableCollision, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.SetActorEnableCollision");
+	ProcessEvent(Function, &Parameters);
 };
 bool AActor::GetActorEnableCollision()
 {
@@ -57,7 +60,8 @@ bool AActor::GetActorEnableCollision()
 		bool ReturnValue;
 	} Parameters;
 
-	ProcessEvent(UObjects::GetActorEnableCollision, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.GetActorEnableCollision");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
 bool AActor::K2_SetActorLocation(struct FVector NewLocation, bool bSweep, struct FHitResult& SweepHitResult, bool bTeleport)
@@ -76,7 +80,8 @@ bool AActor::K2_SetActorLocation(struct FVector NewLocation, bool bSweep, struct
 	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
-	ProcessEvent(UObjects::K2_SetActorLocation, &Parameters);
+	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_SetActorLocation");
+	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 }
 void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origin, struct FVector& BoxExtent, bool bIncludeFromChildActors)

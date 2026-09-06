@@ -2,7 +2,6 @@
 /// @brief Out-of-line UFunction wrappers for APortalWarsCharacter.
 
 #include "../Engine.h"
-#include "../UObjects.h"
 
 using namespace Engine;
 

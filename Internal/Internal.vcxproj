@@ -249,7 +249,6 @@
     <ClInclude Include="..\shared\Settings.h" />
     <ClInclude Include="..\shared\LauncherSettings.h" />
     <ClInclude Include="..\shared\Version.h" />
-    <ClInclude Include="ue\UObjects.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
     <ClInclude Include="native\ActorLocation.h" />
     <ClInclude Include="native\Visibility.h" />
@@ -261,7 +260,6 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ue\Engine.cpp" />
-    <ClCompile Include="ue\UObjects.cpp" />
     <ClCompile Include="ue\custom.cpp" />
     <ClCompile Include="ue\sdk\AActor.cpp" />
     <ClCompile Include="ue\sdk\ABaseGun.cpp" />

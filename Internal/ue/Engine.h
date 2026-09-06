@@ -82,7 +82,7 @@ namespace Engine
 	extern UWorld* WRLD;			  ///< address of the game's UWorld* slot, resolved by Init()
 	extern uintptr_t GetBoneMatrixF;  ///< scanned GetBoneMatrix function pointer (bone projection)
 
-	/// One-time bootstrap: resolve the globals from byte signatures and cache the
-	/// well-known UFunctions (UObjects::Init). Returns false if any signature fails.
+	/// One-time bootstrap: resolve the globals from byte signatures. Returns false if any fails.
+	/// (UFunctions are resolved lazily at each wrapper's first call via a function-local static.)
 	bool Init();
 } // namespace Engine
