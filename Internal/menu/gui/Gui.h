@@ -163,7 +163,12 @@ namespace GUI
 	/// @brief Hooked IDXGISwapChain::Present: renders the overlay, then forwards to the original Present.
 	HRESULT APIENTRY HookPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 	{
-		Overlay(pSwapChain);
+		// The hook sits on the shared IDXGISwapChain::Present, so our own external-overlay swap chain's
+		// Present lands here too. Drive the overlay ONLY for the game's swap chain: presenting the
+		// external chain from inside Overlay would otherwise re-enter Overlay -> ExternalWindow::Render
+		// -> Present -> HookPresent -> ... and overflow the stack. Forward the external chain untouched.
+		if (pSwapChain != static_cast<IDXGISwapChain*>(ExternalWindow::SwapChain))
+			Overlay(pSwapChain);
 		return oIDXGISwapChainPresent(pSwapChain, SyncInterval, Flags);
 	}
 
