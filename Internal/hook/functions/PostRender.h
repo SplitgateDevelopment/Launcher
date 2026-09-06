@@ -30,19 +30,23 @@ namespace PostRender
 	{
 		do
 		{
+			// Clear the shared controller when the walk fails (e.g. mid map-load, once the old controller
+			// is destroyed) instead of leaving it dangling: the external overlay renders the menu on its
+			// own thread and reads Globals::PlayerController, so a stale pointer here is an off-thread
+			// fault (the menu guards against null, but it can't detect a freed object).
 			UWorld* World = UWorld::GetWorld();
-			if (!World) break;
+			if (!World) { Globals::PlayerController = nullptr; break; }
 
 			UGameInstance* OwningGameInstance = World->OwningGameInstance;
-			if (!OwningGameInstance) break;
+			if (!OwningGameInstance) { Globals::PlayerController = nullptr; break; }
 
 			TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
 
 			UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-			if (!LocalPlayer) break;
+			if (!LocalPlayer) { Globals::PlayerController = nullptr; break; }
 
 			APlayerController* PlayerController = LocalPlayer->PlayerController;
-			if (!PlayerController) break;
+			if (!PlayerController) { Globals::PlayerController = nullptr; break; }
 
 			Globals::World = World;
 			Globals::Canvas = Canvas;
