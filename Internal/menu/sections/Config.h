@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "../../settings/Profiles.h"
+#include "../../../shared/Utilities.h"
 
 namespace Menu
 {
@@ -29,6 +30,10 @@ namespace Menu
 				SettingsHelper::File().Reset();
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("Open folder"))
+				Shared::Utilities::OpenFolder(SettingsHelper::File().Path().parent_path());
+			ImGui::Tooltip("Open the folder holding the settings file.");
 
 			if (ImGui::ToggleButton("Autosave on change", &Settings.MISC.AutoSave))
 				Events::Dispatch(Events::Type::SettingsChanged);
