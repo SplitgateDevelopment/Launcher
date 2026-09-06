@@ -39,9 +39,7 @@ namespace PostRender
 		Engine::PlayerController = PlayerController;
 		Engine::IsInGame = PlayerController && PlayerController->IsInGame();
 
-		// The UCanvas arg is valid every frame (main menu / loading included), so publish it before the
-		// in-game gate — the Canvas menu draws through it unconditionally, while features still gate on
-		// PlayerController below.
+		Engine::World = World;
 		Engine::Canvas = Canvas;
 
 		if (Settings.MENU.Backend == MenuBackend::Canvas)
@@ -49,8 +47,6 @@ namespace PostRender
 
 		if (PlayerController)
 		{
-			Engine::World = World;
-
 			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
 			Input::DispatchHotKeys();
 
