@@ -146,7 +146,9 @@ namespace ImGui
 		ImGui::TextUnformatted(label);
 		ImGui::EndGroup();
 
-		ImGui::SameLine(ImGui::GetWindowSize().x - width - style->WindowPadding.x);
+		// Match the extra right gap ToggleButton uses, so hotkey buttons line up with the toggles.
+		const float extraRightPad = ImGui::GetFontSize();
+		ImGui::SameLine(ImGui::GetWindowSize().x - width - style->WindowPadding.x - extraRightPad);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(pad, pad));
 		HotKeyEx(key, ImVec2(width, ImGui::GetFontSize() + pad * 2));
 		ImGui::PopStyleVar();
