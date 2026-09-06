@@ -39,9 +39,9 @@ namespace Render
 		active->Line(a, b, thickness, color);
 	}
 
-	inline void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color)
+	inline void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color, bool centered = true)
 	{
-		active->Text(pos, text, scale, color);
+		active->Text(pos, text, scale, color, centered);
 	}
 
 	inline float Measure(const std::string& text, float scale)

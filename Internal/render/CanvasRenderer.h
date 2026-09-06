@@ -17,10 +17,10 @@ class CanvasRenderer : public Renderer
 		if (Engine::Canvas) Engine::Canvas->K2_DrawLine(a, b, thickness, color);
 	}
 
-	void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color) override
+	void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color, bool centered) override
 	{
 		if (Engine::Canvas)
-			Engine::Canvas->K2_DrawText(0, FString(text), pos, {scale, scale}, color, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, true, false, true, {0.f, 0.f, 0.f, 1.f});
+			Engine::Canvas->K2_DrawText(0, FString(text), pos, {scale, scale}, color, 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, centered, false, true, {0.f, 0.f, 0.f, 1.f});
 	}
 
 	void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color) override

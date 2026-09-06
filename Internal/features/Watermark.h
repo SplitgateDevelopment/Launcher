@@ -58,20 +58,13 @@ class Watermark : public Feature
 			color = FLinearColor{c.R, c.G, c.B, c.A};
 		}
 
-		TextLine(0.f, "Splitgate Internal", color);
-		TextLine(15.f, std::format("FPS: {:.0f}", Fps()), color);
+		// Left-aligned (centered = false) so the corner text starts at x = 0.
+		const float scale = 1.f;
+		Render::Text(FVector2D{0.f, 0.f}, "Splitgate Internal", scale, color, false);
+		Render::Text(FVector2D{0.f, 15.f}, std::format("FPS: {:.0f}", Fps()), scale, color, false);
 	};
 
   private:
-	/// Draw one left-aligned line at the top-left. Render::Text centers on pos.x, so offset by half the
-	/// measured width to put the left edge at x = 0.
-	void TextLine(float y, const std::string& text, const FLinearColor& color)
-	{
-		const float scale = 1.f;
-		const float width = Render::Measure(text, scale);
-		Render::Text(FVector2D{width * 0.5f, y}, text, scale, color);
-	};
-
 	/// Smoothed frames-per-second from this feature's own per-frame tick, so it doesn't read ImGui's
 	/// IO from the game thread.
 	float Fps()

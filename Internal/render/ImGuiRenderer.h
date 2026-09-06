@@ -29,6 +29,7 @@ class ImGuiRenderer : public Renderer
 		std::string text;
 		float scale;
 		ImU32 color;
+		bool centered;
 	};
 	struct RectCmd
 	{
@@ -69,10 +70,10 @@ class ImGuiRenderer : public Renderer
 		lines.push_back({ImVec2(a.X, a.Y), ImVec2(b.X, b.Y), thickness, ToU32(color)});
 	}
 
-	void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color) override
+	void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color, bool centered) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		texts.push_back({ImVec2(pos.X, pos.Y), text, scale, ToU32(color)});
+		texts.push_back({ImVec2(pos.X, pos.Y), text, scale, ToU32(color), centered});
 	}
 
 	float Measure(const std::string& text, float scale) override
@@ -150,8 +151,9 @@ class ImGuiRenderer : public Renderer
 		for (const auto& te : t)
 		{
 			const float size = baseSize * te.scale;
-			const ImVec2 dim = font->CalcTextSizeA(size, FLT_MAX, 0.f, te.text.c_str());
-			drawList->AddText(font, size, ImVec2(te.pos.x - dim.x * 0.5f, te.pos.y), te.color, te.text.c_str());
+			// Centered text is offset left by half its width; left-aligned text sits at pos.x as-is.
+			const float x = te.centered ? te.pos.x - font->CalcTextSizeA(size, FLT_MAX, 0.f, te.text.c_str()).x * 0.5f : te.pos.x;
+			drawList->AddText(font, size, ImVec2(x, te.pos.y), te.color, te.text.c_str());
 		}
 	}
 };
