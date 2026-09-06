@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "../ue/Engine.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../native/ActorLocation.h"
 
 /// Shared, once-per-frame view of the world's actors.

@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "Renderer.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 class CanvasRenderer : public Renderer
 {

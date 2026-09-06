@@ -6,7 +6,7 @@
 /// captured originals on disable.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 /// Overwrites the character's thruster recharge/timing fields each frame so the
 /// jetpack never depletes.

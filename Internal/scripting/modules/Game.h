@@ -6,7 +6,7 @@
 #include <imgui.h>
 
 #include "../../ue/Engine.h"
-#include "../../utils/Globals.h"
+#include "../../ue/Globals.h"
 
 /**
  * @file

@@ -7,7 +7,7 @@
 /// opt-in via Settings.VISUALS.DrawAllNames.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../render/Render.h"
 #include "../native/WorldToScreen.h"
 

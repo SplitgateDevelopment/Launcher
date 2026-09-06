@@ -6,7 +6,7 @@
 /// post-process — see the class comment for the in-game caveats.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../utils/Rgb.h"
 

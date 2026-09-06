@@ -16,7 +16,7 @@
 
 #include "../../settings/Settings.h"
 #include "../../cache/ClassCache.h"
-#include "../../utils/Globals.h"
+#include "../../ue/Globals.h"
 #include "../../utils/Logger.h"
 
 namespace Menu

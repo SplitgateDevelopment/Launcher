@@ -7,7 +7,7 @@
 /// the SettingsChanged event and diffs a snapshot of the tracked bools, so it reports what changed.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 #include <array>
 #include <format>

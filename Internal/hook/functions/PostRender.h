@@ -10,7 +10,7 @@
 /// forwards to the original so the game keeps drawing normally.
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
-#include "../../utils/Globals.h"
+#include "../../ue/Globals.h"
 #include "../../cache/ActorCache.h"
 #include "../../render/Render.h"
 #include "../../features/Features.h"

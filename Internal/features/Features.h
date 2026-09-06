@@ -6,7 +6,7 @@
 /// (SettingsChanged, event-driven features, and the LoadIntoMap one-shot).
 
 #include "FeatureRunner.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../scripting/Events.h"
 
 #include "GodMode.h"

@@ -423,8 +423,8 @@
     <ClInclude Include="scripting\modules\Settings.h">
       <Filter>scripting\modules</Filter>
     </ClInclude>
-    <ClInclude Include="utils\Globals.h">
-      <Filter>utils</Filter>
+    <ClInclude Include="ue\Globals.h">
+      <Filter>ue</Filter>
     </ClInclude>
     <ClInclude Include="menu\sections\Debug.h">
       <Filter>menu\sections</Filter>
@@ -512,6 +512,9 @@
       <Filter>ue</Filter>
     </ClCompile>
     <ClCompile Include="ue\UObjects.cpp">
+      <Filter>ue</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\Globals.cpp">
       <Filter>ue</Filter>
     </ClCompile>
     <ClCompile Include="ue\custom.cpp">

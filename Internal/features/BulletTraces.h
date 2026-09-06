@@ -6,7 +6,7 @@
 /// are only ever drawn from recorded positions (never by dereferencing a dead actor).
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../utils/Rgb.h"

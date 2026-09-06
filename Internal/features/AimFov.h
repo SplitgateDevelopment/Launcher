@@ -5,7 +5,7 @@
 /// lock-on radius (Settings.AIM.AimFov, in pixels) is visible while tuning.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 

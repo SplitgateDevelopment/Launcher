@@ -5,7 +5,7 @@
 /// weapon meshes about yaw while enabled, resetting them to zero on disable.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 /// Spins the local player's first-person meshes by advancing a yaw angle each
 /// frame (10 degrees/tick, wrapping at 360).

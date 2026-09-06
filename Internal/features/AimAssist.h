@@ -10,7 +10,7 @@
 /// input — verify it does anything on mouse & keyboard in-game.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 class AimAssist : public Feature
 {

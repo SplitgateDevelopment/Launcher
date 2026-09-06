@@ -7,7 +7,7 @@
 /// Presence, and sends the one-time welcome chat messages.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../discord/rpc.h"
 
 /// Bundle of local-player modifications that always runs (Enabled is forced

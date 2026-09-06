@@ -13,7 +13,7 @@
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../external/discord-rpc/include/discord_register.h"
 #include "../utils/Logger.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "handlers.h"
 
 #pragma comment(lib, "discord-rpc.lib")

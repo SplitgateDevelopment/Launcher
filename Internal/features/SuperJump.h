@@ -6,7 +6,7 @@
 /// poll every frame.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../scripting/Events.h"
 
 class SuperJump : public Feature

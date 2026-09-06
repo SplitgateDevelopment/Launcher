@@ -6,7 +6,7 @@
 /// class comment below for scope and the in-game tuning caveats.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"

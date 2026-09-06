@@ -8,7 +8,7 @@
 /// (not a real trace), so the FOV/delay want in-game tuning.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"

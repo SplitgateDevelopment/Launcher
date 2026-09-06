@@ -8,7 +8,7 @@
 /// tuned in-game; verify on a live match.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"

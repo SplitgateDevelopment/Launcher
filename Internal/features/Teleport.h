@@ -6,7 +6,7 @@
 /// Events::HotKeyPressed edge event (from Input::DispatchHotKeys), so it doesn't poll every frame.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../scripting/Events.h"
 
 #include <cmath>

@@ -8,7 +8,7 @@
 /// frustum (they stay "true" through walls), so they can't drive a visible/occluded ESP.
 
 #include "../ue/Engine.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "ActorLocation.h"
 
 namespace Visibility

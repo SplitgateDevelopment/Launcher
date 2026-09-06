@@ -6,7 +6,7 @@
 /// onto the target. Only the local player's projectiles are moved (filtered by Instigator).
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 

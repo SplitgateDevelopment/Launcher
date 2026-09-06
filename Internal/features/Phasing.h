@@ -6,7 +6,7 @@
 /// comment for the scoping and caveats.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../ue/Engine.h"
 
 #include <functional>

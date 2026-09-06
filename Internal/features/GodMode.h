@@ -5,7 +5,7 @@
 /// a very large value while enabled, restoring a normal value on disable.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 /// Keeps the local player effectively invulnerable by overwriting Health and
 /// MaxHealth every frame while enabled.

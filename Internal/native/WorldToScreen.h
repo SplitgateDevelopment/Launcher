@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../settings/Settings.h"
 
 namespace Projection

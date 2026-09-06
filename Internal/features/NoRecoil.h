@@ -5,7 +5,7 @@
 /// while enabled, restoring the captured original values on disable.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 /// Overwrites the equipped gun's recoilConfig with zeros each frame so shots
 /// have no kick or spread.

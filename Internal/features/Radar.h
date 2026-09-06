@@ -6,7 +6,7 @@
 /// comment for the in-game tuning caveats.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../utils/Rgb.h"
 #include "../cache/ActorCache.h"
 

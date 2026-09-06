@@ -11,7 +11,7 @@
 ///  - Free cam: the game's debug fly-camera (ToggleDebugCamera console command).
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 
 #include <cmath>
 #include <string>

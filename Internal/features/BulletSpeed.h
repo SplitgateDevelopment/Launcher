@@ -7,7 +7,7 @@
 /// NOTE: the boost is per-frame, so effective speed scales with frame rate — tune the slider to taste.
 
 #include "Feature.h"
-#include "../utils/Globals.h"
+#include "../ue/Globals.h"
 #include "../cache/ActorCache.h"
 
 #include <cmath>

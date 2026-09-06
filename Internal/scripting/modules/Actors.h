@@ -10,7 +10,7 @@
 #include <pybind11/stl.h>
 
 #include "../../ue/Engine.h"
-#include "../../utils/Globals.h"
+#include "../../ue/Globals.h"
 #include "../../native/Visibility.h"
 #include "../../cache/ActorCache.h"
 

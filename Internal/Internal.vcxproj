@@ -240,7 +240,7 @@
     <ClInclude Include="hook\functions\PostRender.h" />
     <ClInclude Include="hook\functions\ProcessEvent.h" />
     <ClInclude Include="settings\Settings.h" />
-    <ClInclude Include="utils\Globals.h" />
+    <ClInclude Include="ue\Globals.h" />
     <ClInclude Include="utils\Input.h" />
     <ClInclude Include="utils\Logger.h" />
     <ClInclude Include="..\shared\Ipc.h" />
@@ -279,6 +279,7 @@
     <ClCompile Include="ue\sdk\UPrimitiveComponent.cpp" />
     <ClCompile Include="ue\sdk\USceneComponent.cpp" />
     <ClCompile Include="ue\sdk\USkinnedMeshComponent.cpp" />
+    <ClCompile Include="ue\Globals.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
