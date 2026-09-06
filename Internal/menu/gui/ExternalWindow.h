@@ -226,7 +226,10 @@ namespace ExternalWindow
 		io.WantTextInput = showMenu;
 		io.WantCaptureKeyboard = showMenu;
 
-		if (showMenu) Menu::Draw();
+		// Call Menu::Draw whenever focused (not just when the menu is visible): it also polls the toggle
+		// hotkey and draws the watermark, both of which must run while the menu is closed so it can be
+		// reopened. Menu::Draw self-guards the window with its own ShowMenu check.
+		if (focused) Menu::Draw();
 
 		ImGui::EndFrame();
 		ImGui::Render();
