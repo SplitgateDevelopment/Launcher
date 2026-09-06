@@ -30,7 +30,11 @@ namespace Menu
 		/// and lists the currently loaded scripts.
 		void MiscTab()
 		{
-			bool isInGame = Globals::PlayerController->IsInGame();
+			// Load the shared controller once and null-check it: the external overlay renders this tab on
+			// its own thread, so during a map load (PostRender clears the global as the controller is
+			// destroyed) an unguarded deref here faults. Everything below already gates on isInGame.
+			auto* playerController = Globals::PlayerController;
+			bool isInGame = playerController && playerController->IsInGame();
 
 			ImGui::SeparatorText("Player");
 
