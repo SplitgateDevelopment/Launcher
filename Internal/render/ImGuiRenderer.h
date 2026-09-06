@@ -68,6 +68,13 @@ class ImGuiRenderer : public Renderer
 	std::mutex mtx;
 
   public:
+	/// A stable font used only for text measurement (Measure/TextSize/StrLen). Set once from the
+	/// game-window ImGui context's atlas after init; ImFont::CalcTextSizeA is a const, context-free
+	/// call, so measuring through this pointer never touches ImGui's global current-context (which the
+	/// streamproof overlay switches/destroys on another thread). Null until set — falls back to an
+	/// approximation.
+	ImFont* measureFont = nullptr;
+
 	void Line(const Render::Vec2& a, const Render::Vec2& b, float thickness, const Render::Color& color) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
@@ -82,10 +89,11 @@ class ImGuiRenderer : public Renderer
 
 	Render::Vec2 TextSize(const std::string& text, float scale) override
 	{
-		// GetFont() dereferences the current ImGui context, which can momentarily be null while the
-		// external overlay is switching/destroying its context on another thread — guard the pointer
-		// itself (GetCurrentContext is a plain read) before calling GetFont, or this crashes.
-		ImFont* font = ImGui::GetCurrentContext() ? ImGui::GetFont() : nullptr;
+		// Measure through the stable measureFont, never ImGui::GetFont(): features call this from
+		// PostRender (game thread) while the streamproof overlay switches/destroys ImGui's global
+		// current-context on the Present thread — reading GetFont() there raced and crashed.
+		// CalcTextSizeA is a const, context-free method on the font object, so this is race-free.
+		ImFont* font = measureFont;
 		if (!font) return {text.length() * scale * 7.f, scale * 14.f};
 		const ImVec2 size = font->CalcTextSizeA(font->FontSize * scale, FLT_MAX, 0.f, text.c_str());
 		return {size.x, size.y};

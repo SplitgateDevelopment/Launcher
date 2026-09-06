@@ -78,6 +78,12 @@ namespace GUI
 		ImGui_ImplWin32_Init(Window::WindowHandle);
 		ImGui_ImplDX11_Init(Window::Device, Window::DeviceContext);
 		ImGui_ImplDX11_CreateDeviceObjects();
+
+		// Cache this context's default font for Render::Measure, so features measure text without ever
+		// reading ImGui's global current-context (which the external overlay switches on another thread).
+		// Fonts[0] is valid now that the atlas has been built above.
+		if (ImFontAtlas* fonts = ImGui::GetIO().Fonts; fonts && fonts->Fonts.Size > 0)
+			Render::imgui.measureFont = fonts->Fonts[0];
 		ImGui::GetMainViewport()->PlatformHandleRaw = Window::WindowHandle;
 		Window::OldWindowProcess = (WNDPROC)SetWindowLongPtr(Window::WindowHandle, GWLP_WNDPROC, (__int3264)(LONG_PTR)Window::WndProc);
 
