@@ -264,6 +264,9 @@
     <ClInclude Include="memory\Memory.h" />
     <ClInclude Include="utils\Rgb.h" />
     <ClInclude Include="menu\Menu.h" />
+    <ClInclude Include="menu\canvas\ZeroInput.h" />
+    <ClInclude Include="menu\canvas\ZeroGUI.h" />
+    <ClInclude Include="menu\ui\UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
