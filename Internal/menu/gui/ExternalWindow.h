@@ -275,6 +275,11 @@ namespace ExternalWindow
 		}
 		Started = true;
 		Logger::Log("SUCCESS", "[Overlay] external streamproof overlay started");
+		// Diagnostic: did creating/showing the overlay window steal the game's foreground? If this logs
+		// WARN, that's the cause of "input dead until alt-tab" and "nothing draws" (both gate on focus).
+		Logger::Log(GameFocused() ? "INFO" : "WARN",
+					GameFocused() ? "[Overlay] game is still the foreground window after Start"
+								  : "[Overlay] game is NOT the foreground window after Start (overlay took it?)");
 	}
 
 	/// @brief Tear the overlay down (game thread). Idempotent.
@@ -309,6 +314,15 @@ namespace ExternalWindow
 		if (!Rtv) return; // mid-resize; skip this frame
 
 		const bool focused = GameFocused();
+		// Diagnostic: log focus transitions (once each), so the log shows exactly when the game loses /
+		// regains foreground relative to enabling the overlay — the overlay draws nothing while unfocused.
+		static bool prevFocused = true;
+		if (focused != prevFocused)
+		{
+			Logger::Log("INFO", focused ? "[Overlay] game regained focus - overlay draws again"
+										: "[Overlay] game lost focus - overlay draws nothing until it returns");
+			prevFocused = focused;
+		}
 
 		ImGui::SetCurrentContext(Ctx);
 		ImGui_ImplDX11_NewFrame();
