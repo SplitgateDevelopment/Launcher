@@ -106,7 +106,7 @@ SplitgateInternal.Events.on(SplitgateInternal.Events.PlayerKilled, on_kill)
 | ----------------- | ---------------------- | ------------------------------------- |
 | `Render`          | UserScripts feature    | Every rendered frame (while enabled). |
 | `Shutdown`        | ProcessEvent           | Game instance is shutting down.       |
-| `LoadIntoMap`     | "Load into map" button | Button pressed.                       |
+| `LoadIntoMap`     | "Load into map" button | Button pressed; `payload.name` = target level (from the dropdown). |
 | `SettingsChanged` | Menu                   | A setting changed (also on Reload/Reset). |
 | `MenuOpened`      | Menu                   | GUI shown (Ins).                      |
 | `MenuClosed`      | Menu                   | GUI hidden (Ins).                     |

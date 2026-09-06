@@ -61,10 +61,25 @@ namespace Menu
 			ImGui::SeparatorText("Game");
 
 			// "Load into map" is usable whenever you're out of a game (e.g. back in the menu after a
-			// match), disabled only while already in one.
+			// match), disabled only while already in one. The dropdown beside it picks the target level
+			// SwitchLevel travels to. This is a static, editable table of map package names the game
+			// accepts; Simulation_Alpha (the firing range) is index 0 and the default. Add/verify entries
+			// against the game's Content/Maps package names. The selection rides in on the event payload.
+			static const char* const levels[] = {
+				"Simulation_Alpha",
+			};
+			static int selectedLevel = 0;
+
 			if (isInGame) ImGui::BeginDisabled();
+			ImGui::SetNextItemWidth(180.f);
+			ImGui::Combo("##level", &selectedLevel, levels, IM_ARRAYSIZE(levels));
+			ImGui::SameLine();
 			if (ImGui::Button("Load into map"))
-				Events::Dispatch(Events::Type::LoadIntoMap);
+			{
+				Events::Payload payload;
+				payload.name = levels[selectedLevel];
+				Events::Dispatch(Events::Type::LoadIntoMap, payload);
+			}
 			if (isInGame) ImGui::EndDisabled();
 
 			ImGui::SameLine();

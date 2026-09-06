@@ -84,7 +84,8 @@ the player dies. Same toggle/Check/Run/Destroy contract, just a different clock.
 One-shot **actions** that don't need a toggle (like the "Load into map" button)
 are better as a plain event handler than a feature — see the `LoadIntoMap`
 handler registered in `Features::Init`, dispatched by the button via
-`Events::Dispatch(Events::Type::LoadIntoMap)`.
+`Events::Dispatch(Events::Type::LoadIntoMap, payload)` with `payload.name`
+carrying the level chosen in the Misc tab's dropdown.
 
 ## Adding a feature
 

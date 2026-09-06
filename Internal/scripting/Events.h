@@ -27,7 +27,7 @@ namespace Events
 	{
 		Render,			 ///< every rendered frame
 		Shutdown,		 ///< game instance is shutting down
-		LoadIntoMap,	 ///< "Load into map" button pressed
+		LoadIntoMap,	 ///< "Load into map" button pressed; payload.name = target level name
 		SettingsChanged, ///< a setting was changed in the menu
 		MenuOpened,		 ///< the GUI was shown
 		MenuClosed,		 ///< the GUI was hidden

@@ -98,14 +98,16 @@ namespace Features
 		}
 
 		// One-shot action, triggered from the "Load into map" button. Replaces
-		// the old LoadIntoMap feature + Settings.MISC.LoadIntoMap flag.
-		Events::Register(Events::Type::LoadIntoMap, []
+		// the old LoadIntoMap feature + Settings.MISC.LoadIntoMap flag. The target
+		// level rides in on payload.name (chosen in the Misc tab's dropdown); it points
+		// at a static string in the menu, valid for this synchronous dispatch.
+		Events::Register(Events::Type::LoadIntoMap, [](const Events::Payload& payload)
 						 {
 			auto* controller = Engine::PlayerController;
-			if (controller && !Engine::IsInGame)
-			{
-				Logger::Log("INFO", "Loading into map");
-				controller->SwitchLevel(L"Simulation_Alpha");
-			} });
+			if (!controller || Engine::IsInGame) return;
+
+			const char* level = (payload.name && *payload.name) ? payload.name : "Simulation_Alpha";
+			Logger::Log("INFO", std::string("Loading into map: ") + level);
+			controller->SwitchLevel(std::string(level)); });
 	};
 }; // namespace Features
