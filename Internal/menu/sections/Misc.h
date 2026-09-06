@@ -62,11 +62,54 @@ namespace Menu
 
 			// "Load into map" is usable whenever you're out of a game (e.g. back in the menu after a
 			// match), disabled only while already in one. The dropdown beside it picks the target level
-			// SwitchLevel travels to. This is a static, editable table of map package names the game
-			// accepts; Simulation_Alpha (the firing range) is index 0 and the default. Add/verify entries
-			// against the game's Content/Maps package names. The selection rides in on the event payload.
+			// SwitchLevel travels to. These are the game's Content/Maps package names (leaf, no path or
+			// .BuiltData); Simulation_Alpha (the firing range) is index 0 and the default. The selection
+			// rides in on the event payload. Enumerated from the FName pool via the SDK tab.
 			static const char* const levels[] = {
-				"Simulation_Alpha",
+				// Simulation / firing-range maps
+				"Simulation_Alpha", // default
+				"Simulation_Bravo",
+				"Simulation_Charlie",
+				"Simulation_Delta",
+				"Simulation_Echo",
+				"Simulation_Foxtrot",
+				"Simulation_Golf",
+				"Simulation_Hotel",
+				"Simulation_India",
+				"Simulation_Juliet",
+				// Arena maps
+				"Abyss",
+				"Atlantis",
+				"Crag",
+				"Foregone_Destruction",
+				"Helix",
+				"Highwind",
+				"Impact",
+				"Karman_Station",
+				"Lavawell",
+				"Oasis",
+				"Olympus",
+				"Pantheon",
+				"Silo",
+				"Stadium",
+				// Special / system maps
+				"MainMenu",
+				"Lobby",
+				"Tutorial",
+				"PracticeRange",
+				"TravelMap",
+				"Forge_Island",
+				"Forge_Flat_Earth",
+				"Abyss_Cinematics",
+				// Blockout / work-in-progress maps
+				"Maya_Blockout",
+				"Noboru_Temple_Blockout",
+				"Decay_Blockout_WIP",
+				"Drift_Blockout_WIP",
+				"Titan_Blockout_WIP",
+				"Toxic_Blockout_Wip",
+				"Vessel_Blockout_WIP",
+				"Vintage_Blockout_WIP",
 			};
 			static int selectedLevel = 0;
 
