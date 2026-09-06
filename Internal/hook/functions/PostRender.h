@@ -37,7 +37,13 @@ namespace PostRender
 		// off-thread fault (a null check can't detect a freed object). IsInGame is evaluated here on the
 		// game thread, where the controller is valid.
 		Engine::PlayerController = PlayerController;
-		Engine::IsInGame = PlayerController && PlayerController->IsInGame();
+
+		// Dispatch the in-game / in-lobby transition (event-driven features like DiscordPresence run
+		// off this instead of polling every frame). Compared against the previous frame's cached value.
+		const bool inGame = PlayerController && PlayerController->IsInGame();
+		if (inGame != Engine::IsInGame)
+			Events::Dispatch(inGame ? Events::Type::EnteredGame : Events::Type::EnteredLobby);
+		Engine::IsInGame = inGame;
 
 		Engine::World = World;
 		Engine::Canvas = Canvas;

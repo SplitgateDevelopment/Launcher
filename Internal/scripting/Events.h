@@ -31,6 +31,8 @@ namespace Events
 		SettingsChanged, ///< a setting was changed in the menu
 		MenuOpened,		 ///< the GUI was shown
 		MenuClosed,		 ///< the GUI was hidden
+		EnteredGame,	 ///< the local player entered an active match (IsInGame false -> true)
+		EnteredLobby,	 ///< the local player left the match, back to lobby/menu (IsInGame true -> false)
 		HotKeyPressed,	 ///< a key/mouse button went down while the game is focused; payload.value = vk code
 
 		// Game events dispatched from ProcessEvent (payload.source = the calling UObject).
