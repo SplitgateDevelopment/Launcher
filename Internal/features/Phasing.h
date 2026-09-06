@@ -73,7 +73,7 @@ class Phasing : public Feature
 	{
 		if (!Initialized) return false;
 		if (!Engine::PlayerController) return false;
-		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::IsInGame) return false;
 		if (!Engine::World) return false;
 
 		return true;

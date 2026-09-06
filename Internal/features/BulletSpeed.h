@@ -29,7 +29,7 @@ class BulletSpeed : public Feature
 
 	bool Check()
 	{
-		return Initialized && Engine::PlayerController && Engine::PlayerController->IsInGame() && Engine::World;
+		return Initialized && Engine::IsInGame && Engine::World;
 	};
 
 	void Init()

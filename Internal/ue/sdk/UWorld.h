@@ -58,5 +58,10 @@ struct UWorld : UObject
 	void HandleTimelineScrubbed();				  // Function Engine.World.HandleTimelineScrubbed // (Final|Native|Public) // @ game+0x3809c50
 
 	static struct UWorld* GetWorld();
+
+	/// Walk to the local player controller: OwningGameInstance → LocalPlayers[0] → PlayerController,
+	/// returning nullptr at the first missing link (e.g. mid map-load, before the local player exists).
+	struct APortalWarsPlayerController* GetLocalPlayerController();
+
 	static constexpr const char* ClassName = "Class Engine.World";
 };

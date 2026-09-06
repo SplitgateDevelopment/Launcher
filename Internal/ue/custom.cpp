@@ -130,6 +130,22 @@ struct UWorld* UWorld::GetWorld()
 	UWorld* World = *(UWorld**)(GWorld);
 	return World;
 }
+struct APortalWarsPlayerController* UWorld::GetLocalPlayerController()
+{
+	UGameInstance* gameInstance = OwningGameInstance;
+	if (!gameInstance) return nullptr;
+
+	TArray<ULocalPlayer*> localPlayers = gameInstance->LocalPlayers;
+	if (localPlayers.Num() <= 0) return nullptr;
+
+	auto* localPlayer = (UPortalWarsLocalPlayer*)localPlayers[0];
+	if (!localPlayer) return nullptr;
+
+	APlayerController* controller = localPlayer->PlayerController;
+	if (!controller) return nullptr;
+
+	return (APortalWarsPlayerController*)controller;
+}
 struct UInputSettings* UInputSettings::GetInputSettings()
 {
 	auto Func = GObjects->FindObject("Function Engine.InputSettings.GetInputSettings");

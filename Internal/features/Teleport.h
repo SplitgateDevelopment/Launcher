@@ -39,7 +39,7 @@ class Teleport : public Feature
 						 {
 			if (!Settings.EXPLOITS.Teleport) return;
 			if (static_cast<int>(p.value) != Settings.EXPLOITS.TeleportKey) return;
-			if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return;
+			if (!Engine::IsInGame) return;
 
 			auto* pawn = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 			if (!pawn) return;

@@ -62,7 +62,7 @@ class Camera : public Feature
 
 	bool Check()
 	{
-		return Initialized && Engine::PlayerController && Engine::PlayerController->IsInGame();
+		return Initialized && Engine::IsInGame;
 	};
 
 	void Init()

@@ -42,7 +42,7 @@ namespace Scripts
 			auto player = m.def_submodule("Player");
 
 			player.def("is_in_game", []
-					   { return Engine::PlayerController && Engine::PlayerController->IsInGame(); });
+					   { return Engine::IsInGame; });
 
 			player.def("location", []() -> py::object
 					   {

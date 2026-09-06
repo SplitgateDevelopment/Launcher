@@ -22,39 +22,13 @@ namespace PostRender
 	void (*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr; ///< Trampoline to the original PostRender.
 	int Index = 100;																	   ///< VTable index of PostRender to swap.
 
-	/// @brief Resolve this frame's local player controller: World → OwningGameInstance →
-	/// LocalPlayers[0] → PlayerController, bailing out (nullptr) at the first missing link — e.g. mid
-	/// map-load, before the local player exists.
-	/// @param outWorld receives the resolved world on success; left untouched otherwise.
-	/// @return the local APortalWarsPlayerController, or nullptr if the walk can't complete.
-	inline APortalWarsPlayerController* ResolvePlayerController(UWorld*& outWorld)
-	{
-		UWorld* world = UWorld::GetWorld();
-		if (!world) return nullptr;
-
-		UGameInstance* gameInstance = world->OwningGameInstance;
-		if (!gameInstance) return nullptr;
-
-		TArray<ULocalPlayer*> localPlayers = gameInstance->LocalPlayers;
-		if (localPlayers.Num() <= 0) return nullptr;
-
-		auto* localPlayer = (UPortalWarsLocalPlayer*)localPlayers[0];
-		if (!localPlayer) return nullptr;
-
-		APlayerController* controller = localPlayer->PlayerController;
-		if (!controller) return nullptr;
-
-		outWorld = world;
-		return (APortalWarsPlayerController*)controller;
-	}
-
 	/// @brief Hooked PostRender: refreshes globals, runs features, then forwards.
 	/// @param UGameViewportClient The viewport client issuing the frame.
 	/// @param Canvas The canvas features draw onto this frame.
 	void HookedPostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 	{
-		UWorld* World = nullptr;
-		APortalWarsPlayerController* PlayerController = ResolvePlayerController(World);
+		UWorld* World = UWorld::GetWorld();
+		APortalWarsPlayerController* PlayerController = World ? World->GetLocalPlayerController() : nullptr;
 
 		// Publish the shared controller + cached IsInGame every frame — null/false when the walk fails
 		// (e.g. mid map-load, once the old controller is destroyed) rather than leaving a stale pointer:

@@ -37,7 +37,7 @@ class SuperJump : public Feature
 						 {
 			if (!Settings.EXPLOITS.SuperJump) return;
 			if (static_cast<int>(p.value) != Settings.EXPLOITS.SuperJumpKey) return;
-			if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return;
+			if (!Engine::IsInGame) return;
 			if (auto* c = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character))
 				c->LaunchCharacter(FVector{0.f, 0.f, Settings.EXPLOITS.SuperJumpForce}, false, true); });
 		Log("Initialized");

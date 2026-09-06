@@ -78,7 +78,7 @@ class AnnounceToggles : public Feature
 	void Run()
 	{
 		const auto& watched = Watched();
-		const bool inGame = Engine::PlayerController && Engine::PlayerController->IsInGame();
+		const bool inGame = Engine::IsInGame;
 
 		for (int i = 0; i < Count; i++)
 		{

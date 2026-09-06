@@ -69,7 +69,7 @@ class PlayerModifications : public Feature
 		Engine::PlayerController->SetName(FString((Settings.MISC.PlayerName)));
 		Engine::PlayerController->FOV(Settings.EXPLOITS.FOV);
 
-		if (!Engine::PlayerController->IsInGame())
+		if (!Engine::IsInGame)
 		{
 			bSentWelcomeMessage = false;
 			DiscordRPC::UpdateState("In Menu");

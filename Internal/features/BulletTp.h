@@ -45,7 +45,7 @@ class BulletTp : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::IsInGame) return false;
 		if (!Engine::World || !Engine::Canvas) return false;
 		return true;
 	};

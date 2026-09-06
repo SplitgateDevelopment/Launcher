@@ -70,7 +70,7 @@ class Glow : public Feature
 	{
 		if (!Initialized) return false;
 		if (!Engine::PlayerController) return false;
-		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::IsInGame) return false;
 
 		return true;
 	};
