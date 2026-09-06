@@ -10,6 +10,10 @@
 #include <cstddef>
 #include "UObjects.h"
 
+// The engine globals/UFunctions now live in namespace Engine; pull them into scope
+// so the out-of-line SDK bodies below keep referencing them unqualified.
+using namespace Engine;
+
 std::string FNameEntry::String()
 {
 	if (bIsWide)
@@ -124,11 +128,11 @@ UObject* UObject::GetDefaultObj()
 	return Default;
 }
 
-FNamePool* NamePoolData = nullptr;
-TUObjectArray* ObjObjects = nullptr;
-UWorld* WRLD = nullptr;
+FNamePool* Engine::NamePoolData = nullptr;
+TUObjectArray* Engine::ObjObjects = nullptr;
+UWorld* Engine::WRLD = nullptr;
 
-uintptr_t GetBoneMatrixF;
+uintptr_t Engine::GetBoneMatrixF;
 
 void APlayerController::SwitchLevel(FString URL)
 {
@@ -1043,7 +1047,7 @@ struct FName USkinnedMeshComponent::GetBoneName(int32_t BoneIndex)
 	return Parameters.ReturnValue;
 }
 
-bool EngineInit()
+bool Engine::Init()
 {
 	auto main = GetModuleHandleA(nullptr);
 

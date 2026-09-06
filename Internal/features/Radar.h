@@ -61,7 +61,7 @@ class Radar : public Feature
 
 	void Init()
 	{
-		CharacterClass = ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
+		CharacterClass = Engine::ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 
 		Initialized = (!!CharacterClass);
 		Log("Initialized");

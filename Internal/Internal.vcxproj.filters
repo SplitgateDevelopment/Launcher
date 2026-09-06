@@ -508,6 +508,9 @@
     <ClCompile Include="ue\Engine.cpp">
       <Filter>ue</Filter>
     </ClCompile>
+    <ClCompile Include="ue\UObjects.cpp">
+      <Filter>ue</Filter>
+    </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
       <Filter>settings</Filter>
     </ClCompile>

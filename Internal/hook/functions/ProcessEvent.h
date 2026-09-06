@@ -114,7 +114,7 @@ namespace ProcessEvent
 		// trigger a killcam/spectate (which shows third person natively) and read internal.log.
 		if (Settings.DEBUG.LogProcessEvent && Params)
 		{
-			static UObject* clientSetCameraMode = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+			static UObject* clientSetCameraMode = Engine::ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
 			if (clientSetCameraMode && Function == clientSetCameraMode)
 				Logger::Log("INFO", "[Camera] ClientSetCameraMode -> " + reinterpret_cast<FName*>(Params)->GetName());
 		}
@@ -129,7 +129,7 @@ namespace ProcessEvent
 		// true. Gated on a setting because it enables *every* input action, not just Play.
 		if (Settings.EXPLOITS.EnableAllInput)
 		{
-			static UObject* IsInputActionEnabled = ObjObjects->FindObject("Function PortalWars.PortalWarsUserWidget.IsInputActionEnabled");
+			static UObject* IsInputActionEnabled = Engine::ObjObjects->FindObject("Function PortalWars.PortalWarsUserWidget.IsInputActionEnabled");
 
 			if (Function == IsInputActionEnabled)
 			{
@@ -152,7 +152,7 @@ namespace ProcessEvent
 		// Parameter layout comes from the Dumpspace dump (see docs/game-dump.md).
 		if (Events::HasHandlers(Events::Type::PlayerKilled))
 		{
-			static UObject* BroadcastDeath = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerState.BroadcastDeath_Multicast");
+			static UObject* BroadcastDeath = Engine::ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerState.BroadcastDeath_Multicast");
 
 			if (Function == BroadcastDeath)
 			{
@@ -177,7 +177,7 @@ namespace ProcessEvent
 		// scripts (payload.name). Gated on HasHandlers so the params are only read when subscribed.
 		if (Events::HasHandlers(Events::Type::ChatReceived))
 		{
-			static UObject* ClientUpdateChat = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
+			static UObject* ClientUpdateChat = Engine::ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
 
 			if (Function == ClientUpdateChat)
 			{
@@ -199,7 +199,7 @@ namespace ProcessEvent
 				std::unordered_map<UObject*, Events::Type> map;
 				for (const auto& [event, name] : gameEvents)
 				{
-					if (UObject* obj = ObjObjects->FindObject(name)) map[obj] = event;
+					if (UObject* obj = Engine::ObjObjects->FindObject(name)) map[obj] = event;
 				}
 				return map;
 			}();

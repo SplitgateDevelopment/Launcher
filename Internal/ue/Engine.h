@@ -102,10 +102,15 @@ bool LineTraceVisible(struct UObject* worldContext, const struct FVector& start,
  */
 bool IsPostGameController(struct UObject* controller);
 
-extern FNamePool* NamePoolData;
+/// Engine bootstrap surface: the signature-resolved globals and the one-time init.
+namespace Engine
+{
+	extern FNamePool* NamePoolData;	  ///< the FName pool, resolved by Init()
+	extern TUObjectArray* ObjObjects; ///< the global UObject array, resolved by Init()
+	extern UWorld* WRLD;			  ///< address of the game's UWorld* slot, resolved by Init()
+	extern uintptr_t GetBoneMatrixF;  ///< scanned GetBoneMatrix function pointer (bone projection)
 
-extern TUObjectArray* ObjObjects;
-
-extern UWorld* WRLD;
-
-bool EngineInit();
+	/// One-time bootstrap: resolve the globals from byte signatures and cache the
+	/// well-known UFunctions (UObjects::Init). Returns false if any signature fails.
+	bool Init();
+} // namespace Engine

@@ -260,6 +260,7 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ue\Engine.cpp" />
+    <ClCompile Include="ue\UObjects.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>

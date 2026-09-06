@@ -82,7 +82,7 @@ namespace Hook
 	{
 		Logger::CreateConsole();
 
-		if (!EngineInit())
+		if (!Engine::Init())
 		{
 			Logger::Log("ERROR", "No engine init");
 			return FALSE;
@@ -144,7 +144,7 @@ namespace Hook
 			Logger::Log("SUCCESS", std::string("Loaded settings from ").append(settingsPath));
 		}
 
-		Logger::Log("INFO", std::format("Found [{:d}] Objects", ObjObjects->NumElements));
+		Logger::Log("INFO", std::format("Found [{:d}] Objects", Engine::ObjObjects->NumElements));
 
 		UObject* NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
 		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);

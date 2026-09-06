@@ -2,7 +2,7 @@
 
 /// @file
 /// @brief SDK tab: a live UObject explorer (search object names, list a class's instances) plus the
-/// GObjects dump-to-file. All reads go through the already-resolved `ObjObjects` (TUObjectArray),
+/// GObjects dump-to-file. All reads go through the already-resolved `Engine::ObjObjects` (TUObjectArray),
 /// `FindObject`, `IsA`, and `GetFullName` — no new offsets. Scans run on demand (button press), not
 /// per frame, since a full GObjects walk is the same cost as Dump GObjects.
 
@@ -48,10 +48,10 @@ namespace Menu
 				nameResults.clear();
 				nameTotal = 0;
 				const std::string needle = nameFilter;
-				const auto count = ObjObjects->NumElements;
+				const auto count = Engine::ObjObjects->NumElements;
 				for (auto i = 0u; i < count; i++)
 				{
-					auto* obj = ObjObjects->GetObjectPtr(i);
+					auto* obj = Engine::ObjObjects->GetObjectPtr(i);
 					if (!obj) continue;
 					std::string full = obj->GetFullName();
 					if (full.find(needle) == std::string::npos) continue;
@@ -147,9 +147,9 @@ namespace Menu
 				instanceTotal = 0;
 
 				// Try the given name, then a couple of common "<meta> <name>" forms.
-				UObject* classObj = ObjObjects->FindObject(className);
-				if (!classObj) classObj = ObjObjects->FindObject((std::string("Class ") + className).c_str());
-				if (!classObj) classObj = ObjObjects->FindObject((std::string("BlueprintGeneratedClass ") + className).c_str());
+				UObject* classObj = Engine::ObjObjects->FindObject(className);
+				if (!classObj) classObj = Engine::ObjObjects->FindObject((std::string("Class ") + className).c_str());
+				if (!classObj) classObj = Engine::ObjObjects->FindObject((std::string("BlueprintGeneratedClass ") + className).c_str());
 
 				if (!classObj)
 				{
@@ -157,10 +157,10 @@ namespace Menu
 				}
 				else
 				{
-					const auto count = ObjObjects->NumElements;
+					const auto count = Engine::ObjObjects->NumElements;
 					for (auto i = 0u; i < count; i++)
 					{
-						auto* obj = ObjObjects->GetObjectPtr(i);
+						auto* obj = Engine::ObjObjects->GetObjectPtr(i);
 						if (!obj || !obj->IsA(classObj)) continue;
 						instanceTotal++;
 						if (instanceResults.size() < 1000)
@@ -207,10 +207,10 @@ namespace Menu
 					return;
 				}
 
-				auto objNum = ObjObjects->NumElements;
+				auto objNum = Engine::ObjObjects->NumElements;
 				for (auto i = 0u; i < objNum; i++)
 				{
-					auto Object = ObjObjects->GetObjectPtr(i);
+					auto Object = Engine::ObjObjects->GetObjectPtr(i);
 					if (!Object) continue;
 					file << '[' + std::to_string(Object->InternalIndex) + "] " + Object->GetFullName() << '\n';
 				}
