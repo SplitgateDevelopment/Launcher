@@ -17,7 +17,10 @@
 /// @brief DirectX 11 overlay: swap-chain hooks, ImGui setup, and per-frame rendering.
 namespace GUI
 {
-	bool initialized = false; ///< True once ImGui and the D3D11 render target have been set up.
+	bool initialized = false;				 ///< True once ImGui and the D3D11 render target have been set up.
+	ImGuiContext* internalContext = nullptr; ///< The game-window overlay's ImGui context. Selected explicitly
+											 ///< under ExternalWindow::ImGuiLock so it never races the external
+											 ///< overlay thread on ImGui's global current-context pointer.
 
 	typedef HRESULT(APIENTRY* IDXGISwapChainPresent)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
 	IDXGISwapChainPresent oIDXGISwapChainPresent = NULL; ///< Trampoline to the original IDXGISwapChain::Present.
@@ -46,7 +49,7 @@ namespace GUI
 		}
 
 		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
+		internalContext = ImGui::CreateContext();
 
 		Config::Init();
 		Styles::Init();
@@ -117,33 +120,41 @@ namespace GUI
 			Window::CreateRenderTarget();
 		if (!Window::RenderTargetView) return; // RTV not ready yet (mid-resize) - skip this frame
 
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+		{
+			// Serialize with the external overlay thread and select our context explicitly: ImGui's
+			// current-context pointer is a single global shared with that thread, so the two contexts
+			// must not run NewFrame/Render concurrently (that races the global and crashes).
+			std::lock_guard<std::mutex> lock(ExternalWindow::ImGuiLock);
+			ImGui::SetCurrentContext(internalContext);
 
-		// Replay the recorded draw commands (ESP/radar/traces/watermark/..., no-op in canvas mode) on
-		// the game window. In External mode the streamproof window drains + draws them instead.
-		if (!external)
-			Render::Flush();
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
 
-		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
+			// Replay the recorded draw commands (ESP/radar/traces/watermark/..., no-op in canvas mode) on
+			// the game window. In External mode the streamproof window drains + draws them instead.
+			if (!external)
+				Render::Flush();
 
-		ImGuiIO& io = ImGui::GetIO();
-		(void)io;
-		io.MouseDrawCursor = Settings.MENU.ShowMenu;
-		io.WantCaptureMouse = Settings.MENU.ShowMenu;
-		io.WantTextInput = Settings.MENU.ShowMenu;
-		io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
+			const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+			ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
 
-		Menu::Draw();
+			ImGuiIO& io = ImGui::GetIO();
+			(void)io;
+			io.MouseDrawCursor = Settings.MENU.ShowMenu;
+			io.WantCaptureMouse = Settings.MENU.ShowMenu;
+			io.WantTextInput = Settings.MENU.ShowMenu;
+			io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
 
-		ImGui::EndFrame();
-		ImGui::Render();
+			Menu::Draw();
 
-		Window::DeviceContext->OMSetRenderTargets(1, &Window::RenderTargetView, nullptr);
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			ImGui::EndFrame();
+			ImGui::Render();
+
+			Window::DeviceContext->OMSetRenderTargets(1, &Window::RenderTargetView, nullptr);
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		}
 	}
 
 	/// @brief Hooked IDXGISwapChain::Present: renders the overlay, then forwards to the original Present.
@@ -183,10 +194,14 @@ namespace GUI
 	/// @brief Tears down the ImGui backends and context and releases the window/D3D resources.
 	void Destroy()
 	{
-		ExternalWindow::Stop(); // stop and tear down the streamproof overlay thread, if running
+		ExternalWindow::Stop(); // joins the external overlay thread first, so no concurrent ImGui remains
+		// Select our context explicitly (the external teardown may have left the global elsewhere) and
+		// destroy it by handle rather than "the current context".
+		ImGui::SetCurrentContext(internalContext);
 		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();
+		ImGui::DestroyContext(internalContext);
+		internalContext = nullptr;
 		Window::Destroy();
 		initialized = false; // so a re-inject re-runs InitializeImGui instead of assuming it's set up
 	};

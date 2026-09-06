@@ -41,6 +41,8 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dcomp.lib")
 
+#include <mutex>
+
 #include <imgui.h>
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
@@ -68,6 +70,12 @@ namespace ExternalWindow
 	inline volatile bool Running = false; ///< thread loop guard; Stop() clears it
 	inline int Width = 0, Height = 0;	  ///< current back-buffer size (game client size)
 	inline int PosX = 0, PosY = 0;		  ///< current window top-left (game client, in screen coords)
+
+	/// Serializes ImGui work between this thread and the game-window overlay (game thread). ImGui's
+	/// current-context pointer is a single global, so the two contexts must not run NewFrame/Render at
+	/// the same time — doing so races that global and crashes (e.g. in NavUpdate). Both sides take this
+	/// lock and explicitly select their own context inside it.
+	inline std::mutex ImGuiLock;
 
 	static constexpr wchar_t ClassName[] = L"SplitgateOverlay";
 
@@ -167,25 +175,31 @@ namespace ExternalWindow
 
 		const bool focused = GameFocused();
 
-		ScopedContext scoped(Ctx);
+		{
+			// Hold the shared ImGui lock across the whole frame and select our context explicitly, so
+			// this never races the game-window overlay's NewFrame/Render on the global context pointer.
+			std::lock_guard<std::mutex> lock(ImGuiLock);
+			ImGui::SetCurrentContext(Ctx);
 
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
 
-		ImFont* font = ImGui::GetFont();
-		// Drain the recorded draw commands every frame (Flush swaps the buffer out under its lock even
-		// when the draw list is null), but only actually draw them while focused.
-		Render::Flush(focused ? ImGui::GetBackgroundDrawList() : nullptr, font, ImGui::GetFontSize());
+			ImFont* font = ImGui::GetFont();
+			// Drain the recorded draw commands every frame (Flush swaps the buffer out under its lock even
+			// when the draw list is null), but only actually draw them while focused.
+			Render::Flush(focused ? ImGui::GetBackgroundDrawList() : nullptr, font, ImGui::GetFontSize());
 
-		ImGui::EndFrame();
-		ImGui::Render();
+			ImGui::EndFrame();
+			ImGui::Render();
 
-		const float transparent[4] = {0.f, 0.f, 0.f, 0.f};
-		Context->OMSetRenderTargets(1, &Rtv, nullptr);
-		Context->ClearRenderTargetView(Rtv, transparent);
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			const float transparent[4] = {0.f, 0.f, 0.f, 0.f};
+			Context->OMSetRenderTargets(1, &Rtv, nullptr);
+			Context->ClearRenderTargetView(Rtv, transparent);
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		}
 
+		// Outside the lock: Present blocks on vsync, and the game thread must not stall waiting for it.
 		SwapChain->Present(1, 0);
 	}
 
@@ -277,6 +291,10 @@ namespace ExternalWindow
 	/// @return true on success.
 	inline bool CreateImGui()
 	{
+		// Under the shared lock: ImGui::CreateContext mutates the global current-context pointer, which
+		// the game-window overlay also reads, so their contexts must not be created/used concurrently.
+		std::lock_guard<std::mutex> lock(ImGuiLock);
+
 		IMGUI_CHECKVERSION();
 		Ctx = ImGui::CreateContext();
 		if (!Ctx) return false;
@@ -292,6 +310,10 @@ namespace ExternalWindow
 	/// initialized (each step is guarded).
 	inline void Teardown()
 	{
+		// Hold the shared lock: shutting the backends down and destroying the context touch the global
+		// current-context pointer the game-window overlay uses, so serialize with it.
+		std::lock_guard<std::mutex> lock(ImGuiLock);
+
 		if (Ctx)
 		{
 			ScopedContext scoped(Ctx);
