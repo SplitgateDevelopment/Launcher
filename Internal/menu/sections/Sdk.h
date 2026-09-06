@@ -8,11 +8,14 @@
 /// no new offsets. Scans run on demand (button press), not per frame, since a full walk is the same
 /// cost as Dump GObjects.
 
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -138,37 +141,84 @@ namespace Menu
 			ImGui::Tooltip("Search every interned FName, including names for content that isn't loaded\n(e.g. map/level names to travel to). Built once, Refresh to rebuild. Click a row to copy.");
 			{
 				static char nameFilter2[128] = "";
+				static bool caseSensitive = false; // default: case-insensitive
+				static bool useRegex = false;	   // plain substring by default
 				static std::vector<int> nameFiltered;
-				static std::string lastNameKey = "\x01";	// sentinel: forces the first filter build
+				static std::string regexError;				 // last regex compile error, shown when useRegex
+				static std::string lastNameKey = "\x01";	 // sentinel: forces the first filter build
 				static size_t lastNameCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
+				static bool lastCase = false, lastRegex = false;
+
 				ImGui::SetNextItemWidth(260.f);
 				ImGui::InputText("##namepoolfilter", nameFilter2, sizeof(nameFilter2));
 				ImGui::SameLine();
 				if (ImGui::Button("Refresh##names")) NameCache::Rebuild();
-				ImGui::SameLine();
-				if (ImGui::Button("Copy##namepool"))
-				{
-					std::string out;
-					const std::string needle = nameFilter2;
-					for (const auto& name : NameCache::Get())
-						if (needle.empty() || name.find(needle) != std::string::npos) out += name + "\n";
-					ImGui::SetClipboardText(out.c_str());
-				}
-				ImGui::Tooltip("Copy the filtered names to the clipboard.");
 
+				ImGui::Checkbox("Case sensitive##names", &caseSensitive);
+				ImGui::SameLine();
+				ImGui::Checkbox("Regex##names", &useRegex);
+				ImGui::Tooltip("ECMAScript regex, matched as a search (unanchored, so a bare pattern behaves like\n\"contains\"). Anchor with ^ and $ to constrain: ^/Game/Maps/[^/]+$ matches a map\npackage but not the assets nested under it.");
+
+				// Re-filter only when an input changes (text, cache, or a toggle), not every frame.
 				const auto& allNames = NameCache::Get();
-				if (nameFilter2 != lastNameKey || allNames.size() != lastNameCacheSize)
+				if (nameFilter2 != lastNameKey || allNames.size() != lastNameCacheSize || caseSensitive != lastCase || useRegex != lastRegex)
 				{
 					lastNameKey = nameFilter2;
 					lastNameCacheSize = allNames.size();
+					lastCase = caseSensitive;
+					lastRegex = useRegex;
 					nameFiltered.clear();
+					regexError.clear();
+
 					const std::string needle = nameFilter2;
-					for (int i = 0; i < static_cast<int>(allNames.size()); i++)
-						if (needle.empty() || allNames[i].find(needle) != std::string::npos)
-							nameFiltered.push_back(i);
+					if (needle.empty())
+					{
+						for (int i = 0; i < static_cast<int>(allNames.size()); i++) nameFiltered.push_back(i);
+					}
+					else if (useRegex)
+					{
+						try
+						{
+							auto flags = std::regex::ECMAScript;
+							if (!caseSensitive) flags |= std::regex::icase;
+							const std::regex re(needle, flags);
+							for (int i = 0; i < static_cast<int>(allNames.size()); i++)
+								if (std::regex_search(allNames[i], re)) nameFiltered.push_back(i);
+						}
+						catch (const std::regex_error& e)
+						{
+							regexError = e.what(); // invalid pattern: show it, match nothing
+						}
+					}
+					else
+					{
+						// Case-insensitive substring without allocating a lowercased copy per name.
+						auto ci = [](char a, char b)
+						{ return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); };
+						for (int i = 0; i < static_cast<int>(allNames.size()); i++)
+						{
+							const std::string& name = allNames[i];
+							const bool match = caseSensitive
+												   ? name.find(needle) != std::string::npos
+												   : std::search(name.begin(), name.end(), needle.begin(), needle.end(), ci) != name.end();
+							if (match) nameFiltered.push_back(i);
+						}
+					}
 				}
 
+				if (useRegex && !regexError.empty())
+					ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "regex error: %s", regexError.c_str());
+
+				if (ImGui::Button("Copy##namepool"))
+				{
+					std::string out;
+					for (int idx : nameFiltered) out += allNames[idx] + "\n";
+					ImGui::SetClipboardText(out.c_str());
+				}
+				ImGui::Tooltip("Copy the filtered names to the clipboard.");
+				ImGui::SameLine();
 				ImGui::Text("%d / %d names", static_cast<int>(nameFiltered.size()), static_cast<int>(allNames.size()));
+
 				ImGui::BeginChild("NamePoolResults", ImVec2(0, 160), true, ImGuiWindowFlags_HorizontalScrollbar);
 				ImGuiListClipper clipper;
 				clipper.Begin(static_cast<int>(nameFiltered.size()));
