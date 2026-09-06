@@ -10,9 +10,8 @@
 #include <string>
 #include <vector>
 
-#include <imgui.h>
-
 #include "Renderer.h"
+#include "adapters/ImGui.h" // ImVec2/ImVec4/ImU32 conversions + Render::ToU32
 
 class ImGuiRenderer : public Renderer
 {
@@ -36,6 +35,12 @@ class ImGuiRenderer : public Renderer
 		ImVec2 min, max;
 		ImU32 color;
 	};
+	struct BoxCmd
+	{
+		ImVec2 min, max;
+		float thickness;
+		ImU32 color;
+	};
 	struct CircleCmd
 	{
 		ImVec2 center;
@@ -51,6 +56,7 @@ class ImGuiRenderer : public Renderer
 	std::vector<LineCmd> lines;
 	std::vector<TextCmd> texts;
 	std::vector<RectCmd> rects;
+	std::vector<BoxCmd> boxes;
 	std::vector<CircleCmd> circles;
 	std::vector<GradientCmd> gradients;
 
@@ -61,44 +67,51 @@ class ImGuiRenderer : public Renderer
 	// access violation.
 	std::mutex mtx;
 
-	static ImU32 ToU32(const FLinearColor& c) { return ImGui::ColorConvertFloat4ToU32(ImVec4(c.R, c.G, c.B, c.A)); }
-
   public:
-	void Line(const FVector2D& a, const FVector2D& b, float thickness, const FLinearColor& color) override
+	void Line(const Render::Vec2& a, const Render::Vec2& b, float thickness, const Render::Color& color) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		lines.push_back({ImVec2(a.X, a.Y), ImVec2(b.X, b.Y), thickness, ToU32(color)});
+		lines.push_back({a.To<ImVec2>(), b.To<ImVec2>(), thickness, Render::ToU32(color)});
 	}
 
-	void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color, bool centered) override
+	void Text(const Render::Vec2& pos, const std::string& text, float scale, const Render::Color& color, bool centered) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		texts.push_back({ImVec2(pos.X, pos.Y), text, scale, ToU32(color), centered});
+		texts.push_back({pos.To<ImVec2>(), text, scale, Render::ToU32(color), centered});
 	}
 
-	float Measure(const std::string& text, float scale) override
+	Render::Vec2 TextSize(const std::string& text, float scale) override
 	{
 		ImFont* font = ImGui::GetFont();
-		if (!font) return text.length() * scale * 7.f;
-		return font->CalcTextSizeA(font->FontSize * scale, FLT_MAX, 0.f, text.c_str()).x;
+		if (!font) return {text.length() * scale * 7.f, scale * 14.f};
+		const ImVec2 size = font->CalcTextSizeA(font->FontSize * scale, FLT_MAX, 0.f, text.c_str());
+		return {size.x, size.y};
 	}
 
-	void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color) override
+	Render::Vec2 StrLen(const std::string& text) override { return TextSize(text, 1.f); }
+
+	void RectFilled(const Render::Vec2& min, const Render::Vec2& max, const Render::Color& color) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		rects.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(color)});
+		rects.push_back({min.To<ImVec2>(), max.To<ImVec2>(), Render::ToU32(color)});
 	}
 
-	void CircleFilled(const FVector2D& center, float radius, const FLinearColor& color) override
+	void Rect(const Render::Vec2& min, const Render::Vec2& max, float thickness, const Render::Color& color) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		circles.push_back({ImVec2(center.X, center.Y), radius, ToU32(color)});
+		boxes.push_back({min.To<ImVec2>(), max.To<ImVec2>(), thickness, Render::ToU32(color)});
 	}
 
-	void RectGradient(const FVector2D& min, const FVector2D& max, const FLinearColor& top, const FLinearColor& bottom) override
+	void CircleFilled(const Render::Vec2& center, float radius, const Render::Color& color) override
 	{
 		std::lock_guard<std::mutex> guard(mtx);
-		gradients.push_back({ImVec2(min.X, min.Y), ImVec2(max.X, max.Y), ToU32(top), ToU32(bottom)});
+		circles.push_back({center.To<ImVec2>(), radius, Render::ToU32(color)});
+	}
+
+	void RectGradient(const Render::Vec2& min, const Render::Vec2& max, const Render::Color& top, const Render::Color& bottom) override
+	{
+		std::lock_guard<std::mutex> guard(mtx);
+		gradients.push_back({min.To<ImVec2>(), max.To<ImVec2>(), Render::ToU32(top), Render::ToU32(bottom)});
 	}
 
 	/// Replay this frame's recorded commands into the current ImGui context's background draw list.
@@ -124,6 +137,7 @@ class ImGuiRenderer : public Renderer
 		std::vector<LineCmd> l;
 		std::vector<TextCmd> t;
 		std::vector<RectCmd> r;
+		std::vector<BoxCmd> b;
 		std::vector<CircleCmd> c;
 		std::vector<GradientCmd> g;
 		{
@@ -131,13 +145,14 @@ class ImGuiRenderer : public Renderer
 			l.swap(lines);
 			t.swap(texts);
 			r.swap(rects);
+			b.swap(boxes);
 			c.swap(circles);
 			g.swap(gradients);
 		}
 
 		if (!drawList || !font) return; // atlas/draw list not ready (e.g. mid device reset)
 
-		// Fills first so lines/text draw on top.
+		// Fills first so strokes/text draw on top.
 		for (const auto& gr : g)
 			drawList->AddRectFilledMultiColor(gr.min, gr.max, gr.top, gr.top, gr.bottom, gr.bottom);
 		for (const auto& re : r)
@@ -145,6 +160,9 @@ class ImGuiRenderer : public Renderer
 		for (const auto& ci : c)
 			drawList->AddCircleFilled(ci.center, ci.radius, ci.color);
 
+		// Strokes: rect outlines then lines.
+		for (const auto& bo : b)
+			drawList->AddRect(bo.min, bo.max, bo.color, 0.f, 0, bo.thickness);
 		for (const auto& li : l)
 			drawList->AddLine(li.a, li.b, li.color, li.thickness);
 

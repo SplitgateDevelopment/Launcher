@@ -8,6 +8,7 @@
 #include "CanvasRenderer.h"
 #include "ImGuiRenderer.h"
 #include "NullRenderer.h"
+#include "Adapters.h" // UE/ImGui/settings conversions, so every call site has them in scope
 #include "../settings/Settings.h"
 
 namespace Render
@@ -34,12 +35,12 @@ namespace Render
 		active = (index < (sizeof(Backends) / sizeof(*Backends))) ? Backends[index] : &canvas;
 	}
 
-	inline void Line(const FVector2D& a, const FVector2D& b, float thickness, const FLinearColor& color)
+	inline void Line(const Vec2& a, const Vec2& b, float thickness, const Color& color)
 	{
 		active->Line(a, b, thickness, color);
 	}
 
-	inline void Text(const FVector2D& pos, const std::string& text, float scale, const FLinearColor& color, bool centered = true)
+	inline void Text(const Vec2& pos, const std::string& text, float scale, const Color& color, bool centered = true)
 	{
 		active->Text(pos, text, scale, color, centered);
 	}
@@ -49,17 +50,35 @@ namespace Render
 		return active->Measure(text, scale);
 	}
 
-	inline void RectFilled(const FVector2D& min, const FVector2D& max, const FLinearColor& color)
+	/// Screen size (width, height) of @p text at @p scale — parity with UCanvas::K2_TextSize.
+	inline Vec2 TextSize(const std::string& text, float scale)
+	{
+		return active->TextSize(text, scale);
+	}
+
+	/// Screen size of @p text at scale 1 — parity with UCanvas::K2_StrLen.
+	inline Vec2 StrLen(const std::string& text)
+	{
+		return active->StrLen(text);
+	}
+
+	inline void RectFilled(const Vec2& min, const Vec2& max, const Color& color)
 	{
 		active->RectFilled(min, max, color);
 	}
 
-	inline void CircleFilled(const FVector2D& center, float radius, const FLinearColor& color)
+	/// Draw the outline of the rectangle @p min..@p max — parity with UCanvas::K2_DrawBox.
+	inline void Rect(const Vec2& min, const Vec2& max, float thickness, const Color& color)
+	{
+		active->Rect(min, max, thickness, color);
+	}
+
+	inline void CircleFilled(const Vec2& center, float radius, const Color& color)
 	{
 		active->CircleFilled(center, radius, color);
 	}
 
-	inline void RectGradient(const FVector2D& min, const FVector2D& max, const FLinearColor& top, const FLinearColor& bottom)
+	inline void RectGradient(const Vec2& min, const Vec2& max, const Color& top, const Color& bottom)
 	{
 		active->RectGradient(min, max, top, bottom);
 	}

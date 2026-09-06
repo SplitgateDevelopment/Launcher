@@ -9,9 +9,12 @@
 class NullRenderer : public Renderer
 {
   public:
-	void Line(const FVector2D&, const FVector2D&, float, const FLinearColor&) override {}
-	void Text(const FVector2D&, const std::string&, float, const FLinearColor&, bool) override {}
-	void RectFilled(const FVector2D&, const FVector2D&, const FLinearColor&) override {}
-	void CircleFilled(const FVector2D&, float, const FLinearColor&) override {}
-	void RectGradient(const FVector2D&, const FVector2D&, const FLinearColor&, const FLinearColor&) override {}
+	void Line(const Render::Vec2&, const Render::Vec2&, float, const Render::Color&) override {}
+	void Text(const Render::Vec2&, const std::string&, float, const Render::Color&, bool) override {}
+	Render::Vec2 TextSize(const std::string&, float) override { return {0.f, 0.f}; }
+	Render::Vec2 StrLen(const std::string&) override { return {0.f, 0.f}; }
+	void RectFilled(const Render::Vec2&, const Render::Vec2&, const Render::Color&) override {}
+	void Rect(const Render::Vec2&, const Render::Vec2&, float, const Render::Color&) override {}
+	void CircleFilled(const Render::Vec2&, float, const Render::Color&) override {}
+	void RectGradient(const Render::Vec2&, const Render::Vec2&, const Render::Color&, const Render::Color&) override {}
 };
