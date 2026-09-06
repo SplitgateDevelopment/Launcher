@@ -12,6 +12,5 @@ struct UInputSettings : UObject
 
 	struct UInputSettings* GetInputSettings(); // Function Engine.InputSettings.GetInputSettings // (Final|Native|Static|Public|BlueprintCallable|BlueprintPure) // @ game+0x3707f30
 
-	static struct UClass* StaticClass();
-	static struct UInputSettings* GetDefaultObj();
+	static constexpr const char* ClassName = "Class Engine.InputSettings";
 };

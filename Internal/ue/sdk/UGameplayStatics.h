@@ -15,5 +15,5 @@ struct UGameplayStatics : UBlueprintFunctionLibrary
 	struct AActor* BeginDeferredActorSpawnFromClass(struct UObject* WorldContextObject, struct UClass* ActorClass, struct FTransform SpawnTransform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, struct AActor* Owner);
 	struct AActor* FinishSpawningActor(struct AActor* Actor, struct FTransform SpawnTransform);
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.GameplayStatics";
 };

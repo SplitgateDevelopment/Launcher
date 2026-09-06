@@ -60,5 +60,5 @@ struct APawn : AActor
 	void AddControllerRollInput(float Val);																					  // Function Engine.Pawn.AddControllerRollInput // (Native|Public|BlueprintCallable) // @ game+0x37a4780
 	void AddControllerPitchInput(float Val);																				  // Function Engine.Pawn.AddControllerPitchInput // (Native|Public|BlueprintCallable) // @ game+0x37a46f0
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.Pawn";
 };

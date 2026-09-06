@@ -103,5 +103,5 @@ struct ACharacter : APawn
 	bool CanCrouch();																																																																																															 // Function Engine.Character.CanCrouch // (Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x36c4fe0
 	void CacheInitialMeshOffset(struct FVector MeshRelativeLocation, struct FRotator MeshRelativeRotation);																																																																										 // Function Engine.Character.CacheInitialMeshOffset // (Native|Public|HasDefaults|BlueprintCallable) // @ game+0x36c4ef0
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.Character";
 };

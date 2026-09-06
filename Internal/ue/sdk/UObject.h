@@ -20,6 +20,5 @@ struct UObject
 	bool IsDefaultObject() const;
 	void ProcessEvent(void* fn, void* parms);
 
-	static struct UObject* GetDefaultObj();
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class CoreUObject.Object";
 };

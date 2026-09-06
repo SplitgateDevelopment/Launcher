@@ -16,5 +16,5 @@ struct UConsole : UObject
 	struct TArray<struct FString> HistoryBuffer; // 0x68(0x10)
 	char pad_78[0xb8];							 // 0x78(0xb8)
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.Console";
 };

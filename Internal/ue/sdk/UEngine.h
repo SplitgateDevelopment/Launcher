@@ -251,6 +251,5 @@ struct UEngine : UObject
 	char pad_C4C[0xd4];												   // 0xc4c(0xd4)
 
 	static struct UEngine* GetEngine();
-	static struct UClass* StaticClass();
-	static struct UEngine* GetDefaultObj();
+	static constexpr const char* ClassName = "Class Engine.Engine";
 };

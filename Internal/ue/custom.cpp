@@ -90,24 +90,6 @@ void UObject::ProcessEvent(void* UFunction, void* Params)
 	auto vtable = *reinterpret_cast<void***>(this);
 	reinterpret_cast<void (*)(void*, void*, void*)>(vtable[68])(this, UFunction, Params);
 }
-struct UClass* UObject::StaticClass()
-{
-	static struct UClass* Clss = nullptr;
-
-	if (!Clss)
-		Clss = (UClass*)GObjects->FindObject("Class CoreUObject.Object");
-
-	return Clss;
-}
-UObject* UObject::GetDefaultObj()
-{
-	static struct UObject* Default = nullptr;
-
-	if (!Default)
-		Default = static_cast<UObject*>(UObject::StaticClass());
-
-	return Default;
-}
 UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame()
 {
 	struct
@@ -119,14 +101,10 @@ UPortalWarsSaveGame* UPortalWarsLocalPlayer::GetUserSaveGame()
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
-struct UClass* UEngine::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.Engine");
-}
 struct UEngine* UEngine::GetEngine()
 {
 	static UEngine* GEngine = nullptr;
-	static UClass* EngineClass = UEngine::StaticClass();
+	static UClass* EngineClass = Engine::StaticClass<UEngine>();
 
 	if (!GEngine)
 	{
@@ -152,19 +130,6 @@ struct UWorld* UWorld::GetWorld()
 	UWorld* World = *(UWorld**)(GWorld);
 	return World;
 }
-struct UClass* UInputSettings::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.InputSettings");
-}
-struct UInputSettings* UInputSettings::GetDefaultObj()
-{
-	static struct UInputSettings* Default = nullptr;
-
-	if (!Default)
-		Default = static_cast<UInputSettings*>((UObject*)UInputSettings::StaticClass());
-
-	return Default;
-}
 struct UInputSettings* UInputSettings::GetInputSettings()
 {
 	auto Func = GObjects->FindObject("Function Engine.InputSettings.GetInputSettings");
@@ -178,35 +143,6 @@ struct UInputSettings* UInputSettings::GetInputSettings()
 
 	return Parms.ReturnValue;
 };
-struct UClass* UGameplayStatics::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.GameplayStatics");
-}
-struct UClass* UConsole::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.Console");
-}
-struct UClass* UKismetStringLibrary::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.KismetStringLibrary");
-}
-struct UClass* UPortalWarsNotificationManager::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class PortalWars.PortalWarsNotificationManager");
-}
-struct UPortalWarsNotificationManager* UPortalWarsNotificationManager::GetDefaultObj()
-{
-	static struct UPortalWarsNotificationManager* Default = nullptr;
-
-	if (!Default)
-		Default = static_cast<UPortalWarsNotificationManager*>((UObject*)UPortalWarsNotificationManager::StaticClass());
-
-	return Default;
-}
-struct UClass* UKismetTextLibrary::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.KismetTextLibrary");
-}
 USkeletalMeshComponent* ACharacterSkin::GetMesh3P()
 {
 	static UObject* Function = nullptr;
@@ -270,7 +206,7 @@ AActor* UGameplayStatics::FinishSpawningActor(AActor* Actor, FTransform SpawnTra
 }
 AActor* SpawnActor(UObject* worldContextObject, UClass* actorClass, FVector location, ESpawnActorCollisionHandlingMethod collision, AActor* owner)
 {
-	auto* gameplayStatics = reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
+	auto* gameplayStatics = reinterpret_cast<UGameplayStatics*>(Engine::StaticClass<UGameplayStatics>());
 	if (!gameplayStatics || !actorClass) return nullptr;
 
 	FTransform transform{};
@@ -350,22 +286,6 @@ bool LineTraceVisible(UObject* worldContext, const FVector& start, const FVector
 	// stands between start and end, i.e. the point is occluded.
 	return !p.ReturnValue;
 }
-struct UClass* ACharacter::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.Character");
-};
-struct UClass* APawn::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class Engine.Pawn");
-};
-struct UClass* APortalWarsCharacter::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class PortalWars.PortalWarsCharacter");
-};
-struct UClass* ACullableActor::StaticClass()
-{
-	return (UClass*)GObjects->FindObject("Class PortalWars.CullableActor");
-};
 FVector USkeletalMeshComponent::GetBoneMatrix(int index)
 {
 

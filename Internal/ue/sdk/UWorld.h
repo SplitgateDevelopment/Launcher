@@ -58,6 +58,5 @@ struct UWorld : UObject
 	void HandleTimelineScrubbed();				  // Function Engine.World.HandleTimelineScrubbed // (Final|Native|Public) // @ game+0x3809c50
 
 	static struct UWorld* GetWorld();
-	static struct UClass* StaticClass();
-	static struct UWorld* GetDefaultObj();
+	static constexpr const char* ClassName = "Class Engine.World";
 };

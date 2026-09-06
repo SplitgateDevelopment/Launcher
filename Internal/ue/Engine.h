@@ -106,4 +106,21 @@ namespace Engine
 	/// Resolve GEngine/World and the static-library CDOs. Call after the engine is up and again
 	/// on each map load (the world changes). Does not touch PlayerController/Canvas (set per-frame).
 	void ResolveObjects();
+
+	/// Look up a UClass by its dumped path (T::ClassName), cached per type on first use.
+	/// Every SDK type that can be looked up declares `static constexpr const char* ClassName`.
+	template <class T>
+	UClass* StaticClass()
+	{
+		static UClass* clss = reinterpret_cast<UClass*>(GObjects->FindObject(T::ClassName));
+		return clss;
+	}
+
+	/// The class-default object for T (the game reuses the UClass as the object), cached per type.
+	template <class T>
+	T* GetDefaultObj()
+	{
+		static T* def = reinterpret_cast<T*>(StaticClass<T>());
+		return def;
+	}
 } // namespace Engine

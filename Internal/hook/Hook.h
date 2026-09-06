@@ -129,7 +129,7 @@ namespace Hook
 		};
 
 		PostRender::VTable = ViewPortClientVTable;
-		ProcessEvent::VTable = *reinterpret_cast<void***>(UObject::GetDefaultObj());
+		ProcessEvent::VTable = *reinterpret_cast<void***>(Engine::GetDefaultObj<UObject>());
 
 		UPortalWarsSaveGame* UserSave = LocalPlayer->GetUserSaveGame();
 		if (UserSave)
@@ -146,7 +146,7 @@ namespace Hook
 
 		Logger::Log("INFO", std::format("Found [{:d}] Objects", Engine::GObjects->NumElements));
 
-		UObject* NewObject = Engine::GameplayStatics->SpawnObject(UConsole::StaticClass(), Engine::GEngine->GameViewport);
+		UObject* NewObject = Engine::GameplayStatics->SpawnObject(Engine::StaticClass<UConsole>(), Engine::GEngine->GameViewport);
 		Engine::GEngine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
 		Logger::Log("SUCCESS", "UConsole spawned");
 

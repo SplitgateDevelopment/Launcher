@@ -42,7 +42,7 @@ void Engine::ResolveObjects()
 {
 	GEngine = UEngine::GetEngine();
 	World = UWorld::GetWorld();
-	GameplayStatics = reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
-	KismetStringLibrary = reinterpret_cast<UKismetStringLibrary*>(UKismetStringLibrary::StaticClass());
-	KismetTextLibrary = reinterpret_cast<UKismetTextLibrary*>(UKismetTextLibrary::StaticClass());
+	GameplayStatics = reinterpret_cast<UGameplayStatics*>(Engine::StaticClass<UGameplayStatics>());
+	KismetStringLibrary = reinterpret_cast<UKismetStringLibrary*>(Engine::StaticClass<UKismetStringLibrary>());
+	KismetTextLibrary = reinterpret_cast<UKismetTextLibrary*>(Engine::StaticClass<UKismetTextLibrary>());
 }

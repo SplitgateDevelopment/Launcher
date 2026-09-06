@@ -265,5 +265,5 @@ struct APortalWarsCharacter : ACharacter
 	void applyRadialImpulseToCorpseMulticast(struct FPWRadialDamageEvent RadialDamageEvent);																						  // Function PortalWars.PortalWarsCharacter.applyRadialImpulseToCorpseMulticast // (Net|Native|Event|NetMulticast|Public) // @ game+0x166a600
 	void applyPointImpulseToCorpseMulticast(struct FPWPointDamageEvent PointDamageEvent);																							  // Function PortalWars.PortalWarsCharacter.applyPointImpulseToCorpseMulticast // (Net|Native|Event|NetMulticast|Public) // @ game+0x166a500
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class PortalWars.PortalWarsCharacter";
 };

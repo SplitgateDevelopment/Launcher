@@ -10,5 +10,5 @@ struct UKismetStringLibrary : UBlueprintFunctionLibrary
 {
 	struct FName Conv_StringToName(struct FString inString); // Function Engine.KismetStringLibrary.Conv_StringToName // (Final|Native|Static|Public|BlueprintCallable|BlueprintPure) // @ game+0x374bdb0
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.KismetStringLibrary";
 };

@@ -10,5 +10,5 @@ struct UKismetTextLibrary : UBlueprintFunctionLibrary
 {
 	struct FText Conv_StringToText(struct FString inString); // Function Engine.KismetTextLibrary.Conv_StringToText // (Final|Native|Static|Public|BlueprintCallable|BlueprintPure) // @ game+0x376b760
 
-	static struct UClass* StaticClass();
+	static constexpr const char* ClassName = "Class Engine.KismetTextLibrary";
 };

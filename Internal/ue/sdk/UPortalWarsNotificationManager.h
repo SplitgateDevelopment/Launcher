@@ -60,6 +60,5 @@ struct UPortalWarsNotificationManager : UObject
 	struct UPortalWarsRewardReceivedViewModel* GetRewardReceivedViewModelForType(struct FString TypeString);								   // Function PortalWars.PortalWarsNotificationManager.GetRewardReceivedViewModelForType // (Final|Native|Protected) // @ game+0x16afbb0
 	struct UPortalWarsPostMatchViewModel* GetPostMatchViewModel();																			   // Function PortalWars.PortalWarsNotificationManager.GetPostMatchViewModel // (Final|Native|Protected) // @ game+0x16afb80
 
-	static struct UClass* StaticClass();
-	static struct UPortalWarsNotificationManager* GetDefaultObj();
+	static constexpr const char* ClassName = "Class PortalWars.PortalWarsNotificationManager";
 };
