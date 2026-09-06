@@ -31,30 +31,23 @@ namespace Menu
 
 			UI::SeparatorText("Loaded Scripts");
 
-			// The scrollable list with per-script Run buttons uses ImGui child regions — ImGui-only.
-			if (!UI::IsImGui())
-			{
-				UI::Text("The loaded-script list uses the ImGui menu backend.");
-				return;
-			}
-
 			if (Scripts::scriptList.empty())
 			{
-				ImGui::TextDisabled("No scripts found. Drop a .py with a main() into the UserScripts folder, then Reload.");
+				UI::TextDisabled("No scripts found. Drop a .py with a main() into the UserScripts folder, then Reload.");
 				return;
 			}
 
 			std::string toRun;
-			ImGui::BeginChild("ScriptList", ImVec2(0, 200), true);
+			UI::BeginChild("ScriptList", 0, 200);
 			for (const auto& script : Scripts::scriptList)
 			{
-				ImGui::PushID(script.c_str());
-				if (ImGui::SmallButton("Run")) toRun = script;
-				ImGui::SameLine();
-				ImGui::TextUnformatted(script.c_str());
-				ImGui::PopID();
+				UI::PushID(script.c_str());
+				if (UI::SmallButton("Run")) toRun = script;
+				UI::SameLine();
+				UI::Text("%s", script.c_str());
+				UI::PopID();
 			}
-			ImGui::EndChild();
+			UI::EndChild();
 			if (!toRun.empty()) Scripts::ExecuteUnloaded(toRun);
 		}
 	} // namespace Sections
