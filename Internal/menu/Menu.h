@@ -5,6 +5,7 @@
 
 #include "../settings/Settings.h"
 #include "../scripting/Events.h"
+#include "../utils/Input.h"
 #include "../utils/Rgb.h"
 #include "sections/Misc.h"
 #include "sections/Exploits.h"
@@ -40,15 +41,7 @@ namespace Menu
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
 
-		// Edge-detect the toggle key ourselves (high bit + previous state). GetAsyncKeyState's `& 1`
-		// "pressed since last call" bit is unreliable here — Input::DispatchHotKeys polls every key
-		// each frame and clears it, which made the menu need several presses to open.
-		static bool prevToggleDown = false;
-		const bool toggleDown = (GetAsyncKeyState(Settings.MENU.ShowHotkey) & 0x8000) != 0;
-		const bool togglePressed = toggleDown && !prevToggleDown;
-		prevToggleDown = toggleDown;
-
-		if (togglePressed || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
+		if (Input::Pressed(Settings.MENU.ShowHotkey) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
 		{
 			Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
 			Events::Dispatch(Settings.MENU.ShowMenu ? Events::Type::MenuOpened : Events::Type::MenuClosed);
