@@ -150,14 +150,20 @@ namespace GUI
 		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
 
+		// Only the ImGui menu backend draws here (and paints ImGui's software cursor). The Canvas menu
+		// draws in PostRender and owns its own cursor, so ImGui must not also show one. Game-input
+		// capture stays keyed on ShowMenu alone (backend-agnostic) so input is blocked whenever the
+		// menu is open, regardless of which backend is drawing it.
+		const bool imguiMenu = Settings.MENU.Backend == MenuBackend::ImGui;
+
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
-		io.MouseDrawCursor = Settings.MENU.ShowMenu;
+		io.MouseDrawCursor = Settings.MENU.ShowMenu && imguiMenu;
 		io.WantCaptureMouse = Settings.MENU.ShowMenu;
 		io.WantTextInput = Settings.MENU.ShowMenu;
 		io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
 
-		Menu::Draw();
+		if (imguiMenu) Menu::Draw();
 
 		ImGui::EndFrame();
 		ImGui::Render();

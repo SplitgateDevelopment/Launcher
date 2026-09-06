@@ -13,6 +13,7 @@
 #include "../../cache/ActorCache.h"
 #include "../../render/Render.h"
 #include "../../features/Features.h"
+#include "../../menu/Menu.h"
 #include "../../utils/Input.h"
 
 /// @brief Hook code for UGameViewportClient::PostRender.
@@ -38,10 +39,17 @@ namespace PostRender
 		Engine::PlayerController = PlayerController;
 		Engine::IsInGame = PlayerController && PlayerController->IsInGame();
 
+		// The UCanvas arg is valid every frame (main menu / loading included), so publish it before the
+		// in-game gate — the Canvas menu draws through it unconditionally, while features still gate on
+		// PlayerController below.
+		Engine::Canvas = Canvas;
+
+		if (Settings.MENU.Backend == MenuBackend::Canvas)
+			Menu::Tick(); // ZeroGUI menu, drawn immediately through Render::canvas
+
 		if (PlayerController)
 		{
 			Engine::World = World;
-			Engine::Canvas = Canvas;
 
 			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
 			Input::DispatchHotKeys();
