@@ -29,10 +29,9 @@ namespace Menu
 			}
 			UI::Tooltip("Show a Rich Presence on your Discord profile. Updates with the live game state\n(map + K/D) every few seconds.");
 
-			// BeginDisabled/EndDisabled greys out the block in ImGui; the Canvas backend has no equivalent,
-			// so it's only applied under the ImGui backend.
+			// Grey out the live/info block while RPC is off (a no-op on backends with no disabled scope).
 			const bool disabled = !Settings.MISC.DiscordRPCEnabled;
-			if (UI::IsImGui() && disabled) ImGui::BeginDisabled();
+			UI::BeginDisabled(disabled);
 
 			UI::SeparatorText("Live");
 			const char* state = DiscordRPC::GetState();
@@ -46,7 +45,7 @@ namespace Menu
 			UI::Text("Image:   %s", "icon");
 			UI::TextDisabled("App ID / Steam app id are runtime-only and set at startup.");
 
-			if (UI::IsImGui() && disabled) ImGui::EndDisabled();
+			UI::EndDisabled();
 		}
 	} // namespace Sections
 } // namespace Menu
