@@ -92,6 +92,7 @@
     <ClInclude Include="features\Camera.h" />
     <ClInclude Include="features\Radar.h" />
     <ClInclude Include="features\DebugNames.h" />
+    <ClInclude Include="features\Watermark.h" />
     <ClInclude Include="features\Aimbot.h" />
     <ClInclude Include="features\Triggerbot.h" />
     <ClInclude Include="features\AimFov.h" />
@@ -122,7 +123,6 @@
     <ClInclude Include="menu\sections\Config.h" />
     <ClInclude Include="settings\Profiles.h" />
     <ClInclude Include="utils\Base64.h" />
-    <ClInclude Include="menu\sections\Watermark.h" />
     <ClInclude Include="scripting\modules\Logger.h" />
     <ClInclude Include="scripting\modules\Settings.h" />
     <ClInclude Include="scripting\modules\Actors.h" />

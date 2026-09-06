@@ -20,6 +20,7 @@
 #include "Camera.h"
 #include "Radar.h"
 #include "DebugNames.h"
+#include "Watermark.h"
 #include "Aimbot.h"
 #include "Triggerbot.h"
 #include "AimFov.h"
@@ -54,6 +55,7 @@ namespace Features
 		Features.push_back(std::make_unique<Camera>());
 		Features.push_back(std::make_unique<Radar>());
 		Features.push_back(std::make_unique<DebugNames>());
+		Features.push_back(std::make_unique<Watermark>());
 		Features.push_back(std::make_unique<Aimbot>());
 		Features.push_back(std::make_unique<Triggerbot>());
 		Features.push_back(std::make_unique<AimFov>());

@@ -121,13 +121,10 @@ namespace GUI
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		// Replay the feature draw commands (ESP/radar/traces/..., no-op in canvas mode) + the watermark
-		// on the game window. In External mode the streamproof window draws both, so skip them here.
+		// Replay the recorded draw commands (ESP/radar/traces/watermark/..., no-op in canvas mode) on
+		// the game window. In External mode the streamproof window drains + draws them instead.
 		if (!external)
-		{
 			Render::Flush();
-			Menu::Sections::Watermark();
-		}
 
 		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);

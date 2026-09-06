@@ -46,8 +46,6 @@
 #include "imgui_Impl_Win32.h"
 
 #include "Window.h" // Window::WindowHandle (the game window) + the WDA_EXCLUDEFROMCAPTURE fallback
-#include "Styles.h"	// GUI::Styles::Init — theme for the streamproof watermark
-#include "../Menu.h" // Menu::Sections::Watermark — drawn here so the watermark is streamproof too
 #include "../../render/Render.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Logger.h"
@@ -180,9 +178,6 @@ namespace ExternalWindow
 		// when the draw list is null), but only actually draw them while focused.
 		Render::Flush(focused ? ImGui::GetBackgroundDrawList() : nullptr, font, ImGui::GetFontSize());
 
-		// The watermark is ImGui, not a Render::* command, so draw it here to keep it streamproof too.
-		if (focused) Menu::Sections::Watermark();
-
 		ImGui::EndFrame();
 		ImGui::Render();
 
@@ -287,7 +282,6 @@ namespace ExternalWindow
 		if (!Ctx) return false;
 
 		ScopedContext scoped(Ctx);
-		GUI::Styles::Init(); // so the watermark matches the game-window overlay's theme
 		if (!ImGui_ImplWin32_Init(Hwnd)) return false;
 		if (!ImGui_ImplDX11_Init(Device, Context)) return false;
 		ImGui_ImplDX11_CreateDeviceObjects();

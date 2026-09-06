@@ -414,8 +414,8 @@
     <ClInclude Include="menu\sections\Exploits.h">
       <Filter>menu\sections</Filter>
     </ClInclude>
-    <ClInclude Include="menu\sections\Watermark.h">
-      <Filter>menu\sections</Filter>
+    <ClInclude Include="features\Watermark.h">
+      <Filter>features</Filter>
     </ClInclude>
     <ClInclude Include="scripting\modules\Logger.h">
       <Filter>scripting\modules</Filter>

@@ -17,7 +17,6 @@
 #include "sections/Sdk.h"
 #include "sections/Discord.h"
 #include "sections/Debug.h"
-#include "sections/Watermark.h"
 
 #include <imgui.h>
 
@@ -36,8 +35,8 @@ namespace Menu
 	/// tab bar (Misc, Exploits, Visuals, Settings, Debug) plus the optional ImGui demo/style-editor windows.
 	void Draw()
 	{
-		// The watermark is drawn by the active renderer, not here: on the game window in the normal
-		// modes, and on the streamproof external window in External mode — so it isn't captured there.
+		// The watermark is its own Watermark feature now (drawn through the Render backend), so it
+		// follows the active renderer — including the streamproof external window — and isn't drawn here.
 		if (Input::Pressed(Settings.MENU.ShowHotkey) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
 		{
 			Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
