@@ -6,6 +6,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
+#include "../../../shared/Utilities.h"
 
 namespace Menu
 {
@@ -43,6 +44,11 @@ namespace Menu
 			ImGui::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
+
+			ImGui::SeparatorText("Files");
+			if (ImGui::Button("Open app folder"))
+				Shared::Utilities::OpenFolder(Shared::AppDataPath(SettingsHelper::AppFolder));
+			ImGui::Tooltip("Open the SplitgateInternal data folder (settings, logs, dumps).");
 
 			ImGui::SeparatorText("Console command");
 			static char consoleBuffer[256] = "";
