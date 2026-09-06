@@ -82,6 +82,15 @@ namespace ExternalWindow
 		return FindWindowW(L"UnrealWindow", L"PortalWars  ");
 	}
 
+	/// @brief Whether the overlay should be visible this frame: true when the game window is in the
+	/// foreground, or when the overlay window itself is (it pulls focus while the menu is open). Alt-
+	/// tabbing to any other app makes this false, so the ESP/menu doesn't float over the desktop.
+	inline bool GameFocused()
+	{
+		const HWND fg = GetForegroundWindow();
+		return fg && (fg == GameWindow() || fg == Hwnd);
+	}
+
 	/// @brief (Re)create the render target view from the swap chain's back buffer. Flip-model buffer 0
 	/// always aliases the current back buffer, so one RTV stays valid across Presents.
 	inline void CreateRtv()
@@ -187,9 +196,14 @@ namespace ExternalWindow
 
 	/// @brief Render one overlay frame: clear transparent, replay this frame's recorded ESP commands
 	/// into the overlay context's draw list, draw the menu, and present through DirectComposition.
+	/// While the game (and overlay) are not the foreground window the overlay paints nothing — it still
+	/// runs a frame to drain the recorded ESP command buffer and presents a fully transparent frame, so
+	/// alt-tabbing away hides the ESP/menu instead of leaving it over the desktop or another app.
 	inline void RenderFrame()
 	{
 		if (!Rtv) return;
+
+		const bool focused = GameFocused();
 
 		ScopedContext scoped(Ctx);
 
@@ -198,15 +212,18 @@ namespace ExternalWindow
 		ImGui::NewFrame();
 
 		ImFont* font = ImGui::GetFont();
-		Render::Flush(ImGui::GetBackgroundDrawList(), font, ImGui::GetFontSize());
+		// Drain the recorded ESP commands every frame (Flush swaps the buffer out under its lock even
+		// when the draw list is null), but only actually draw them while focused.
+		Render::Flush(focused ? ImGui::GetBackgroundDrawList() : nullptr, font, ImGui::GetFontSize());
 
+		const bool showMenu = focused && Settings.MENU.ShowMenu;
 		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDrawCursor = Settings.MENU.ShowMenu;
-		io.WantCaptureMouse = Settings.MENU.ShowMenu;
-		io.WantTextInput = Settings.MENU.ShowMenu;
-		io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
+		io.MouseDrawCursor = showMenu;
+		io.WantCaptureMouse = showMenu;
+		io.WantTextInput = showMenu;
+		io.WantCaptureKeyboard = showMenu;
 
-		Menu::Draw();
+		if (showMenu) Menu::Draw();
 
 		ImGui::EndFrame();
 		ImGui::Render();
