@@ -1,0 +1,115 @@
+#pragma once
+
+#include "Fwd.h"
+#include "Values.h"
+#include "ABaseGun.h"
+
+// Class PortalWars.Gun
+// Size: 0x720 (Inherited: 0x2c0)
+struct AGun : ABaseGun
+{
+	char BodyPartTargetForBots[0x01];				  // 0x2c0(0x01)
+	char pad_2C1[0x3];								  // 0x2c1(0x03)
+	float TimeBetweenShotsForBots;					  // 0x2c4(0x04)
+	struct FWeaponData WeaponConfig;				  // 0x2c8(0x2c)
+	char pad_2F4[0x4];								  // 0x2f4(0x04)
+	struct APortalWarsPickup* PickupClass;			  // 0x2f8(0x08)
+	char gunValue;									  // 0x300(0x01)
+	char pad_301[0x1];								  // 0x301(0x01)
+	uint16_t CurrentAmmo;							  // 0x302(0x02)
+	char CurrentAmmoInClip;							  // 0x304(0x01)
+	char pad_305[0x13];								  // 0x305(0x13)
+	float EquipTime;								  // 0x318(0x04)
+	char bAutoEquip : 1;							  // 0x31c(0x01)
+	char pad_31C_1 : 7;								  // 0x31c(0x01)
+	char pad_31D[0x7];								  // 0x31d(0x07)
+	bool bCanFirePortalsWhileEquipped;				  // 0x324(0x01)
+	char pad_325[0x1b];								  // 0x325(0x1b)
+	bool bIsChargingWeapon;							  // 0x340(0x01)
+	char pad_341[0x3];								  // 0x341(0x03)
+	struct FRecoilData recoilConfig;				  // 0x344(0x18)
+	char pad_35C[0x24];								  // 0x35c(0x24)
+	struct UCameraShakeBase* SpectatorCameraShake;	  // 0x380(0x08)
+	char pad_388[0x30];								  // 0x388(0x30)
+	struct UAkAudioEvent* MeleeSwingEvent;			  // 0x3b8(0x08)
+	struct UAkAudioEvent* MeleeHitEvent;			  // 0x3c0(0x08)
+	char pad_3C8[0xc];								  // 0x3c8(0x0c)
+	bool isMeleeWeapon;								  // 0x3d4(0x01)
+	char pad_3D5[0x3];								  // 0x3d5(0x03)
+	struct UDamageType* MeleeDamageType;			  // 0x3d8(0x08)
+	float MinTimeBeforeApplyingMeleeDmg;			  // 0x3e0(0x04)
+	float MeleeRangeScaleOverride;					  // 0x3e4(0x04)
+	float MeleeHitCameraShakeScale;					  // 0x3e8(0x04)
+	float MeleeCameraShakeDelay;					  // 0x3ec(0x04)
+	char pad_3F0[0x8];								  // 0x3f0(0x08)
+	struct UCameraShakeBase* MeleeHitCameraShake;	  // 0x3f8(0x08)
+	struct UCameraShakeBase* MeleeCameraShake;		  // 0x400(0x08)
+	char pad_408[0x8];								  // 0x408(0x08)
+	int32_t GunID;									  // 0x410(0x04)
+	char pad_414[0x4];								  // 0x414(0x04)
+	struct FString InternalName;					  // 0x418(0x10)
+	struct FText DisplayName;						  // 0x428(0x18)
+	struct FText ShortDisplayName;					  // 0x440(0x18)
+	struct UTexture2D* GunIcon;						  // 0x458(0x08)
+	struct FAutoAimData AutoAimConfig;				  // 0x460(0x34)
+	char pad_494[0xc];								  // 0x494(0x0c)
+	char CurrentState[0x01];						  // 0x4a0(0x01)
+	struct FShotInfo ShotInfo;						  // 0x4a1(0x02)
+	char pad_4A3[0x5];								  // 0x4a3(0x05)
+	struct UForceFeedbackEffect* FireForceFeedback;	  // 0x4a8(0x08)
+	struct UForceFeedbackEffect* MeleeForceFeedback;  // 0x4b0(0x08)
+	char WeaponSpecificAnimations[0x60];			  // 0x4b8(0x60)
+	char pad_518[0x8];								  // 0x518(0x08)
+	char EquipAnim[0x10];							  // 0x520(0x10)
+	char FireAnim[0x10];							  // 0x530(0x10)
+	char ReloadAnim[0x10];							  // 0x540(0x10)
+	char ReloadShortAnim[0x10];						  // 0x550(0x10)
+	char InspectWeaponAnim[0x10];					  // 0x560(0x10)
+	char MeleeAnims[0x10];							  // 0x570(0x10)
+	char ThrowGrenadeAnim[0x10];					  // 0x580(0x10)
+	char FirePortalAnim[0x10];						  // 0x590(0x10)
+	char SprintingFirePortalAnim[0x10];				  // 0x5a0(0x10)
+	char ClosePortalAnim[0x10];						  // 0x5b0(0x10)
+	char SprintingClosePortalAnim[0x10];			  // 0x5c0(0x10)
+	struct UAnimMontage* EquipAnim_3P;				  // 0x5d0(0x08)
+	struct UAnimMontage* FireAnim_3P;				  // 0x5d8(0x08)
+	struct UAnimMontage* ReloadAnim_3P;				  // 0x5e0(0x08)
+	struct UAnimMontage* ReloadShortAnim_3P;		  // 0x5e8(0x08)
+	struct UAnimMontage* InspectWeaponAnim_3P;		  // 0x5f0(0x08)
+	struct UAnimMontage* MeleeAnim_3P;				  // 0x5f8(0x08)
+	struct UAnimMontage* ThrowGrenadeAnim_3P;		  // 0x600(0x08)
+	struct UAnimMontage* FirePortalAnim_3P;			  // 0x608(0x08)
+	struct UAnimMontage* SprintingFirePortalAnim_3P;  // 0x610(0x08)
+	struct UAnimMontage* ClosePortalAnim_3P;		  // 0x618(0x08)
+	struct UAnimMontage* SprintingClosePortalAnim_3P; // 0x620(0x08)
+	char pad_628[0x8];								  // 0x628(0x08)
+	struct UAkAudioEvent* AmmoPickupEvent;			  // 0x630(0x08)
+	struct UAkAudioEvent* GunCollisionEvent;		  // 0x638(0x08)
+	struct UAkAudioEvent* FireAudioEvent;			  // 0x640(0x08)
+	struct UAkAudioEvent* FireStopAudioEvent;		  // 0x648(0x08)
+	struct UAkAudioEvent* OutOfAmmoAudioEvent;		  // 0x650(0x08)
+	struct UAkAudioEvent* ZoomInAudioEvent;			  // 0x658(0x08)
+	struct UAkAudioEvent* ZoomOutAudioEvent;		  // 0x660(0x08)
+	struct UAkAudioEvent* EquipAudioEvent;			  // 0x668(0x08)
+	struct UAkAudioEvent* FireEvent;				  // 0x670(0x08)
+	struct UAkAudioEvent* FireStopEvent;			  // 0x678(0x08)
+	struct UAkAudioEvent* OutOfAmmoEvent;			  // 0x680(0x08)
+	struct UAkAudioEvent* ZoomInEvent;				  // 0x688(0x08)
+	struct UAkAudioEvent* ZoomOutEvent;				  // 0x690(0x08)
+	struct UAkAudioEvent* EquipEvent;				  // 0x698(0x08)
+	char pad_6A0[0x68];								  // 0x6a0(0x68)
+	struct FFuzzyConfig FuzzyConfig[0x9];			  // 0x708(0x12)
+	char pad_71A[0x6];								  // 0x71a(0x06)
+
+	void ServerGoToState(enum class EWeaponState NewState);		// Function PortalWars.Gun.ServerGoToState // (Net|NetReliableNative|Event|Protected|NetServer|NetValidate) // @ game+0x16544c0
+	void PlayMeleeCameraShake();								// Function PortalWars.Gun.PlayMeleeCameraShake // (Final|Native|Protected) // @ game+0x16544a0
+	void OnRep_ShotInfo(struct FShotInfo& PreviousValue);		// Function PortalWars.Gun.OnRep_ShotInfo // (Final|Native|Protected|HasOutParms) // @ game+0x1654400
+	void OnRep_CurrentState(enum class EWeaponState PrevState); // Function PortalWars.Gun.OnRep_CurrentState // (Final|Native|Protected) // @ game+0x1654380
+	void OnRep_AmmoInClip();									// Function PortalWars.Gun.OnRep_AmmoInClip // (Native|Protected) // @ game+0x1654360
+	void OnRep_Ammo();											// Function PortalWars.Gun.OnRep_Ammo // (Native|Protected) // @ game+0x1654340
+	void OnGunImageLoaded();									// Function PortalWars.Gun.OnGunImageLoaded // (Final|Native|Protected) // @ game+0x1654320
+	bool GetCanZoom();											// Function PortalWars.Gun.GetCanZoom // (Final|Native|Public|BlueprintCallable|BlueprintPure|Const) // @ game+0x16541d0
+	struct UPortalWarsAkComponent* GetAkComponent();			// Function PortalWars.Gun.GetAkComponent // (Final|Native|Public|BlueprintCallable) // @ game+0x1654180
+	void DisableNeedAnimInstanceUpdate();						// Function PortalWars.Gun.DisableNeedAnimInstanceUpdate // (Final|Native|Protected) // @ game+0x1654160
+	void ClientStartReload();									// Function PortalWars.Gun.ClientStartReload // (Net|NetReliableNative|Event|Protected|NetClient) // @ game+0x1654140
+};
