@@ -179,13 +179,18 @@ Source folders (from the project file; contents documented as they are read):
   (Logger, Settings, Events) to user scripts.
 - `ue/` — Unreal Engine SDK, split per type. `sdk/` holds one header per type (~96) with
   `Fwd.h` (forward decls), `Enums.h`, and `Values.h` (aggregates the `F*`/`T*` value types);
-  `Engine.h` is the umbrella that includes them all (include this, not the individual headers).
-  A class's `ProcessEvent` UFunction wrappers live in `sdk/<Type>.cpp`; the hand-added
-  convenience members and free helpers (`SpawnActor`, `LineTraceVisible`, `IsPostGameController`)
-  live in `custom.cpp`/`custom.h`. `namespace Engine` holds `Engine::Init` (the bootstrap, was
-  `EngineInit`), the resolved globals (`Engine::ObjObjects`/`NamePoolData`/`WRLD`/`GetBoneMatrixF`)
-  and `Engine::UObjects` (cached UFunction handles, `UObjects.h/.cpp`). `Globals.h/.cpp` (the
-  cached engine-object pointers in `namespace Globals`) lives here too.
+  `sdk.h` is the aggregator that includes every `sdk/<Type>.h`, and `Engine.h` is the entry
+  point callers include (it pulls in `sdk.h` + `custom.h` + `namespace Engine`). A class's
+  `ProcessEvent` UFunction wrappers live in `sdk/<Type>.cpp` (UFunctions are resolved lazily via
+  a function-local `static ... GObjects->FindObject(...)`); the hand-added convenience members and
+  free helpers (`SpawnActor`, `LineTraceVisible`, `IsPostGameController`) live in `custom.cpp`/
+  `custom.h`. `namespace Engine` (all inline variables/templates, header-only) holds: the scanned
+  internals `Engine::GObjects`/`GNames`/`GWorld`/`GetBoneMatrixFn`; the resolved game objects
+  `Engine::GEngine`/`World`/`PlayerController`/`GameplayStatics`/`KismetStringLibrary`/
+  `KismetTextLibrary`/`Canvas`/`IsInGame`; the two bootstraps `Engine::Init` (signature scan, in
+  `Engine.cpp`) and `Engine::ResolveObjects` (resolve CDOs, called again per map load); and the
+  `Engine::StaticClass<T>()` / `GetDefaultObj<T>()` templates that read each type's
+  `static constexpr ClassName` trait.
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
 - `utils/` — helpers (`Util.h/.cpp`, plus two facades over `shared/`: `Logger.h`

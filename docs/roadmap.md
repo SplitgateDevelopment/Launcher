@@ -235,11 +235,16 @@ from the hand-written logic, and move the init/objects/globals layer behind a na
   (16 files); the hand-added convenience members (`GetName`/`StaticClass`/`GetEngine`/`GetWorld`/bone
   helpers/deferred spawn) plus the free helpers (`SpawnActor`, `LineTraceVisible`, `IsPostGameController`)
   live in `ue/custom.cpp` (declared in `ue/custom.h`).
-- `namespace Engine` holds `Engine::Init` (was `EngineInit`), the resolved globals
-  (`Engine::NamePoolData`/`ObjObjects`/`WRLD`/`GetBoneMatrixF`) and `Engine::UObjects` (extern handles in
-  `ue/UObjects.h`, defined in `ue/UObjects.cpp`). SDK types stay global to keep the blast radius small.
-- `utils/Globals.h` moved to `ue/Globals.h` + `ue/Globals.cpp` (extern + defs, dead Kismet CDOs dropped);
-  the `Globals` namespace name is unchanged so call sites only shift their include path.
+- `ue/Engine.h` includes `ue/sdk.h` (the aggregator of every `sdk/<Type>.h`) + `custom.h` +
+  `namespace Engine`, so `#include "ue/Engine.h"` sites are unchanged.
+- `namespace Engine` (header-only: inline variables + templates) holds the scanned internals with
+  UE-oriented names (`GObjects`/`GNames`/`GWorld`/`GetBoneMatrixFn`), the resolved game objects
+  (`GEngine`/`World`/`PlayerController`/`GameplayStatics`/`KismetStringLibrary`/`KismetTextLibrary`/
+  `Canvas`/`IsInGame`), the two bootstraps `Engine::Init` (signature scan, was `EngineInit`) and
+  `Engine::ResolveObjects` (was `Globals::Init`), and the `StaticClass<T>()`/`GetDefaultObj<T>()`
+  templates driven by a per-type `static constexpr ClassName` trait. SDK types themselves stay global.
+- The former `UObjects` cache is gone — each wrapper resolves its UFunction lazily via a
+  function-local static. `utils/Globals.h` folded into `namespace Engine` (no separate `Globals`).
 
 **Note.** `ue/sdk/` mirrors the Dumpspace dump (see [game-dump.md](game-dump.md)); the split is manual,
 so regenerating the dump means re-applying this per-file layout (or teaching the generator to emit it).
