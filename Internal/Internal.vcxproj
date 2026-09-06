@@ -259,7 +259,6 @@
     <ClInclude Include="..\shared\LauncherSettings.h" />
     <ClInclude Include="..\shared\Version.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
-    <ClInclude Include="native\ActorId.h" />
     <ClInclude Include="native\ActorLocation.h" />
     <ClInclude Include="native\Visibility.h" />
     <ClInclude Include="native\WorldToScreen.h" />
