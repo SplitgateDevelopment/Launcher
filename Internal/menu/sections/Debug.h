@@ -73,6 +73,14 @@ namespace Menu
 
 			if (ImGui::CollapsingHeader("Recent logs"))
 			{
+				if (ImGui::Button("Copy##logs"))
+				{
+					std::string out;
+					for (const auto& line : Logger::Recent()) out += line + "\n";
+					ImGui::SetClipboardText(out.c_str());
+				}
+				ImGui::Tooltip("Copy the recent log lines to the clipboard.");
+
 				ImGui::BeginChild("Logs", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 				for (const auto& line : Logger::Recent())
 					ImGui::TextUnformatted(line.c_str());
