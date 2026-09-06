@@ -52,6 +52,19 @@ NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
 											   {RendererMode::External, "external"},
 										   })
 
+/// Which GUI engine draws the menu itself (independent of RendererMode, which is for the ESP/overlay).
+/// ImGui draws in the Present hook; Canvas draws through the UE canvas (ZeroGUI) in PostRender.
+enum class MenuBackend
+{
+	ImGui,
+	Canvas,
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(MenuBackend, {
+											  {MenuBackend::ImGui, "imgui"},
+											  {MenuBackend::Canvas, "canvas"},
+										  })
+
 /// Menu appearance, the show/hide hotkey, and how the overlays are rendered.
 struct MenuSettings
 {
@@ -61,9 +74,10 @@ struct MenuSettings
 	int ShowHotkey = VK_INSERT;					  ///< virtual-key code toggling the GUI (default Insert)
 	bool Rgb = false;							  ///< cycle the watermark, menu accent, and radar self-icon through a rainbow; off = their defaults (red / white)
 	RendererMode Renderer = RendererMode::Canvas; ///< how the overlays are drawn (canvas / imgui / null / external)
+	MenuBackend Backend = MenuBackend::ImGui;	  ///< which GUI engine draws the menu (imgui / canvas)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Rgb, Renderer)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Rgb, Renderer, Backend)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 /// Which camera the Camera feature drives. First person is the game default (no override).
