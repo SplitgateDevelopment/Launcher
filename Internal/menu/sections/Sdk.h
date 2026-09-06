@@ -313,6 +313,33 @@ namespace Menu
 				if (Engine::PlayerController) Engine::PlayerController->SendChatMessage(FString(msg));
 			}
 			UI::Tooltip("Write every GObject (index + full name) to Dumps/GObjects.txt.");
+
+			UI::SameLine();
+			if (UI::Button("Dump FName pool"))
+			{
+				fs::path dumpsDir = Shared::AppDataPath(SettingsHelper::AppFolder) / "Dumps";
+				if (!fs::exists(dumpsDir)) fs::create_directories(dumpsDir);
+
+				fs::path filePath = dumpsDir / "FNames.txt";
+				std::ofstream file(filePath, std::ios::out | std::ios::trunc);
+				if (!file.is_open())
+				{
+					char errorMsg[256];
+					strerror_s(errorMsg, sizeof(errorMsg), errno);
+					Logger::Log("ERROR", std::format("Failed to open {} for writing: {}", filePath.string(), errorMsg));
+					return;
+				}
+
+				const auto& names = NameCache::Get();
+				for (const auto& name : names)
+					file << name << '\n';
+				file.close();
+
+				std::string msg = std::format("Dumped {} FNames to {}", names.size(), filePath.string());
+				Logger::Log("SUCCESS", msg);
+				if (Engine::PlayerController) Engine::PlayerController->SendChatMessage(FString(msg));
+			}
+			UI::Tooltip("Write the whole FName pool (every interned name, incl. not-yet-loaded content) to\nDumps/FNames.txt. Uses the cached pool — Refresh the Name pool list above to rescan first.");
 		}
 	} // namespace Sections
 } // namespace Menu
