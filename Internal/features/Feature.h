@@ -6,6 +6,8 @@
 /// drive it. See the class comment below for the full Init/Check/Run/Destroy
 /// contract.
 
+#include <vector>
+
 #include "../settings/Settings.h"
 #include "../utils/Logger.h"
 #include "../scripting/Events.h"
@@ -36,10 +38,11 @@ class Feature
 	bool OneTime = false;	  // Run() fires once per enable instead of every frame
 
 	std::string Name = "BaseFeature"; ///< human-readable id, used in Log() output
-	// Which event drives this feature. Render runs every frame (the fast loop in
-	// Features::Execute); any other event subscribes it to the event bus and runs
-	// it when that event is dispatched (e.g. Events::Type::PlayerDeath).
-	Events::Type Event = Events::Type::Render;
+	// Which events drive this feature. Render runs every frame (the fast loop in
+	// Features::Execute); every other trigger subscribes it to the event bus and runs it when that
+	// event is dispatched (e.g. Events::Type::PlayerDeath). A feature may list several triggers, and
+	// may mix Render with bus events.
+	std::vector<Events::Type> Triggers{Events::Type::Render};
 
 	// Bookkeeping owned by Features::Execute; subclasses should not touch these.
 	bool applied = false; // Run() has been applied and not yet reverted by Destroy()
@@ -58,8 +61,14 @@ class Feature
 	virtual bool Check() = 0;
 	/// Revert whatever Run() applied. Called once on the enabled -> disabled edge.
 	virtual void Destroy() = 0;
-	/// Apply the effect. Called every frame while enabled (or once per enable if OneTime).
-	virtual void Run() = 0;
+
+	/// Apply the effect. Called every frame while enabled (or once per enable if OneTime) for a
+	/// Render trigger, and on each dispatch of any other trigger event. The runner always calls the
+	/// (event, payload) form; the default chain lets a subclass override whichever arity it needs —
+	/// Run() to ignore the trigger, Run(event) for the event only, or Run(event, payload) for both.
+	virtual void Run() {}
+	virtual void Run(Events::Type) { Run(); }
+	virtual void Run(Events::Type event, const Events::Payload&) { Run(event); }
 
 	/// Emit a "[Name] message" line, but only when Settings.DEBUG.FeaturesLogging is on.
 	void Log(std::string message)

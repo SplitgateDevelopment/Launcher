@@ -88,14 +88,16 @@ namespace Features
 			// Autosave: persist on every change when enabled.
 			if (Settings.MISC.AutoSave) SettingsHelper::File().Save(); });
 
-		// Subscribe event-driven features (Event != "render") to the event bus;
-		// render features run from Features::Execute each frame instead.
+		// Subscribe each non-Render trigger to the event bus, forwarding the event + payload to the
+		// feature's Run(); Render triggers run from Features::Execute each frame instead. A feature
+		// may list several triggers (e.g. DiscordPresence on EnteredGame + EnteredLobby).
 		for (auto& feature : Features)
 		{
-			if (feature->Event != Events::Type::Render)
+			for (Events::Type trigger : feature->Triggers)
 			{
-				Events::Register(feature->Event, [ptr = feature.get()]
-								 { RunFeature(*ptr); });
+				if (trigger == Events::Type::Render) continue;
+				Events::Register(trigger, [ptr = feature.get(), trigger](const Events::Payload& payload)
+								 { RunFeature(*ptr, trigger, payload); });
 			}
 		}
 

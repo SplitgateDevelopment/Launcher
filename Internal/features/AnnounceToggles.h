@@ -48,7 +48,7 @@ class AnnounceToggles : public Feature
 	AnnounceToggles()
 	{
 		Name = "AnnounceToggles";
-		Event = Events::Type::SettingsChanged; // driven by menu changes, not per-frame
+		Triggers = {Events::Type::SettingsChanged}; // driven by menu changes, not per-frame
 		UpdateEnabled();
 		Log("Created");
 	};

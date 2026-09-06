@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include "Feature.h"
 
@@ -24,10 +25,11 @@ namespace Features
 	// Drives a single feature once: init on first use, refresh Enabled, skip if
 	// idle-disabled, then Run() while enabled (once, if OneTime) or Destroy()
 	// exactly once on the enabled -> disabled edge. Used both by the per-frame
-	// render loop and by the event bus (for event-driven features). Features
-	// whose Check() still returns Enabled keep their previous behavior (they just
-	// skip on disable and never reach Destroy).
-	inline void RunFeature(Feature& feature)
+	// render loop and by the event bus (for event-driven features). The triggering
+	// @p event and @p payload are forwarded to Run() (defaulting to the Render loop's
+	// empty payload). Features whose Check() still returns Enabled keep their previous
+	// behavior (they just skip on disable and never reach Destroy).
+	inline void RunFeature(Feature& feature, Events::Type event = Events::Type::Render, const Events::Payload& payload = {})
 	{
 		try
 		{
@@ -55,7 +57,7 @@ namespace Features
 			{
 				if (!feature.OneTime || !feature.hasRun)
 				{
-					feature.Run();
+					feature.Run(event, payload);
 					feature.hasRun = true;
 				}
 				feature.applied = true;
@@ -77,13 +79,14 @@ namespace Features
 	}
 
 	// Runs every render-driven feature. Called once per rendered frame from
-	// PostRender. Event-driven features (Event != "render") are skipped here and
-	// run from the event bus instead.
+	// PostRender. Features without a Render trigger are skipped here and run from
+	// the event bus instead (a feature may have both).
 	inline void Execute()
 	{
 		for (const auto& feature : Features)
 		{
-			if (feature->Event == Events::Type::Render)
+			const auto& triggers = feature->Triggers;
+			if (std::find(triggers.begin(), triggers.end(), Events::Type::Render) != triggers.end())
 			{
 				RunFeature(*feature);
 			}

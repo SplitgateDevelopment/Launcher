@@ -218,7 +218,7 @@ namespace
 	TEST_F(FeaturesTest, ExecuteSkipsEventDrivenFeatures)
 	{
 		FakeFeature* f = add();
-		f->Event = Events::Type::Shutdown;
+		f->Triggers = {Events::Type::Shutdown};
 		f->Enabled = true;
 		Features::Execute();
 		EXPECT_EQ(0, f->runCount);
@@ -229,9 +229,9 @@ namespace
 	TEST_F(FeaturesTest, EventFeatureRunsWhenDispatched)
 	{
 		FakeFeature f;
-		f.Event = Events::Type::Shutdown;
+		f.Triggers = {Events::Type::Shutdown};
 		f.Enabled = true;
-		Events::Register(f.Event, [&]
+		Events::Register(Events::Type::Shutdown, [&]
 						 { Features::RunFeature(f); });
 
 		Events::Dispatch(Events::Type::Render);
