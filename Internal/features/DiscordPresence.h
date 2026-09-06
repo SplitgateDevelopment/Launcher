@@ -2,8 +2,11 @@
 
 /// @file
 /// The DiscordPresence feature: refreshes the Discord Rich Presence with live game state (map +
-/// K/D) whenever the local player enters a match or returns to the lobby. Event-driven (EnteredGame
-/// / EnteredLobby) rather than per-frame, so it only touches Discord on an actual state change.
+/// K/D). Event-driven rather than per-frame — it runs on the in-game/in-lobby transitions
+/// (EnteredGame / EnteredLobby) and on each kill (PlayerKilled) so the K/D stays current.
+/// UpdateGameState only pushes to Discord when the string actually changes, so PlayerKilled
+/// (which fires for every kill in the match) effectively updates only on the local player's
+/// own kills/deaths.
 
 #include "Feature.h"
 #include "../discord/rpc.h"
@@ -14,7 +17,7 @@ class DiscordPresence : public Feature
 	DiscordPresence()
 	{
 		Name = "DiscordPresence";
-		Triggers = {Events::Type::EnteredGame, Events::Type::EnteredLobby};
+		Triggers = {Events::Type::EnteredGame, Events::Type::EnteredLobby, Events::Type::PlayerKilled};
 		UpdateEnabled();
 		Log("Created");
 	};
@@ -38,10 +41,10 @@ class DiscordPresence : public Feature
 	void Destroy() {
 	};
 
-	/// Push the current game state to Discord on the in-game / in-lobby transition that fired us.
-	void Run(Events::Type event) override
+	/// Push the current game state to Discord on the event that fired us (a state transition or a
+	/// kill). UpdateGameState no-ops when the resulting presence string is unchanged.
+	void Run() override
 	{
-		Log(event == Events::Type::EnteredGame ? "entered game" : "entered lobby");
 		DiscordRPC::UpdateGameState();
 	};
 };
