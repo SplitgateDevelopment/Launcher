@@ -230,8 +230,12 @@ namespace ImGui
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
 
+		// Gap between the switch's right edge and the window border, on top of WindowPadding, so toggles
+		// don't sit flush against the edge.
+		const float extraRightPad = ImGui::GetFontSize();
+
 		ImGui::TextUnformatted(label);
-		ImGui::SameLine(ImGui::GetWindowSize().x - style->WindowPadding.x - ImGui::GetFontSize() * 2);
+		ImGui::SameLine(ImGui::GetWindowSize().x - style->WindowPadding.x - extraRightPad - ImGui::GetFontSize() * 2);
 		std::string str1 = "##";
 		std::string str2 = label;
 		return ToggleButtonEx((str1 + str2).c_str(), v);
