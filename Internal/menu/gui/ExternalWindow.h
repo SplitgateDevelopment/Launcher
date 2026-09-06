@@ -1,24 +1,35 @@
 #pragma once
 
 /// @file
-/// @brief Streamproof external overlay: a separate, capture-excluded top-level window that carries
-/// the ESP + menu, so screen/window capture (OBS, Game Bar, Discord) sees the game but not the
-/// overlay.
+/// @brief Streamproof external overlay renderer: a separate, capture-excluded top-level window that
+/// carries everything the drawing backend renders — the ESP, bullet traces, radar, glow, snaplines,
+/// etc. (all replayed from the recorded Render::* command buffer) plus the watermark — so screen /
+/// window capture (OBS, Game Bar, Discord) sees the game but none of the overlay's drawing. The menu
+/// is deliberately NOT drawn here — it renders on the game-window overlay, which owns the proven
+/// input path; this window is display-only and never touches input or focus.
 ///
 /// Why a whole separate window. SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE) on the *game*
-/// window hides the whole game from capture — useless for streaming. To hide only the overlay it
-/// must live in its own window with that affinity set on it.
+/// window hides the whole game from capture — useless for streaming. To hide only the overlay's
+/// drawing it must live in its own window with that affinity set on it.
 ///
-/// Why its own thread. The menu must be interactive on this window (click-through is dropped while
-/// it's open), which needs a Win32 message pump — and the game's render thread (where Present runs)
-/// has none for our window. So this owns a dedicated thread that creates the window, its own D3D11
-/// device + DirectComposition swap chain (for true per-pixel alpha), and a *second* ImGui context,
+/// Why display-only. Making this window interactive means giving it input — which requires either
+/// stealing the game's focus (which then can't be handed back reliably) or global low-level input
+/// hooks (which can lock input system-wide if the render loop stalls). Both proved unshippable. So
+/// this window never takes focus, installs no hooks, and processes no input: it is permanently
+/// click-through, and simply replays the recorded draw commands (and the watermark) each frame. The
+/// game keeps focus the entire time, so its input can never break.
+///
+/// Why its own thread. The window needs a Win32 message pump, and the game's render thread (where
+/// Present runs) has none for our window. So this owns a dedicated thread that creates the window,
+/// its own D3D11 device + DirectComposition swap chain (for true per-pixel alpha), and a *second*
+/// ImGui context (used only for its draw list + font when replaying the draw commands + watermark),
 /// then runs a pump + render loop. GUI drives Start()/Stop() as RendererMode::External is entered /
-/// left; while it runs, the game-window overlay skips the menu + ESP flush so nothing draws twice.
+/// left; while it runs, the game-window overlay draws the menu but skips the Render flush + watermark
+/// so those aren't drawn twice.
 ///
 /// Per-pixel transparency uses a composition swap chain (DXGI_ALPHA_MODE_PREMULTIPLIED) presented
 /// through DirectComposition; ImGui's DX11 blend writes premultiplied-correct alpha, so clearing the
-/// target transparent and drawing ImGui on top composites cleanly over the desktop/game.
+/// target transparent and drawing on top composites cleanly over the desktop/game.
 
 #include <Windows.h>
 
@@ -35,16 +46,14 @@
 #include "imgui_Impl_Win32.h"
 
 #include "Window.h" // Window::WindowHandle (the game window) + the WDA_EXCLUDEFROMCAPTURE fallback
-#include "Styles.h" // GUI::Styles::Init — same theme as the game-window overlay
-#include "../Menu.h"
+#include "Styles.h"	// GUI::Styles::Init — theme for the streamproof watermark
+#include "../Menu.h" // Menu::Sections::Watermark — drawn here so the watermark is streamproof too
 #include "../../render/Render.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Logger.h"
 
-// Declared by the ImGui Win32 backend (also declared in Window.h, which we include).
-
-/// @brief The streamproof external overlay window, its D3D11/DirectComposition pipeline, its own
-/// ImGui context, and the dedicated thread that pumps + renders it.
+/// @brief The streamproof external ESP window, its D3D11/DirectComposition pipeline, its own ImGui
+/// context (draw list + font only), and the dedicated thread that pumps + renders it.
 namespace ExternalWindow
 {
 	inline HWND Hwnd = nullptr;					   ///< the overlay window (separate from the game window)
@@ -57,11 +66,11 @@ namespace ExternalWindow
 	inline IDCompositionVisual* DcompVisual = nullptr;
 	inline ImGuiContext* Ctx = nullptr; ///< the overlay's ImGui context (distinct from the game's)
 
-	inline HANDLE Thread = nullptr;			 ///< the pump + render thread
-	inline volatile bool Running = false;	 ///< thread loop guard; Stop() clears it
-	inline bool Interactive = false;		 ///< true while click-through is dropped (menu open)
-	inline int Width = 0, Height = 0;		 ///< current back-buffer size (game client size)
-	inline int PosX = 0, PosY = 0;			 ///< current window top-left (game client, in screen coords)
+	inline HANDLE Thread = nullptr;		  ///< the pump + render thread
+	inline volatile bool Running = false; ///< thread loop guard; Stop() clears it
+	inline int Width = 0, Height = 0;	  ///< current back-buffer size (game client size)
+	inline int PosX = 0, PosY = 0;		  ///< current window top-left (game client, in screen coords)
+
 	static constexpr wchar_t ClassName[] = L"SplitgateOverlay";
 
 	/// @brief RAII helper: make @p ctx current for the scope, then restore the previous context.
@@ -82,44 +91,13 @@ namespace ExternalWindow
 		return FindWindowW(L"UnrealWindow", L"PortalWars  ");
 	}
 
-	/// @brief Whether the overlay should be visible this frame: true when the game window is in the
-	/// foreground, or when the overlay window itself is (it pulls focus while the menu is open). Alt-
-	/// tabbing to any other app makes this false, so the ESP/menu doesn't float over the desktop.
+	/// @brief Whether the game window is the foreground window. The overlay never takes the foreground
+	/// itself, so this is simply "is the game the active window" — used to hide the ESP when you
+	/// alt-tab away, so it doesn't float over the desktop or another app.
 	inline bool GameFocused()
 	{
 		const HWND fg = GetForegroundWindow();
-		return fg && (fg == GameWindow() || fg == Hwnd);
-	}
-
-	/// @brief Hand the foreground and keyboard focus back to the game window when the menu closes.
-	///
-	/// The reliable step is hiding the overlay first: SW_HIDE forces Windows to move the foreground to
-	/// the window beneath it (the game), which a plain SetForegroundWindow from the overlay thread was
-	/// being denied. Handing the game a real foreground change also makes it re-lock the cursor for
-	/// mouse-look. The window is then reshown non-activating (still topmost, click-through). Whether the
-	/// game actually regained the foreground is logged, so a lingering failure shows up in internal.log
-	/// instead of being guessed at.
-	inline void FocusGame()
-	{
-		const HWND game = GameWindow();
-		if (!game) return;
-
-		// Hide the overlay so Windows reassigns the foreground to the window beneath it (the game); that
-		// forced reactivation is what makes the game's viewport re-capture the mouse. Then reshow the
-		// overlay non-activating and topmost.
-		//
-		// Deliberately NO AttachThreadInput here: attaching this thread's input queue to the game UI
-		// thread's froze input for EVERY window until the game was restarted (a merged-input-queue
-		// wedge). SW_HIDE + SetForegroundWindow returns the foreground without corrupting global input.
-		ShowWindow(Hwnd, SW_HIDE);
-		SetForegroundWindow(game);
-		ShowWindow(Hwnd, SW_SHOWNOACTIVATE);
-		SetWindowPos(Hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-		const bool ok = GetForegroundWindow() == game;
-		Logger::Log(ok ? "SUCCESS" : "ERROR",
-					ok ? "[Overlay] menu closed, game regained the foreground"
-					   : "[Overlay] menu closed, but the game did NOT regain the foreground");
+		return fg && fg == GameWindow();
 	}
 
 	/// @brief (Re)create the render target view from the swap chain's back buffer. Flip-model buffer 0
@@ -140,66 +118,11 @@ namespace ExternalWindow
 		Rtv = nullptr;
 	}
 
-	/// @brief Window procedure: while the menu is open, feed input to the overlay's ImGui context and
-	/// swallow it; otherwise let messages fall through. The window is click-through (WS_EX_TRANSPARENT)
-	/// when the menu is closed, so it receives no mouse input then anyway.
+	/// @brief Window procedure. The overlay is permanently click-through and never focused, so it gets
+	/// essentially no input messages and drives nothing from them. Nothing to handle here.
 	inline LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (Settings.MENU.ShowMenu && Ctx)
-		{
-			ScopedContext scoped(Ctx);
-			ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
-			switch (msg)
-			{
-			case WM_MOUSEMOVE:
-			case WM_LBUTTONDOWN:
-			case WM_LBUTTONUP:
-			case WM_LBUTTONDBLCLK:
-			case WM_RBUTTONDOWN:
-			case WM_RBUTTONUP:
-			case WM_MBUTTONDOWN:
-			case WM_MBUTTONUP:
-			case WM_MOUSEWHEEL:
-			case WM_MOUSEHWHEEL:
-			case WM_KEYDOWN:
-			case WM_KEYUP:
-			case WM_CHAR:
-			case WM_SETCURSOR:
-				return true;
-			default:
-				break;
-			}
-		}
 		return DefWindowProcW(hWnd, msg, wParam, lParam);
-	}
-
-	/// @brief Apply the click-through / interactivity state for the current @ref Settings.MENU.ShowMenu.
-	/// Closed menu: WS_EX_TRANSPARENT | WS_EX_NOACTIVATE so clicks pass to the game. Open menu: drop
-	/// those and pull focus so the menu is usable. Only touches styles on an actual state change.
-	inline void SyncInteractivity()
-	{
-		const bool wantInteractive = Settings.MENU.ShowMenu;
-		if (wantInteractive == Interactive) return;
-		Interactive = wantInteractive;
-
-		LONG_PTR ex = GetWindowLongPtrW(Hwnd, GWL_EXSTYLE);
-		if (wantInteractive)
-			ex &= ~(WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
-		else
-			ex |= (WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
-		SetWindowLongPtrW(Hwnd, GWL_EXSTYLE, ex);
-		// Commit the ex-style change so the click-through (WS_EX_TRANSPARENT) state is applied to hit-
-		// testing immediately, instead of only on the next natural frame change.
-		SetWindowPos(Hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
-
-		// Opening the menu pulls foreground onto the overlay so it takes keyboard input; closing it hands
-		// foreground + focus back to the game. The handoff goes through FocusGame (AttachThreadInput)
-		// because a plain SetForegroundWindow for the game is ignored under the foreground lock, which
-		// left the overlay activated and the game ignoring input.
-		if (wantInteractive)
-			SetForegroundWindow(Hwnd);
-		else
-			FocusGame();
 	}
 
 	/// @brief Keep the overlay positioned over the game's client area and sized to it; resize the swap
@@ -235,11 +158,11 @@ namespace ExternalWindow
 		}
 	}
 
-	/// @brief Render one overlay frame: clear transparent, replay this frame's recorded ESP commands
-	/// into the overlay context's draw list, draw the menu, and present through DirectComposition.
-	/// While the game (and overlay) are not the foreground window the overlay paints nothing — it still
-	/// runs a frame to drain the recorded ESP command buffer and presents a fully transparent frame, so
-	/// alt-tabbing away hides the ESP/menu instead of leaving it over the desktop or another app.
+	/// @brief Render one overlay frame: clear transparent, replay this frame's recorded draw commands
+	/// (+ the watermark) into the overlay context's draw list, and present through DirectComposition.
+	/// Draws only while the game is the foreground window: when unfocused it still runs a frame to
+	/// drain the recorded command buffer and presents a fully transparent frame, so alt-tabbing away
+	/// hides the overlay.
 	inline void RenderFrame()
 	{
 		if (!Rtv) return;
@@ -253,21 +176,12 @@ namespace ExternalWindow
 		ImGui::NewFrame();
 
 		ImFont* font = ImGui::GetFont();
-		// Drain the recorded ESP commands every frame (Flush swaps the buffer out under its lock even
+		// Drain the recorded draw commands every frame (Flush swaps the buffer out under its lock even
 		// when the draw list is null), but only actually draw them while focused.
 		Render::Flush(focused ? ImGui::GetBackgroundDrawList() : nullptr, font, ImGui::GetFontSize());
 
-		const bool showMenu = focused && Settings.MENU.ShowMenu;
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDrawCursor = showMenu;
-		io.WantCaptureMouse = showMenu;
-		io.WantTextInput = showMenu;
-		io.WantCaptureKeyboard = showMenu;
-
-		// Call Menu::Draw whenever focused (not just when the menu is visible): it also polls the toggle
-		// hotkey and draws the watermark, both of which must run while the menu is closed so it can be
-		// reopened. Menu::Draw self-guards the window with its own ShowMenu check.
-		if (focused) Menu::Draw();
+		// The watermark is ImGui, not a Render::* command, so draw it here to keep it streamproof too.
+		if (focused) Menu::Sections::Watermark();
 
 		ImGui::EndFrame();
 		ImGui::Render();
@@ -280,8 +194,9 @@ namespace ExternalWindow
 		SwapChain->Present(1, 0);
 	}
 
-	/// @brief Create the layered/click-through/topmost/capture-excluded window (no redirection bitmap,
-	/// so DirectComposition owns the pixels). @return true on success.
+	/// @brief Create the click-through/topmost/capture-excluded window (no redirection bitmap, so
+	/// DirectComposition owns the pixels). The window stays click-through + non-activating for its
+	/// whole life — it never takes the foreground and never processes input. @return true on success.
 	inline bool CreateOverlayWindow()
 	{
 		WNDCLASSEXW wc{};
@@ -305,14 +220,14 @@ namespace ExternalWindow
 		PosY = topLeft.y;
 
 		// NOREDIRECTIONBITMAP: DirectComposition presents the pixels, so we don't want a GDI
-		// redirection surface. TRANSPARENT | NOACTIVATE start it click-through (menu closed).
+		// redirection surface. TRANSPARENT | NOACTIVATE keep it click-through and non-activating for
+		// its whole life — the ESP is display-only, so the window never needs input or focus.
 		const DWORD exStyle = WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_NOREDIRECTIONBITMAP;
 		Hwnd = CreateWindowExW(exStyle, ClassName, L"", WS_POPUP, PosX, PosY, Width, Height, nullptr, nullptr, wc.hInstance, nullptr);
 		if (!Hwnd) return false;
 
 		SetWindowDisplayAffinity(Hwnd, WDA_EXCLUDEFROMCAPTURE);
 		ShowWindow(Hwnd, SW_SHOWNOACTIVATE);
-		Interactive = false;
 		return true;
 	}
 
@@ -363,7 +278,7 @@ namespace ExternalWindow
 	}
 
 	/// @brief Create the overlay's own ImGui context and its DX11/Win32 backends (bound to @ref Hwnd
-	/// and @ref Device). Applies the same theme as the game-window overlay so the two menus match.
+	/// and @ref Device). Used only for its draw list + font atlas when replaying the ESP commands.
 	/// @return true on success.
 	inline bool CreateImGui()
 	{
@@ -372,7 +287,7 @@ namespace ExternalWindow
 		if (!Ctx) return false;
 
 		ScopedContext scoped(Ctx);
-		GUI::Styles::Init(); // same cream/red palette + metrics as the internal overlay
+		GUI::Styles::Init(); // so the watermark matches the game-window overlay's theme
 		if (!ImGui_ImplWin32_Init(Hwnd)) return false;
 		if (!ImGui_ImplDX11_Init(Device, Context)) return false;
 		ImGui_ImplDX11_CreateDeviceObjects();
@@ -432,7 +347,6 @@ namespace ExternalWindow
 			}
 
 			SyncRect();
-			SyncInteractivity();
 			RenderFrame(); // Present(1, ...) paces the loop to vsync
 		}
 

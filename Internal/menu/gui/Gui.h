@@ -91,16 +91,16 @@ namespace GUI
 			InitializeImGui(pSwapChain);
 		if (!initialized) return;
 
-		// Streamproof (External) mode: a separate, capture-excluded window owns the menu + ESP. Make
-		// sure that overlay thread is running and draw nothing on the (captured) game window - so the
-		// ESP command buffer is consumed only by the external window and the menu isn't drawn twice.
-		if (Settings.VISUALS.Renderer == RendererMode::External)
-		{
+		// Streamproof (External) mode: a separate, capture-excluded window renders everything the
+		// drawing backend produces (ESP / radar / bullet traces / ...) plus the watermark, so capture
+		// can't see them. Keep that thread running; the game window below still draws the MENU (it owns
+		// the working input path), but skips the Render flush + watermark so those are drawn only on the
+		// streamproof window - which is also where the command buffer is drained, not here.
+		const bool external = (Settings.VISUALS.Renderer == RendererMode::External);
+		if (external)
 			ExternalWindow::Start();
-			return;
-		}
-		// Any other renderer: if we were in External mode, tear that overlay window down.
-		if (ExternalWindow::Active()) ExternalWindow::Stop();
+		else if (ExternalWindow::Active())
+			ExternalWindow::Stop();
 
 		// Skip rendering into a degenerate target: minimized, or a zero-sized client area (which is
 		// also true during the minimize/restore transition, before IsIconic flips). Running ImGui at
@@ -121,9 +121,13 @@ namespace GUI
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		// Replay the ESP/radar draw commands recorded this frame (ImGui renderer mode; no-op in
-		// canvas mode) into the background draw list.
-		Render::Flush();
+		// Replay the feature draw commands (ESP/radar/traces/..., no-op in canvas mode) + the watermark
+		// on the game window. In External mode the streamproof window draws both, so skip them here.
+		if (!external)
+		{
+			Render::Flush();
+			Menu::Sections::Watermark();
+		}
 
 		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);

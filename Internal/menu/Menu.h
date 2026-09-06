@@ -36,11 +36,8 @@ namespace Menu
 	/// tab bar (Misc, Exploits, Visuals, Settings, Debug) plus the optional ImGui demo/style-editor windows.
 	void Draw()
 	{
-		Menu::Sections::Watermark();
-
-		ImGuiIO& io = ImGui::GetIO();
-		(void)io;
-
+		// The watermark is drawn by the active renderer, not here: on the game window in the normal
+		// modes, and on the streamproof external window in External mode — so it isn't captured there.
 		if (Input::Pressed(Settings.MENU.ShowHotkey) || ImGui::IsKeyPressed(ImGuiKey_GamepadStart))
 		{
 			Settings.MENU.ShowMenu = !Settings.MENU.ShowMenu;
