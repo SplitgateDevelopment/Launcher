@@ -81,12 +81,12 @@ TEST(SettingsSerialization, CameraModeUnknownFallsBackToFirst)
 TEST(SettingsSerialization, RendererAndCameraSurviveSettingsRoundTrip)
 {
 	SETTINGS in{};
-	in.VISUALS.Renderer = RendererMode::ImGui;
+	in.MENU.Renderer = RendererMode::ImGui;
 	in.EXPLOITS.Camera = CameraMode::ThirdPerson;
 
 	const auto out = json(in).get<SETTINGS>();
 
-	EXPECT_EQ(out.VISUALS.Renderer, RendererMode::ImGui);
+	EXPECT_EQ(out.MENU.Renderer, RendererMode::ImGui);
 	EXPECT_EQ(out.EXPLOITS.Camera, CameraMode::ThirdPerson);
 }
 
