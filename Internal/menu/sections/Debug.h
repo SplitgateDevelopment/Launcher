@@ -51,51 +51,42 @@ namespace Menu
 				Shared::Utilities::OpenFolder(Shared::AppDataPath(SettingsHelper::AppFolder));
 			UI::Tooltip("Open the SplitgateInternal data folder (settings, logs, dumps).");
 
-			// The console-command input, feature tree and log child region use ImGui InputText /
-			// TreeNode / child regions — ImGui-only. The Canvas backend shows a note.
-			if (!UI::IsImGui())
-			{
-				UI::Text("Console command, feature tree and logs use the ImGui menu backend.");
-				return;
-			}
-
-			ImGui::SeparatorText("Console command");
+			UI::SeparatorText("Console command");
 			static char consoleBuffer[256] = "";
-			ImGui::SetNextItemWidth(260.f);
-			ImGui::InputText("##console", consoleBuffer, sizeof(consoleBuffer));
-			ImGui::SameLine();
-			if (ImGui::Button("Run") && consoleBuffer[0] && Engine::PlayerController)
+			UI::SetNextItemWidth(260.f);
+			UI::InputText("##console", consoleBuffer, sizeof(consoleBuffer));
+			UI::SameLine();
+			if (UI::Button("Run") && consoleBuffer[0] && Engine::PlayerController)
 			{
 				Engine::PlayerController->SendToConsole(FString(std::string(consoleBuffer)));
 			}
 
-			if (ImGui::TreeNode("Loaded Features"))
+			if (UI::TreeNode("Loaded Features"))
 			{
 				for (const auto& Feature : Features::Features)
 				{
-					ImGui::BulletText(Feature->Name.c_str());
-					ImGui::Tooltip(std::format("Init [{}], Enabled [{}]", Feature->Initialized, Feature->Enabled).c_str());
+					UI::BulletText("%s", Feature->Name.c_str());
+					UI::Tooltip(std::format("Init [{}], Enabled [{}]", Feature->Initialized, Feature->Enabled).c_str());
 				}
 
-				ImGui::TreePop();
+				UI::TreePop();
 			}
 
-			if (ImGui::CollapsingHeader("Recent logs"))
+			if (UI::CollapsingHeader("Recent logs"))
 			{
-				if (ImGui::Button("Copy##logs"))
+				if (UI::Button("Copy##logs"))
 				{
 					std::string out;
 					for (const auto& line : Logger::Recent())
 						out += line + "\n";
-					ImGui::SetClipboardText(out.c_str());
+					UI::SetClipboardText(out.c_str());
 				}
-				ImGui::Tooltip("Copy the recent log lines to the clipboard.");
+				UI::Tooltip("Copy the recent log lines to the clipboard.");
 
-				ImGui::BeginChild("Logs", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+				UI::BeginChild("Logs", 0, 200);
 				for (const auto& line : Logger::Recent())
-					ImGui::TextUnformatted(line.c_str());
-				if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f); // stick to bottom
-				ImGui::EndChild();
+					UI::Text("%s", line.c_str());
+				UI::EndChild();
 			}
 		}
 	} // namespace Sections
