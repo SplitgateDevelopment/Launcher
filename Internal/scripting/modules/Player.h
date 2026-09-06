@@ -6,7 +6,6 @@
 #include <pybind11/embed.h>
 
 #include "../../ue/Engine.h"
-#include "../../ue/Globals.h"
 
 /**
  * @file
@@ -25,15 +24,15 @@ namespace Scripts
 		/// The local pawn (AcknowledgedPawn) or nullptr if not in game.
 		inline AActor* LocalPawn()
 		{
-			if (!Globals::PlayerController) return nullptr;
-			return reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+			if (!Engine::PlayerController) return nullptr;
+			return reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 		}
 
 		/// The local character (for health / character-specific fields) or nullptr.
 		inline APortalWarsCharacter* LocalCharacter()
 		{
-			if (!Globals::PlayerController) return nullptr;
-			return reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+			if (!Engine::PlayerController) return nullptr;
+			return reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 		}
 
 		/// Registers the `Player` submodule: local location/teleport, health, view rotation, and the
@@ -43,7 +42,7 @@ namespace Scripts
 			auto player = m.def_submodule("Player");
 
 			player.def("is_in_game", []
-					   { return Globals::PlayerController && Globals::PlayerController->IsInGame(); });
+					   { return Engine::PlayerController && Engine::PlayerController->IsInGame(); });
 
 			player.def("location", []() -> py::object
 					   {
@@ -57,7 +56,7 @@ namespace Scripts
 					   {
 				auto* pawn = LocalPawn();
 				if (!pawn) return false;
-				FRotator rot = Globals::PlayerController->ControlRotation;
+				FRotator rot = Engine::PlayerController->ControlRotation;
 				return pawn->K2_TeleportTo(FVector{x, y, z}, rot); }, py::arg("x"), py::arg("y"), py::arg("z"));
 
 			player.def("health", []() -> py::object
@@ -73,15 +72,15 @@ namespace Scripts
 
 			player.def("view_rotation", []() -> py::object
 					   {
-				if (!Globals::PlayerController) return py::none();
-				FRotator r = Globals::PlayerController->ControlRotation;
+				if (!Engine::PlayerController) return py::none();
+				FRotator r = Engine::PlayerController->ControlRotation;
 				return py::make_tuple(r.Pitch, r.Yaw, r.Roll); });
 
 			player.def("set_view_rotation", [](float pitch, float yaw, float roll)
 					   {
-				if (!Globals::PlayerController) return;
+				if (!Engine::PlayerController) return;
 				FRotator r{pitch, yaw, roll};
-				Globals::PlayerController->SetControlRotation(r); }, py::arg("pitch"), py::arg("yaw"), py::arg("roll") = 0.f);
+				Engine::PlayerController->SetControlRotation(r); }, py::arg("pitch"), py::arg("yaw"), py::arg("roll") = 0.f);
 
 			player.def("velocity", []() -> py::object
 					   {
@@ -103,16 +102,16 @@ namespace Scripts
 				r.Yaw = std::atan2(dy, dx) * toDeg;
 				r.Pitch = std::atan2(dz, std::sqrt(dx * dx + dy * dy)) * toDeg;
 				r.Roll = 0.f;
-				Globals::PlayerController->SetControlRotation(r);
+				Engine::PlayerController->SetControlRotation(r);
 				return true; }, py::arg("x"), py::arg("y"), py::arg("z"));
 
 			player.def("console", [](std::string command)
 					   {
-				if (Globals::PlayerController) Globals::PlayerController->SendToConsole(FString(command)); }, py::arg("command"));
+				if (Engine::PlayerController) Engine::PlayerController->SendToConsole(FString(command)); }, py::arg("command"));
 
 			player.def("chat", [](std::string message)
 					   {
-				if (Globals::PlayerController) Globals::PlayerController->SendChatMessage(FString(message)); }, py::arg("message"));
+				if (Engine::PlayerController) Engine::PlayerController->SendChatMessage(FString(message)); }, py::arg("message"));
 
 			player.def("respawn", []
 					   {

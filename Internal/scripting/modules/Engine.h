@@ -7,7 +7,6 @@
 #include <pybind11/embed.h>
 
 #include "../../ue/Engine.h"
-#include "../../ue/Globals.h"
 #include "../../native/WorldToScreen.h"
 
 /**
@@ -46,8 +45,8 @@ namespace Scripts
 			// Viewport size in pixels, or None if the canvas isn't ready.
 			engine.def("canvas_size", []() -> py::object
 					   {
-				if (!Globals::Canvas) return py::none();
-				return py::make_tuple(Globals::Canvas->ClipX, Globals::Canvas->ClipY); });
+				if (!Engine::Canvas) return py::none();
+				return py::make_tuple(Engine::Canvas->ClipX, Engine::Canvas->ClipY); });
 
 			// Euclidean distance between two world points, in metres (UE units are cm).
 			engine.def("distance", [](float x1, float y1, float z1, float x2, float y2, float z2)

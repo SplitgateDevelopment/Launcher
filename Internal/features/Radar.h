@@ -6,7 +6,7 @@
 /// comment for the in-game tuning caveats.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../utils/Rgb.h"
 #include "../cache/ActorCache.h"
 
@@ -52,9 +52,9 @@ class Radar : public Feature
 	{
 		if (!Initialized) return false;
 
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -75,7 +75,7 @@ class Radar : public Feature
 	/// radar radius (forward = up), and drop points outside the panel.
 	void Run()
 	{
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
@@ -93,7 +93,7 @@ class Radar : public Feature
 		const float sinYaw = sinf(yaw);
 
 		const float radius = Size * 0.5f;
-		const float cx = Globals::Canvas->ClipX - Margin - radius;
+		const float cx = Engine::Canvas->ClipX - Margin - radius;
 		const float cy = Margin + radius;
 
 		// Panel border + own marker: the cycling RGB color when enabled, else the default white.

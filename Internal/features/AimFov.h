@@ -5,7 +5,7 @@
 /// lock-on radius (Settings.AIM.AimFov, in pixels) is visible while tuning.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 
@@ -33,9 +33,9 @@ class AimFov : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -51,8 +51,8 @@ class AimFov : public Feature
 
 	void Run()
 	{
-		const float cx = Globals::Canvas->ClipX * 0.5f;
-		const float cy = Globals::Canvas->ClipY * 0.5f;
+		const float cx = Engine::Canvas->ClipX * 0.5f;
+		const float cy = Engine::Canvas->ClipY * 0.5f;
 		const float radius = Settings.AIM.AimFov;
 		// RGB overrides the configured color with the cycling rainbow, like the ESP box/lines.
 		const FLinearColor color = ToColor(Settings.MENU.Rgb ? Rgb::Current() : Settings.AIM.AimFovColor);

@@ -6,7 +6,7 @@
 /// class comment below for scope and the in-game tuning caveats.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"
@@ -170,9 +170,9 @@ class Esp : public Feature
 	{
 		if (!Initialized) return false;
 
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -208,7 +208,7 @@ class Esp : public Feature
 		const bool rgb = Settings.MENU.Rgb;
 		const FLinearColor rgbColor = rgb ? ToColor(Rgb::Current()) : FLinearColor{};
 
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		const bool hasPlayer = localPawn != nullptr;
 		FVector playerPos{};
@@ -264,7 +264,7 @@ class Esp : public Feature
 			if (OffScreen(feet)) continue;
 
 			if (visuals.Snaplines)
-				Render::Line({Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY}, feet, 1.f, snapC);
+				Render::Line({Engine::Canvas->ClipX * 0.5f, Engine::Canvas->ClipY}, feet, 1.f, snapC);
 
 			if (visuals.Box3D)
 				DrawBox3D(controller, cached.location, boxC);

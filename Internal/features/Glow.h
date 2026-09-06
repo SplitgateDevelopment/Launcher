@@ -6,7 +6,7 @@
 /// post-process — see the class comment for the in-game caveats.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../utils/Rgb.h"
 
@@ -69,8 +69,8 @@ class Glow : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
 
 		return true;
 	};
@@ -88,7 +88,7 @@ class Glow : public Feature
 		for (const auto& cached : ActorCache::Players())
 			Reset(cached.character);
 
-		Reset(reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character));
+		Reset(reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character));
 	};
 
 	/// Enable the through-wall outline + color for each wanted character. Players that shouldn't
@@ -99,7 +99,7 @@ class Glow : public Feature
 		const bool rgb = Settings.MENU.Rgb;
 		const FLinearColor rgbColor = rgb ? ToColor(Rgb::Current()) : FLinearColor{};
 
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 
 		// Source the stencil values from the local character: they're reliably populated there, whereas

@@ -5,7 +5,7 @@
 /// while enabled, restoring the captured original values on disable.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 /// Overwrites the equipped gun's recoilConfig with zeros each frame so shots
 /// have no kick or spread.
@@ -44,10 +44,10 @@ class NoRecoil : public Feature
 	{
 		if (!Initialized) return false;
 
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
 
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 		if (!Player) return false;
 
 		Gun = Player->CurrentWeapon;
@@ -58,7 +58,7 @@ class NoRecoil : public Feature
 
 	void Init()
 	{
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		if (!Player || !Player->CurrentWeapon)
 		{

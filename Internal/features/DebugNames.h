@@ -7,7 +7,7 @@
 /// opt-in via Settings.VISUALS.DrawAllNames.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../render/Render.h"
 #include "../native/WorldToScreen.h"
 
@@ -33,9 +33,9 @@ class DebugNames : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -52,11 +52,11 @@ class DebugNames : public Feature
 
 	void Run()
 	{
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		const FLinearColor color{1.f, 1.f, 1.f, 1.f};
 		const float scale = Settings.VISUALS.FontScale;
 
-		auto& Levels = Globals::World->Levels;
+		auto& Levels = Engine::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
 		{
 			if (!Levels.IsValidIndex(l)) continue;

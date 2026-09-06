@@ -7,7 +7,7 @@
 /// NOTE: the boost is per-frame, so effective speed scales with frame rate — tune the slider to taste.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 
 #include <cmath>
@@ -29,7 +29,7 @@ class BulletSpeed : public Feature
 
 	bool Check()
 	{
-		return Initialized && Globals::PlayerController && Globals::PlayerController->IsInGame() && Globals::World;
+		return Initialized && Engine::PlayerController && Engine::PlayerController->IsInGame() && Engine::World;
 	};
 
 	void Init()
@@ -43,7 +43,7 @@ class BulletSpeed : public Feature
 
 	void Run()
 	{
-		auto* localPawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+		auto* localPawn = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 		if (!localPawn) return;
 
 		const float boost = Settings.EXPLOITS.BulletSpeedBoost;

@@ -11,7 +11,7 @@
 ///  - Free cam: the game's debug fly-camera (ToggleDebugCamera console command).
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 #include <cmath>
 #include <string>
@@ -23,14 +23,14 @@ class Camera : public Feature
 
 	static void ToggleDebugCamera()
 	{
-		Globals::PlayerController->SendToConsole(FString(std::string("ToggleDebugCamera")));
+		Engine::PlayerController->SendToConsole(FString(std::string("ToggleDebugCamera")));
 	}
 
 	/// Place the camera behind the pawn, looking along the aim — called every frame while in third
 	/// person, so the game's per-frame camera update can't reassert first person.
 	void DriveThirdPerson()
 	{
-		auto* pc = Globals::PlayerController;
+		auto* pc = Engine::PlayerController;
 		auto* pawn = reinterpret_cast<AActor*>(pc->AcknowledgedPawn);
 		if (!pawn) return;
 
@@ -62,7 +62,7 @@ class Camera : public Feature
 
 	bool Check()
 	{
-		return Initialized && Globals::PlayerController && Globals::PlayerController->IsInGame();
+		return Initialized && Engine::PlayerController && Engine::PlayerController->IsInGame();
 	};
 
 	void Init()

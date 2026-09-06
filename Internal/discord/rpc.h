@@ -13,7 +13,7 @@
 #include "../external/discord-rpc/include/discord_rpc.h"
 #include "../external/discord-rpc/include/discord_register.h"
 #include "../utils/Logger.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "handlers.h"
 
 #pragma comment(lib, "discord-rpc.lib")
@@ -96,10 +96,10 @@ namespace DiscordRPC
 
 		static std::string stateBuffer; // persists so discordPresence.state stays valid across updates
 
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		if (controller && controller->IsInGame())
 		{
-			const std::string map = Globals::World ? Globals::World->GetName() : "";
+			const std::string map = Engine::World ? Engine::World->GetName() : "";
 			int kills = 0, deaths = 0;
 			if (auto* state = reinterpret_cast<APortalWarsPlayerState*>(controller->PlayerState))
 			{

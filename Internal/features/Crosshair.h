@@ -5,7 +5,7 @@
 /// render backend (four arms with a centre gap). RGB-aware, like the ESP/aim-FOV overlays.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../utils/Rgb.h"
 #include "../render/Render.h"
 
@@ -30,9 +30,9 @@ class Crosshair : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -49,8 +49,8 @@ class Crosshair : public Feature
 	void Run()
 	{
 		const auto& v = Settings.VISUALS;
-		const float cx = Globals::Canvas->ClipX * 0.5f;
-		const float cy = Globals::Canvas->ClipY * 0.5f;
+		const float cx = Engine::Canvas->ClipX * 0.5f;
+		const float cy = Engine::Canvas->ClipY * 0.5f;
 		const float gap = v.CrosshairGap;
 		const float len = v.CrosshairSize;
 		const float t = v.CrosshairThickness;

@@ -8,7 +8,7 @@
 /// tuned in-game; verify on a live match.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"
@@ -60,7 +60,7 @@ class Aimbot : public Feature
 		for (int b : candidates)
 		{
 			const FVector world = mesh->GetBoneMatrix(b);
-			if (LineTraceVisible(Globals::PlayerController, eye, world, reinterpret_cast<AActor*>(character)))
+			if (LineTraceVisible(Engine::PlayerController, eye, world, reinterpret_cast<AActor*>(character)))
 				return b;
 		}
 		return -1;
@@ -83,9 +83,9 @@ class Aimbot : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -108,7 +108,7 @@ class Aimbot : public Feature
 		const bool engaged = aim.SilentAim ? Input::Down(VK_LBUTTON) : Input::Down(aim.AimKey);
 		if (!engaged) return;
 
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
@@ -117,7 +117,7 @@ class Aimbot : public Feature
 			localTeam = localChar->GetTeamNum();
 
 		const int bone = BoneIndex(aim.AimBone);
-		const FVector2D crosshair{Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY * 0.5f};
+		const FVector2D crosshair{Engine::Canvas->ClipX * 0.5f, Engine::Canvas->ClipY * 0.5f};
 
 		// Aim origin: the local pawn's location, roughly at eye height. Also the start point for the
 		// strict per-bone line-of-sight traces below.

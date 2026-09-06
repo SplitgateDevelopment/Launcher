@@ -6,7 +6,6 @@
 /// comment for the scoping and caveats.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
 #include "../ue/Engine.h"
 
 #include <functional>
@@ -34,9 +33,9 @@ class Phasing : public Feature
 	/// so it never touches a despawned pointer (safe for both the disable pass and the restore pass).
 	void ForEachCover(const std::function<void(AActor*)>& fn)
 	{
-		if (!Globals::World) return;
+		if (!Engine::World) return;
 
-		auto& Levels = Globals::World->Levels;
+		auto& Levels = Engine::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
 		{
 			if (!Levels.IsValidIndex(l)) continue;
@@ -73,9 +72,9 @@ class Phasing : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::World) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::World) return false;
 
 		return true;
 	};

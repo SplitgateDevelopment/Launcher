@@ -6,7 +6,7 @@
 /// are only ever drawn from recorded positions (never by dereferencing a dead actor).
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../utils/Rgb.h"
@@ -51,8 +51,8 @@ class BulletTraces : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController || !Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::World || !Globals::Canvas) return false;
+		if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::World || !Engine::Canvas) return false;
 		return true;
 	};
 

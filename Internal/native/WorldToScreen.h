@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../settings/Settings.h"
 
 namespace Projection
@@ -20,16 +20,16 @@ namespace Projection
 	/// Settings.DEBUG.NativeWorldToScreen is off, defers to the game's ProjectWorldLocationToScreen.
 	inline bool WorldToScreen(const FVector& world, FVector2D& out)
 	{
-		if (!Globals::PlayerController || !Globals::Canvas) return false;
+		if (!Engine::PlayerController || !Engine::Canvas) return false;
 
 		// Fallback path: the game's projection UFunction (a ProcessEvent per point). CustomProjection
 		// selects PortalWars' own ProjectWorldLocationToScreenCustom over the stock engine one.
 		if (!Settings.DEBUG.NativeWorldToScreen)
 			return Settings.DEBUG.CustomProjection
-					   ? Globals::PlayerController->ProjectWorldLocationToScreenCustom(world, out, false)
-					   : Globals::PlayerController->ProjectWorldLocationToScreen(world, out, false);
+					   ? Engine::PlayerController->ProjectWorldLocationToScreenCustom(world, out, false)
+					   : Engine::PlayerController->ProjectWorldLocationToScreen(world, out, false);
 
-		auto* manager = Globals::PlayerController->PlayerCameraManager;
+		auto* manager = Engine::PlayerController->PlayerCameraManager;
 		if (!manager) return false;
 
 		// Resolve the camera POV (location / rotation / FOV) from the cheapest source that's ready.
@@ -87,8 +87,8 @@ namespace Projection
 		const float x = delta.X * right.X + delta.Y * right.Y + delta.Z * right.Z;
 		const float y = delta.X * up.X + delta.Y * up.Y + delta.Z * up.Z;
 
-		const float halfW = Globals::Canvas->ClipX * 0.5f;
-		const float halfH = Globals::Canvas->ClipY * 0.5f;
+		const float halfW = Engine::Canvas->ClipX * 0.5f;
+		const float halfH = Engine::Canvas->ClipY * 0.5f;
 		const float scale = halfW / tanf(camFov * 0.5f * toRad);
 
 		out.X = halfW + x * scale / depth;
@@ -104,8 +104,8 @@ namespace Projection
 	{
 		if (!Settings.DEBUG.NativeBones)
 		{
-			if (!Globals::PlayerController) return {0, 0};
-			return mesh->GetBone(index, Globals::PlayerController);
+			if (!Engine::PlayerController) return {0, 0};
+			return mesh->GetBone(index, Engine::PlayerController);
 		}
 
 		FVector2D out{};

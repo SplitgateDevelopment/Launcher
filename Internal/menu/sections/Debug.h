@@ -55,9 +55,9 @@ namespace Menu
 			ImGui::SetNextItemWidth(260.f);
 			ImGui::InputText("##console", consoleBuffer, sizeof(consoleBuffer));
 			ImGui::SameLine();
-			if (ImGui::Button("Run") && consoleBuffer[0] && Globals::PlayerController)
+			if (ImGui::Button("Run") && consoleBuffer[0] && Engine::PlayerController)
 			{
-				Globals::PlayerController->SendToConsole(FString(std::string(consoleBuffer)));
+				Engine::PlayerController->SendToConsole(FString(std::string(consoleBuffer)));
 			}
 
 			if (ImGui::TreeNode("Loaded Features"))

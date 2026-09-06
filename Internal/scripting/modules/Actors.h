@@ -10,7 +10,6 @@
 #include <pybind11/stl.h>
 
 #include "../../ue/Engine.h"
-#include "../../ue/Globals.h"
 #include "../../native/Visibility.h"
 #include "../../cache/ActorCache.h"
 
@@ -56,10 +55,10 @@ namespace Scripts
 		inline std::vector<PlayerInfo> CollectPlayers()
 		{
 			std::vector<PlayerInfo> out;
-			if (!Globals::PlayerController) return out;
+			if (!Engine::PlayerController) return out;
 
 			ActorCache::Rebuild();
-			auto* localPawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+			auto* localPawn = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 
 			for (const auto& p : ActorCache::Players())
 			{
@@ -119,8 +118,8 @@ namespace Scripts
 					return c && Visibility::IsVisible(c, Visibility::LocalEye()); }, "Whether the character is in line of sight from the local player (occlusion trace).")
 				.def("distance", [](const PlayerInfo& p) -> py::object
 					 {
-					if (!Globals::PlayerController || !Globals::PlayerController->AcknowledgedPawn) return py::none();
-					FVector me = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn)->K2_GetActorLocation();
+					if (!Engine::PlayerController || !Engine::PlayerController->AcknowledgedPawn) return py::none();
+					FVector me = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn)->K2_GetActorLocation();
 					const double dx = p.x - me.X, dy = p.y - me.Y, dz = p.z - me.Z;
 					return py::float_(std::sqrt(dx * dx + dy * dy + dz * dz) / 100.0); }, "Distance from the local player, in metres.")
 				.def("__repr__", [](const PlayerInfo& p)

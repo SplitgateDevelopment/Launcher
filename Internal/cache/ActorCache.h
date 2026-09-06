@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "../ue/Engine.h"
-#include "../ue/Globals.h"
 #include "../native/ActorLocation.h"
 
 /// Shared, once-per-frame view of the world's actors.
@@ -61,7 +60,7 @@ namespace ActorCache
 		players.clear();
 		projectiles.clear();
 
-		if (!Globals::World) return;
+		if (!Engine::World) return;
 		if (!characterClass) characterClass = Engine::GObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
 
@@ -69,7 +68,7 @@ namespace ActorCache
 		const bool wantProjectiles = Settings.VISUALS.BulletTraces || Settings.EXPLOITS.BulletTp || Settings.EXPLOITS.BulletSpeed;
 		if (wantProjectiles && !projectileClass) projectileClass = Engine::GObjects->FindObject("Class PortalWars.Projectile");
 
-		auto& Levels = Globals::World->Levels;
+		auto& Levels = Engine::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
 		{
 			if (!Levels.IsValidIndex(l)) continue;
@@ -140,7 +139,7 @@ namespace ActorCache
 		// (APortalWarsPostPlayerController) the actor list is large and nothing consumes the cache,
 		// so the per-frame walk is pure cost — this is the post-game FPS drop. Features already skip
 		// via their own IsInGame() Check(), so clearing here is safe.
-		auto* pc = Globals::PlayerController;
+		auto* pc = Engine::PlayerController;
 		if (!pc || !pc->IsInGame() || IsPostGameController(reinterpret_cast<UObject*>(pc)))
 		{
 			players.clear();

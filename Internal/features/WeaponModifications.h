@@ -37,10 +37,10 @@ class WeaponModifications : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
 
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 		if (!Player) return false;
 
 		Weapon = Player->CurrentWeapon;
@@ -51,7 +51,7 @@ class WeaponModifications : public Feature
 
 	void Init()
 	{
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 		if (!Player)
 		{
 			Initialized = false;
@@ -116,7 +116,7 @@ class WeaponModifications : public Feature
 	{
 		if (!Settings.EXPLOITS.GodMelee) return;
 
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		Player->MeleeRange = 999999.f;
 		Player->TimeBetweenMelee = 0.1f;
@@ -138,7 +138,7 @@ class WeaponModifications : public Feature
 	void ResetMelee()
 	{
 		if (Settings.EXPLOITS.GodMelee) return;
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		if (Player->MeleeRange < 9999.f) return;
 

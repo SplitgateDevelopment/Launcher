@@ -5,7 +5,7 @@
 /// a very large value while enabled, restoring a normal value on disable.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 /// Keeps the local player effectively invulnerable by overwriting Health and
 /// MaxHealth every frame while enabled.
@@ -33,10 +33,10 @@ class GodMode : public Feature
 	{
 		if (!Initialized) return false;
 
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
 
-		Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		if (!Player) return false;
 		if (!Player->Health) return false;
@@ -46,7 +46,7 @@ class GodMode : public Feature
 
 	void Init()
 	{
-		Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		if (!Player || !Player->MaxHealth)
 		{

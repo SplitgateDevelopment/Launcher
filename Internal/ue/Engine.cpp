@@ -37,3 +37,12 @@ bool Engine::Init()
 
 	return true;
 }
+
+void Engine::ResolveObjects()
+{
+	GEngine = UEngine::GetEngine();
+	World = UWorld::GetWorld();
+	GameplayStatics = reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
+	KismetStringLibrary = reinterpret_cast<UKismetStringLibrary*>(UKismetStringLibrary::StaticClass());
+	KismetTextLibrary = reinterpret_cast<UKismetTextLibrary*>(UKismetTextLibrary::StaticClass());
+}

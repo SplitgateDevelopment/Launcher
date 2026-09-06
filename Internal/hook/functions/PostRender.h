@@ -10,7 +10,6 @@
 /// forwards to the original so the game keeps drawing normally.
 #include "../../ue/Engine.h"
 #include "../../settings/Settings.h"
-#include "../../ue/Globals.h"
 #include "../../cache/ActorCache.h"
 #include "../../render/Render.h"
 #include "../../features/Features.h"
@@ -35,25 +34,25 @@ namespace PostRender
 			// overlay renders the menu on its own thread and reads these, so a stale pointer here is an
 			// off-thread fault (the menu guards against null, but it can't detect a freed object).
 			UWorld* World = UWorld::GetWorld();
-			if (!World) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
+			if (!World) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
 
 			UGameInstance* OwningGameInstance = World->OwningGameInstance;
-			if (!OwningGameInstance) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
+			if (!OwningGameInstance) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
 
 			TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
 
 			UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-			if (!LocalPlayer) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
+			if (!LocalPlayer) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
 
 			APlayerController* PlayerController = LocalPlayer->PlayerController;
-			if (!PlayerController) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
+			if (!PlayerController) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
 
-			Globals::World = World;
-			Globals::Canvas = Canvas;
-			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+			Engine::World = World;
+			Engine::Canvas = Canvas;
+			Engine::PlayerController = (APortalWarsPlayerController*)PlayerController;
 			// Refresh the cached flag here on the game thread, where the controller is valid, so the
 			// off-thread menu can read it without touching the (possibly freed) controller itself.
-			Globals::IsInGame = PlayerController->IsInGame();
+			Engine::IsInGame = PlayerController->IsInGame();
 
 			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
 			Input::DispatchHotKeys();

@@ -16,7 +16,7 @@
 
 #include "../../settings/Settings.h"
 #include "../../cache/ClassCache.h"
-#include "../../ue/Globals.h"
+#include "../../ue/Engine.h"
 #include "../../utils/Logger.h"
 
 namespace Menu
@@ -218,7 +218,7 @@ namespace Menu
 
 				std::string msg = std::format("Dumped {} GObjects to {}", objNum, filePath.string());
 				Logger::Log("SUCCESS", msg);
-				if (Globals::PlayerController) Globals::PlayerController->SendChatMessage(FString(msg));
+				if (Engine::PlayerController) Engine::PlayerController->SendChatMessage(FString(msg));
 			}
 			ImGui::Tooltip("Write every GObject (index + full name) to Dumps/GObjects.txt.");
 		}

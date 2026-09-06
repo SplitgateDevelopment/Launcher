@@ -56,9 +56,9 @@ namespace Hook
 	{
 		__try
 		{
-			Globals::Init(); // re-resolve the world (it changes across map loads)
+			Engine::ResolveObjects(); // re-resolve the world (it changes across map loads)
 
-			UGameInstance* gameInstance = Globals::World ? Globals::World->OwningGameInstance : nullptr;
+			UGameInstance* gameInstance = Engine::World ? Engine::World->OwningGameInstance : nullptr;
 			if (!gameInstance) return nullptr;
 
 			TArray<ULocalPlayer*> localPlayers = gameInstance->LocalPlayers;
@@ -87,7 +87,7 @@ namespace Hook
 			Logger::Log("ERROR", "No engine init");
 			return FALSE;
 		};
-		Globals::Init();
+		Engine::ResolveObjects();
 
 		// The world / local player may not exist yet (a map load, or a menu before the local player
 		// is set up). We must NOT wait for them here: this callback runs on the game's UI/message
@@ -146,8 +146,8 @@ namespace Hook
 
 		Logger::Log("INFO", std::format("Found [{:d}] Objects", Engine::GObjects->NumElements));
 
-		UObject* NewObject = Globals::GameplayStatics->SpawnObject(UConsole::StaticClass(), Globals::Engine->GameViewport);
-		Globals::Engine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
+		UObject* NewObject = Engine::GameplayStatics->SpawnObject(UConsole::StaticClass(), Engine::GEngine->GameViewport);
+		Engine::GEngine->GameViewport->ViewportConsole = static_cast<UConsole*>(NewObject);
 		Logger::Log("SUCCESS", "UConsole spawned");
 
 		Scripts::Init();

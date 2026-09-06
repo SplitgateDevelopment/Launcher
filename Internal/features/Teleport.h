@@ -6,7 +6,7 @@
 /// Events::HotKeyPressed edge event (from Input::DispatchHotKeys), so it doesn't poll every frame.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../scripting/Events.h"
 
 #include <cmath>
@@ -39,12 +39,12 @@ class Teleport : public Feature
 						 {
 			if (!Settings.EXPLOITS.Teleport) return;
 			if (static_cast<int>(p.value) != Settings.EXPLOITS.TeleportKey) return;
-			if (!Globals::PlayerController || !Globals::PlayerController->IsInGame()) return;
+			if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return;
 
-			auto* pawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+			auto* pawn = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 			if (!pawn) return;
 
-			const FRotator rot = Globals::PlayerController->ControlRotation;
+			const FRotator rot = Engine::PlayerController->ControlRotation;
 			constexpr float toRad = 3.14159265f / 180.f;
 			const float pitch = rot.Pitch * toRad, yaw = rot.Yaw * toRad;
 			const FVector forward{cosf(pitch) * cosf(yaw), cosf(pitch) * sinf(yaw), sinf(pitch)};

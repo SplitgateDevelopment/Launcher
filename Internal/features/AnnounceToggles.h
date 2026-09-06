@@ -7,7 +7,7 @@
 /// the SettingsChanged event and diffs a snapshot of the tracked bools, so it reports what changed.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 #include <array>
 #include <format>
@@ -78,7 +78,7 @@ class AnnounceToggles : public Feature
 	void Run()
 	{
 		const auto& watched = Watched();
-		const bool inGame = Globals::PlayerController && Globals::PlayerController->IsInGame();
+		const bool inGame = Engine::PlayerController && Engine::PlayerController->IsInGame();
 
 		for (int i = 0; i < Count; i++)
 		{
@@ -97,7 +97,7 @@ class AnnounceToggles : public Feature
 				data.SenderText = FString(message);
 				data.NiceText = FString(message);
 				data.ChatType = EChatType::General;
-				Globals::PlayerController->ClientUpdateChat(data);
+				Engine::PlayerController->ClientUpdateChat(data);
 			}
 
 			previous[i] = current;

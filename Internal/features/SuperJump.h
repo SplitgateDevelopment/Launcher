@@ -6,7 +6,7 @@
 /// poll every frame.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../scripting/Events.h"
 
 class SuperJump : public Feature
@@ -37,8 +37,8 @@ class SuperJump : public Feature
 						 {
 			if (!Settings.EXPLOITS.SuperJump) return;
 			if (static_cast<int>(p.value) != Settings.EXPLOITS.SuperJumpKey) return;
-			if (!Globals::PlayerController || !Globals::PlayerController->IsInGame()) return;
-			if (auto* c = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
+			if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return;
+			if (auto* c = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character))
 				c->LaunchCharacter(FVector{0.f, 0.f, Settings.EXPLOITS.SuperJumpForce}, false, true); });
 		Log("Initialized");
 	};

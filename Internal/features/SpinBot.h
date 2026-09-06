@@ -5,7 +5,7 @@
 /// weapon meshes about yaw while enabled, resetting them to zero on disable.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 /// Spins the local player's first-person meshes by advancing a yaw angle each
 /// frame (10 degrees/tick, wrapping at 360).
@@ -36,10 +36,10 @@ class SpinBot : public Feature
 	{
 		if (!Initialized) return false;
 
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
 
-		Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		if (!Player) return false;
 		if (!Player->Mesh1P) return false;

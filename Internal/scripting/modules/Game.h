@@ -6,7 +6,6 @@
 #include <imgui.h>
 
 #include "../../ue/Engine.h"
-#include "../../ue/Globals.h"
 
 /**
  * @file
@@ -30,13 +29,13 @@ namespace Scripts
 
 			game.def("map_name", []() -> py::object
 					 {
-				if (!Globals::World) return py::none();
-				return py::str(Globals::World->GetName()); }, "The current world/map object name, or None.");
+				if (!Engine::World) return py::none();
+				return py::str(Engine::World->GetName()); }, "The current world/map object name, or None.");
 
 			game.def("local_name", []() -> py::object
 					 {
-				if (!Globals::PlayerController) return py::none();
-				auto* c = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+				if (!Engine::PlayerController) return py::none();
+				auto* c = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 				if (!c || !c->PlayerState) return py::none();
 				return py::str(c->PlayerState->PlayerNamePrivate.ToString()); }, "The local player's display name, or None.");
 		}

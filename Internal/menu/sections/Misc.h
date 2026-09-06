@@ -34,7 +34,7 @@ namespace Menu
 			// IsInGame() on the live controller: this tab is rendered on the external overlay's own
 			// thread, and a map load can free the controller mid-frame — a use-after-free a null check
 			// can't catch. Everything below already gates on isInGame.
-			bool isInGame = Globals::IsInGame;
+			bool isInGame = Engine::IsInGame;
 
 			ImGui::SeparatorText("Player");
 
@@ -70,7 +70,7 @@ namespace Menu
 			ImGui::SameLine();
 			if (!isInGame) ImGui::BeginDisabled();
 			if (ImGui::Button("Respawn"))
-				if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character))
+				if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character))
 					character->RequestSuicide();
 			if (!isInGame) ImGui::EndDisabled();
 			ImGui::Tooltip("Kill your character so it respawns (RequestSuicide).");
@@ -130,15 +130,15 @@ namespace Menu
 
 				ImGui::SameLine();
 				if (!isInGame || selected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Spawn") && isInGame && !selected.empty() && Globals::PlayerController)
+				if (ImGui::Button("Spawn") && isInGame && !selected.empty() && Engine::PlayerController)
 				{
 					UObject* cls = Engine::GObjects->FindObject(selected.c_str());
-					auto* pawn = Globals::PlayerController->AcknowledgedPawn;
+					auto* pawn = Engine::PlayerController->AcknowledgedPawn;
 					if (cls && pawn)
 					{
 						FVector loc = reinterpret_cast<AActor*>(pawn)->K2_GetActorLocation();
 						loc.X += 200.f; // a bit in front of the player
-						AActor* actor = SpawnActor(reinterpret_cast<UObject*>(Globals::PlayerController), reinterpret_cast<UClass*>(cls),
+						AActor* actor = SpawnActor(reinterpret_cast<UObject*>(Engine::PlayerController), reinterpret_cast<UClass*>(cls),
 												   loc, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn, nullptr);
 						Logger::Log(actor ? "SUCCESS" : "ERROR", (actor ? "Spawned " : "Spawn failed: ") + selected);
 					}
@@ -197,10 +197,10 @@ namespace Menu
 
 				ImGui::SameLine();
 				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
 				{
 					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 					if (cls && character)
 					{
 						character->CharacterSkinClass = reinterpret_cast<ACharacterSkin*>(cls);
@@ -215,10 +215,10 @@ namespace Menu
 
 				// Apply the selected class to the gun / jetpack too (they use their own skin types).
 				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
 				{
 					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 					if (cls && character && character->CurrentWeapon)
 					{
 						character->CurrentWeapon->WeaponSkinClass = reinterpret_cast<ABaseGunSkin*>(cls);
@@ -227,10 +227,10 @@ namespace Menu
 					}
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
+				if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
 				{
 					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 					if (cls && character)
 					{
 						character->JetpackSkinClass = reinterpret_cast<AJetpackSkin*>(cls);

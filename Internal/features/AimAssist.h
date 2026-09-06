@@ -10,7 +10,7 @@
 /// input — verify it does anything on mouse & keyboard in-game.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 
 class AimAssist : public Feature
 {
@@ -21,8 +21,8 @@ class AimAssist : public Feature
 
 	static APortalWarsCharacter* LocalCharacter()
 	{
-		if (!Globals::PlayerController) return nullptr;
-		return reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		if (!Engine::PlayerController) return nullptr;
+		return reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 	}
 
 	/// Put the tracked gun's config back to its captured baseline.
@@ -48,7 +48,7 @@ class AimAssist : public Feature
 
 	bool Check()
 	{
-		return Initialized && Globals::PlayerController && Globals::PlayerController->IsInGame();
+		return Initialized && Engine::PlayerController && Engine::PlayerController->IsInGame();
 	};
 
 	void Init()

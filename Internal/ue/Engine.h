@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <atomic>
 
 #include "sdk/Fwd.h"
 #include "sdk/Enums.h"
@@ -74,15 +75,35 @@
 // Hand-written free helpers layered on the generated SDK (bodies in custom.cpp).
 #include "custom.h"
 
-/// Engine bootstrap surface: the signature-resolved globals and the one-time init.
+/// Engine runtime state: the signature-scanned internals, the resolved game objects,
+/// and the two bootstrap steps that fill them in.
 namespace Engine
 {
-	inline FNamePool* GNames = nullptr;		 ///< the FName pool, resolved by Init()
-	inline TUObjectArray* GObjects = nullptr; ///< the global UObject array, resolved by Init()
-	inline UWorld* GWorld = nullptr;		 ///< address of the game's UWorld* slot, resolved by Init()
-	inline uintptr_t GetBoneMatrixFn = 0;	 ///< scanned GetBoneMatrix function pointer (bone projection)
+	// --- Signature-scanned internals (raw addresses, resolved once by Init) ---
+	inline FNamePool* GNames = nullptr;		  ///< the FName pool
+	inline TUObjectArray* GObjects = nullptr; ///< the global UObject array
+	inline UWorld* GWorld = nullptr;		  ///< address of the game's UWorld* slot
+	inline uintptr_t GetBoneMatrixFn = 0;	  ///< scanned GetBoneMatrix function pointer (bone projection)
 
-	/// One-time bootstrap: resolve the globals from byte signatures. Returns false if any fails.
-	/// (UFunctions are resolved lazily at each wrapper's first call via a function-local static.)
+	// --- Resolved game objects (cached pointers, filled by ResolveObjects) ---
+	inline UEngine* GEngine = nullptr;						 ///< the global UEngine
+	inline UWorld* World = nullptr;							 ///< the current UWorld (resolved snapshot)
+	inline APortalWarsPlayerController* PlayerController = nullptr; ///< local player controller (updated as it changes)
+	inline UGameplayStatics* GameplayStatics = nullptr;		 ///< UGameplayStatics CDO
+	inline UKismetStringLibrary* KismetStringLibrary = nullptr; ///< UKismetStringLibrary CDO
+	inline UKismetTextLibrary* KismetTextLibrary = nullptr;	 ///< UKismetTextLibrary CDO
+	inline UCanvas* Canvas = nullptr;						 ///< draw canvas (set during rendering)
+
+	/// Cached PlayerController->IsInGame(), refreshed by PostRender on the game thread. The external
+	/// overlay renders the menu on its own thread; it reads this flag instead of dereferencing the
+	/// controller, which the game may have freed mid map-load (a null check can't catch a freed object).
+	inline std::atomic<bool> IsInGame = false;
+
+	/// One-time bootstrap: resolve the scanned internals from byte signatures. Returns false if
+	/// any signature fails. (UFunctions are resolved lazily at each wrapper's first call.)
 	bool Init();
+
+	/// Resolve GEngine/World and the static-library CDOs. Call after the engine is up and again
+	/// on each map load (the world changes). Does not touch PlayerController/Canvas (set per-frame).
+	void ResolveObjects();
 } // namespace Engine

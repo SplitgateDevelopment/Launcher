@@ -8,7 +8,7 @@
 /// (not a real trace), so the FOV/delay want in-game tuning.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 #include "../native/Visibility.h"
@@ -67,9 +67,9 @@ class Triggerbot : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::Canvas) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::Canvas) return false;
 
 		return true;
 	};
@@ -95,7 +95,7 @@ class Triggerbot : public Feature
 			return;
 		}
 
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
@@ -103,7 +103,7 @@ class Triggerbot : public Feature
 		if (auto* localChar = reinterpret_cast<APortalWarsCharacter*>(controller->Character))
 			localTeam = localChar->GetTeamNum();
 
-		const FVector2D crosshair{Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY * 0.5f};
+		const FVector2D crosshair{Engine::Canvas->ClipX * 0.5f, Engine::Canvas->ClipY * 0.5f};
 
 		// Eye origin for the visibility line-of-sight trace.
 		FVector eye = localPawn->K2_GetActorLocation();

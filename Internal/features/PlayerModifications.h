@@ -7,7 +7,7 @@
 /// Presence, and sends the one-time welcome chat messages.
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../discord/rpc.h"
 
 /// Bundle of local-player modifications that always runs (Enabled is forced
@@ -36,15 +36,15 @@ class PlayerModifications : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController) return false;
-		if (!Globals::PlayerController->PlayerState) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::PlayerController->PlayerState) return false;
 
 		return true;
 	};
 
 	void Init()
 	{
-		auto PlayerState = Globals::PlayerController->PlayerState;
+		auto PlayerState = Engine::PlayerController->PlayerState;
 		if (!PlayerState)
 		{
 			Initialized = false;
@@ -66,10 +66,10 @@ class PlayerModifications : public Feature
 	/// when not in a match.
 	void Run()
 	{
-		Globals::PlayerController->SetName(FString((Settings.MISC.PlayerName)));
-		Globals::PlayerController->FOV(Settings.EXPLOITS.FOV);
+		Engine::PlayerController->SetName(FString((Settings.MISC.PlayerName)));
+		Engine::PlayerController->FOV(Settings.EXPLOITS.FOV);
 
-		if (!Globals::PlayerController->IsInGame())
+		if (!Engine::PlayerController->IsInGame())
 		{
 			bSentWelcomeMessage = false;
 			DiscordRPC::UpdateState("In Menu");
@@ -79,7 +79,7 @@ class PlayerModifications : public Feature
 
 		DiscordRPC::UpdateState("In Game");
 
-		auto Player = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
+		auto Player = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
 
 		Player->CustomTimeDilation = Settings.EXPLOITS.PlayerSpeed;
 		Player->curTimeOutOfBounds = 0.f;
@@ -95,8 +95,8 @@ class PlayerModifications : public Feature
 
 		if (!bSentWelcomeMessage)
 		{
-			Globals::PlayerController->SendChatMessage(FString(std::format("Welcome, {}", OriginalPlayerName)));
-			Globals::PlayerController->SendChatMessage(FString(Settings.MENU.Watermark));
+			Engine::PlayerController->SendChatMessage(FString(std::format("Welcome, {}", OriginalPlayerName)));
+			Engine::PlayerController->SendChatMessage(FString(Settings.MENU.Watermark));
 
 			bSentWelcomeMessage = true;
 		};

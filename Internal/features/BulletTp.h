@@ -6,7 +6,7 @@
 /// onto the target. Only the local player's projectiles are moved (filtered by Instigator).
 
 #include "Feature.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../native/WorldToScreen.h"
 
@@ -45,8 +45,8 @@ class BulletTp : public Feature
 	bool Check()
 	{
 		if (!Initialized) return false;
-		if (!Globals::PlayerController || !Globals::PlayerController->IsInGame()) return false;
-		if (!Globals::World || !Globals::Canvas) return false;
+		if (!Engine::PlayerController || !Engine::PlayerController->IsInGame()) return false;
+		if (!Engine::World || !Engine::Canvas) return false;
 		return true;
 	};
 
@@ -62,7 +62,7 @@ class BulletTp : public Feature
 	void Run()
 	{
 		const auto& aim = Settings.AIM;
-		auto* controller = Globals::PlayerController;
+		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
 		if (!localPawn) return;
 
@@ -72,7 +72,7 @@ class BulletTp : public Feature
 
 		// 1. Pick the target: the enemy whose aim bone is nearest the crosshair.
 		const int bone = BoneIndex(aim.AimBone);
-		const FVector2D crosshair{Globals::Canvas->ClipX * 0.5f, Globals::Canvas->ClipY * 0.5f};
+		const FVector2D crosshair{Engine::Canvas->ClipX * 0.5f, Engine::Canvas->ClipY * 0.5f};
 
 		FVector targetBone{};
 		bool haveTarget = false;

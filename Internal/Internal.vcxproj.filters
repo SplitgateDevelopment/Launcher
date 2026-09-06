@@ -420,9 +420,6 @@
     <ClInclude Include="scripting\modules\Settings.h">
       <Filter>scripting\modules</Filter>
     </ClInclude>
-    <ClInclude Include="ue\Globals.h">
-      <Filter>ue</Filter>
-    </ClInclude>
     <ClInclude Include="menu\sections\Debug.h">
       <Filter>menu\sections</Filter>
     </ClInclude>
@@ -506,9 +503,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
-      <Filter>ue</Filter>
-    </ClCompile>
-    <ClCompile Include="ue\Globals.cpp">
       <Filter>ue</Filter>
     </ClCompile>
     <ClCompile Include="ue\custom.cpp">

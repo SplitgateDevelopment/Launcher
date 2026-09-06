@@ -8,7 +8,6 @@
 /// frustum (they stay "true" through walls), so they can't drive a visible/occluded ESP.
 
 #include "../ue/Engine.h"
-#include "../ue/Globals.h"
 #include "ActorLocation.h"
 
 namespace Visibility
@@ -27,7 +26,7 @@ namespace Visibility
 		FVector point = target->Mesh ? target->Mesh->GetBoneMatrix(BoneFNames::spine_03)
 									 : ActorLocation(reinterpret_cast<AActor*>(target));
 
-		return LineTraceVisible(reinterpret_cast<UObject*>(Globals::PlayerController), eye, point,
+		return LineTraceVisible(reinterpret_cast<UObject*>(Engine::PlayerController), eye, point,
 								reinterpret_cast<AActor*>(target));
 	}
 
@@ -35,8 +34,8 @@ namespace Visibility
 	/// game. Convenience so callers that don't already have it can pass a consistent origin.
 	inline FVector LocalEye()
 	{
-		if (!Globals::PlayerController) return FVector{0.f, 0.f, 0.f};
-		auto* pawn = reinterpret_cast<AActor*>(Globals::PlayerController->AcknowledgedPawn);
+		if (!Engine::PlayerController) return FVector{0.f, 0.f, 0.f};
+		auto* pawn = reinterpret_cast<AActor*>(Engine::PlayerController->AcknowledgedPawn);
 		if (!pawn) return FVector{0.f, 0.f, 0.f};
 		FVector eye = ActorLocation(pawn);
 		eye.Z += 80.f; // rough eye height

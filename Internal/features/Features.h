@@ -6,7 +6,7 @@
 /// (SettingsChanged, event-driven features, and the LoadIntoMap one-shot).
 
 #include "FeatureRunner.h"
-#include "../ue/Globals.h"
+#include "../ue/Engine.h"
 #include "../scripting/Events.h"
 
 #include "GodMode.h"
@@ -101,7 +101,7 @@ namespace Features
 		// the old LoadIntoMap feature + Settings.MISC.LoadIntoMap flag.
 		Events::Register(Events::Type::LoadIntoMap, []
 						 {
-			auto* controller = Globals::PlayerController;
+			auto* controller = Engine::PlayerController;
 			if (controller && !controller->IsInGame())
 			{
 				Logger::Log("INFO", "Loading into map");
