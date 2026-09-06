@@ -6,6 +6,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
+#include "../../hook/GuardHook.h"
 #include "../../../shared/Utilities.h"
 #include "../ui/UI.h"
 
@@ -21,35 +22,39 @@ namespace Menu
 		/// GObjects to Dumps/GObjects.txt, and a tree listing loaded features with their init/enabled state.
 		void DebugTab()
 		{
-			bool changed = false;
-
 			UI::SeparatorText("Logging");
-			changed |= UI::Toggle("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
-			changed |= UI::Toggle("Features Logging", &Settings.DEBUG.FeaturesLogging);
+			UI::ToggleSetting("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
+			UI::ToggleSetting("Features Logging", &Settings.DEBUG.FeaturesLogging);
 
 			UI::SeparatorText("GUI");
-			changed |= UI::Toggle("Show demo window", &Settings.DEBUG.ShowDemoWindow);
-			changed |= UI::Toggle("Show style editor", &Settings.DEBUG.ShowStyleEditor);
+			UI::ToggleSetting("Show demo window", &Settings.DEBUG.ShowDemoWindow);
+			UI::ToggleSetting("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
 			UI::SeparatorText("Performance");
-			changed |= UI::Toggle("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
+			UI::ToggleSetting("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
 			UI::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
 			if (!Settings.DEBUG.NativeWorldToScreen)
 			{
-				changed |= UI::Toggle("Custom projection", &Settings.DEBUG.CustomProjection);
+				UI::ToggleSetting("Custom projection", &Settings.DEBUG.CustomProjection);
 				UI::Tooltip("With native off: use PortalWars' ProjectWorldLocationToScreenCustom instead of the stock UFunction.");
 			}
-			changed |= UI::Toggle("Native bones", &Settings.DEBUG.NativeBones);
+			UI::ToggleSetting("Native bones", &Settings.DEBUG.NativeBones);
 			UI::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
-			changed |= UI::Toggle("Native actor location", &Settings.DEBUG.NativeActorLocation);
+			UI::ToggleSetting("Native actor location", &Settings.DEBUG.NativeActorLocation);
 			UI::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
-
-			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
 			UI::SeparatorText("Files");
 			if (UI::Button("Open app folder"))
 				Shared::Utilities::OpenFolder(Shared::AppDataPath(SettingsHelper::AppFolder));
 			UI::Tooltip("Open the SplitgateInternal data folder (settings, logs, dumps).");
+
+			UI::SeparatorText("Hooking");
+			if (UI::Button("Test GuardHook"))
+			{
+				const bool ok = Hook::GuardHook::SelfTest();
+				Logger::Log(ok ? "SUCCESS" : "ERROR", ok ? "[GuardHook] self-test passed (detour ran)" : "[GuardHook] self-test failed");
+			}
+			UI::Tooltip("Run an in-process self-test of the guard-page hook primitive: it hooks a scratch\nfunction and confirms the detour ran instead. Touches no game code; result goes to the log.");
 
 			UI::SeparatorText("Console command");
 			static char consoleBuffer[256] = "";

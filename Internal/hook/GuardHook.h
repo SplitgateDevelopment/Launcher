@@ -140,5 +140,34 @@ namespace Hook
 				vehHandle = nullptr;
 			}
 		}
+
+		inline bool demoDetourRan = false;			  ///< set by SelfTest's detour to prove it ran
+		inline void SelfTestDetour() { demoDetourRan = true; } ///< the SelfTest detour (a normal, un-guarded function)
+
+		/// In-process proof that the primitive works, safe to run in the game (touches no game code):
+		/// guard-hook a scratch page holding a lone `ret`, call it, and confirm the detour ran instead.
+		/// The target lives on its own VirtualAlloc'd page so guarding it can never fault our own handler
+		/// or this function. @return true if the detour ran (hook worked).
+		inline bool SelfTest()
+		{
+			demoDetourRan = false;
+
+			auto* page = static_cast<BYTE*>(VirtualAlloc(nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+			if (!page) return false;
+			page[0] = 0xC3; // x64 `ret` — the "original" we expect to be redirected away from
+
+			bool ok = false;
+			if (Install(page, reinterpret_cast<void*>(&SelfTestDetour)))
+			{
+				// Call through a volatile pointer so the compiler can't inline past the guarded page.
+				void(*volatile call)() = reinterpret_cast<void (*)()>(page);
+				call();
+				Remove(page);
+				ok = demoDetourRan;
+			}
+
+			VirtualFree(page, 0, MEM_RELEASE);
+			return ok;
+		}
 	} // namespace GuardHook
 } // namespace Hook
