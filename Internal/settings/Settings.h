@@ -183,7 +183,8 @@ struct VisualsSettings
 	bool RadarShowFriendly = false; ///< radar: also plot teammates, in FriendColor
 	bool DrawAllNames = false;		///< debug: draw the object name of every actor (not just players)
 
-	float FontScale = 1.f; ///< text size for ESP names/distance (and the debug names)
+	float FontScale = 1.f;		 ///< text size for ESP names/distance (and the debug names)
+	std::string CanvasFont = ""; ///< UE-canvas renderer text font, by name (empty = the engine default / Roboto)
 
 	Color NameColor{1.f, 1.f, 1.f, 1.f};
 	Color BoxColor{1.f, 0.f, 0.f, 1.f};
@@ -211,7 +212,7 @@ struct VisualsSettings
 	Color GlowSelfColor{0.f, 1.f, 0.f, 1.f};	  ///< own-pawn glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, Rank, MaxDistance, EspVisibleCheck, BotTag, HideBots, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, BotTagColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, Rank, MaxDistance, EspVisibleCheck, BotTag, HideBots, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, CanvasFont, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, BotTagColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings
