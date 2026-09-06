@@ -82,7 +82,10 @@ class ImGuiRenderer : public Renderer
 
 	Render::Vec2 TextSize(const std::string& text, float scale) override
 	{
-		ImFont* font = ImGui::GetFont();
+		// GetFont() dereferences the current ImGui context, which can momentarily be null while the
+		// external overlay is switching/destroying its context on another thread — guard the pointer
+		// itself (GetCurrentContext is a plain read) before calling GetFont, or this crashes.
+		ImFont* font = ImGui::GetCurrentContext() ? ImGui::GetFont() : nullptr;
 		if (!font) return {text.length() * scale * 7.f, scale * 14.f};
 		const ImVec2 size = font->CalcTextSizeA(font->FontSize * scale, FLT_MAX, 0.f, text.c_str());
 		return {size.x, size.y};
