@@ -242,6 +242,7 @@
     <ClInclude Include="ue\sdk\UWorld.h" />
     <ClInclude Include="ue\sdk\Values.h" />
     <ClInclude Include="hook\Hook.h" />
+    <ClInclude Include="hook\GuardHook.h" />
     <ClInclude Include="features\Features.h" />
     <ClInclude Include="features\FeatureRunner.h" />
     <ClInclude Include="discord\handlers.h" />
@@ -258,6 +259,7 @@
     <ClInclude Include="..\shared\LauncherSettings.h" />
     <ClInclude Include="..\shared\Version.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
+    <ClInclude Include="native\ActorId.h" />
     <ClInclude Include="native\ActorLocation.h" />
     <ClInclude Include="native\Visibility.h" />
     <ClInclude Include="native\WorldToScreen.h" />
