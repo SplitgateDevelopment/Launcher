@@ -22,37 +22,52 @@ namespace PostRender
 	void (*Original)(UGameViewportClient* UGameViewportClient, UCanvas* Canvas) = nullptr; ///< Trampoline to the original PostRender.
 	int Index = 100;																	   ///< VTable index of PostRender to swap.
 
+	/// @brief Resolve this frame's local player controller: World → OwningGameInstance →
+	/// LocalPlayers[0] → PlayerController, bailing out (nullptr) at the first missing link — e.g. mid
+	/// map-load, before the local player exists.
+	/// @param outWorld receives the resolved world on success; left untouched otherwise.
+	/// @return the local APortalWarsPlayerController, or nullptr if the walk can't complete.
+	inline APortalWarsPlayerController* ResolvePlayerController(UWorld*& outWorld)
+	{
+		UWorld* world = UWorld::GetWorld();
+		if (!world) return nullptr;
+
+		UGameInstance* gameInstance = world->OwningGameInstance;
+		if (!gameInstance) return nullptr;
+
+		TArray<ULocalPlayer*> localPlayers = gameInstance->LocalPlayers;
+		if (localPlayers.Num() <= 0) return nullptr;
+
+		auto* localPlayer = (UPortalWarsLocalPlayer*)localPlayers[0];
+		if (!localPlayer) return nullptr;
+
+		APlayerController* controller = localPlayer->PlayerController;
+		if (!controller) return nullptr;
+
+		outWorld = world;
+		return (APortalWarsPlayerController*)controller;
+	}
+
 	/// @brief Hooked PostRender: refreshes globals, runs features, then forwards.
 	/// @param UGameViewportClient The viewport client issuing the frame.
 	/// @param Canvas The canvas features draw onto this frame.
 	void HookedPostRender(UGameViewportClient* UGameViewportClient, UCanvas* Canvas)
 	{
-		do
+		UWorld* World = nullptr;
+		APortalWarsPlayerController* PlayerController = ResolvePlayerController(World);
+
+		// Publish the shared controller + cached IsInGame every frame — null/false when the walk fails
+		// (e.g. mid map-load, once the old controller is destroyed) rather than leaving a stale pointer:
+		// the external overlay reads these from its own thread, so a dangling pointer here is an
+		// off-thread fault (a null check can't detect a freed object). IsInGame is evaluated here on the
+		// game thread, where the controller is valid.
+		Engine::PlayerController = PlayerController;
+		Engine::IsInGame = PlayerController && PlayerController->IsInGame();
+
+		if (PlayerController)
 		{
-			// Clear the shared controller (and the cached IsInGame flag) when the walk fails (e.g. mid
-			// map-load, once the old controller is destroyed) instead of leaving it dangling: the external
-			// overlay renders the menu on its own thread and reads these, so a stale pointer here is an
-			// off-thread fault (the menu guards against null, but it can't detect a freed object).
-			UWorld* World = UWorld::GetWorld();
-			if (!World) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
-
-			UGameInstance* OwningGameInstance = World->OwningGameInstance;
-			if (!OwningGameInstance) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
-
-			TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
-
-			UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-			if (!LocalPlayer) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
-
-			APlayerController* PlayerController = LocalPlayer->PlayerController;
-			if (!PlayerController) { Engine::PlayerController = nullptr; Engine::IsInGame = false; break; }
-
 			Engine::World = World;
 			Engine::Canvas = Canvas;
-			Engine::PlayerController = (APortalWarsPlayerController*)PlayerController;
-			// Refresh the cached flag here on the game thread, where the controller is valid, so the
-			// off-thread menu can read it without touching the (possibly freed) controller itself.
-			Engine::IsInGame = PlayerController->IsInGame();
 
 			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
 			Input::DispatchHotKeys();
@@ -65,7 +80,7 @@ namespace PostRender
 			Render::Select(Settings.VISUALS.Renderer);
 
 			Features::Execute();
-		} while (false);
+		}
 
 		return Original(UGameViewportClient, Canvas);
 	}
