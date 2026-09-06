@@ -19,8 +19,9 @@ namespace GUI
 {
 	bool initialized = false;				 ///< True once ImGui and the D3D11 render target have been set up.
 	ImGuiContext* internalContext = nullptr; ///< The game-window overlay's ImGui context. Selected explicitly
-											 ///< under ExternalWindow::ImGuiLock so it never races the external
-											 ///< overlay thread on ImGui's global current-context pointer.
+											 ///< each frame because the external overlay renders with its own
+											 ///< context on this same thread (both share ImGui's global current
+											 ///< context, so each pass picks its own before NewFrame).
 
 	typedef HRESULT(APIENTRY* IDXGISwapChainPresent)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
 	IDXGISwapChainPresent oIDXGISwapChainPresent = NULL; ///< Trampoline to the original IDXGISwapChain::Present.
@@ -120,41 +121,43 @@ namespace GUI
 			Window::CreateRenderTarget();
 		if (!Window::RenderTargetView) return; // RTV not ready yet (mid-resize) - skip this frame
 
-		{
-			// Serialize with the external overlay thread and select our context explicitly: ImGui's
-			// current-context pointer is a single global shared with that thread, so the two contexts
-			// must not run NewFrame/Render concurrently (that races the global and crashes).
-			std::lock_guard<std::mutex> lock(ExternalWindow::ImGuiLock);
-			ImGui::SetCurrentContext(internalContext);
+		// External renderer: draw the ESP/radar/traces/watermark on the streamproof window first (its own
+		// ImGui context, but the same device and this same thread, so no lock is needed). It drains the
+		// recorded command buffer, so the game-window pass below must not also flush it.
+		if (external)
+			ExternalWindow::Render();
 
-			ImGui_ImplDX11_NewFrame();
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
+		// The two overlays share ImGui's single global current-context pointer but run serially on this
+		// thread, so just select the menu's context explicitly before rendering it.
+		ImGui::SetCurrentContext(internalContext);
 
-			// Replay the recorded draw commands (ESP/radar/traces/watermark/..., no-op in canvas mode) on
-			// the game window. In External mode the streamproof window drains + draws them instead.
-			if (!external)
-				Render::Flush();
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
 
-			const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-			ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
+		// Replay the recorded draw commands (ESP/radar/traces/watermark/..., no-op in canvas mode) on
+		// the game window only in the non-streamproof modes; External already drew + drained them above.
+		if (!external)
+			Render::Flush();
 
-			ImGuiIO& io = ImGui::GetIO();
-			(void)io;
-			io.MouseDrawCursor = Settings.MENU.ShowMenu;
-			io.WantCaptureMouse = Settings.MENU.ShowMenu;
-			io.WantTextInput = Settings.MENU.ShowMenu;
-			io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
+		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(mainViewport->WorkPos.x + 550, mainViewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, 350), ImGuiCond_FirstUseEver);
 
-			Menu::Draw();
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+		io.MouseDrawCursor = Settings.MENU.ShowMenu;
+		io.WantCaptureMouse = Settings.MENU.ShowMenu;
+		io.WantTextInput = Settings.MENU.ShowMenu;
+		io.WantCaptureKeyboard = Settings.MENU.ShowMenu;
 
-			ImGui::EndFrame();
-			ImGui::Render();
+		Menu::Draw();
 
-			Window::DeviceContext->OMSetRenderTargets(1, &Window::RenderTargetView, nullptr);
-			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-		}
+		ImGui::EndFrame();
+		ImGui::Render();
+
+		Window::DeviceContext->OMSetRenderTargets(1, &Window::RenderTargetView, nullptr);
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	/// @brief Hooked IDXGISwapChain::Present: renders the overlay, then forwards to the original Present.
@@ -194,7 +197,7 @@ namespace GUI
 	/// @brief Tears down the ImGui backends and context and releases the window/D3D resources.
 	void Destroy()
 	{
-		ExternalWindow::Stop(); // joins the external overlay thread first, so no concurrent ImGui remains
+		ExternalWindow::Stop(); // tear down the external overlay (window + swap chain + its ImGui context)
 		// Select our context explicitly (the external teardown may have left the global elsewhere) and
 		// destroy it by handle rather than "the current context".
 		ImGui::SetCurrentContext(internalContext);
