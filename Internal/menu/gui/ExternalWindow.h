@@ -91,6 +91,24 @@ namespace ExternalWindow
 		return fg && (fg == GameWindow() || fg == Hwnd);
 	}
 
+	/// @brief Hand the foreground and keyboard focus back to the game window, defeating Windows'
+	/// foreground lock by briefly attaching this (overlay) thread's input queue to the game UI thread's.
+	/// A plain SetForegroundWindow from the overlay thread for another thread's window is silently
+	/// ignored, which is why closing the menu left the game unfocused and ignoring input.
+	inline void FocusGame()
+	{
+		const HWND game = GameWindow();
+		if (!game) return;
+		const DWORD myTid = GetCurrentThreadId();
+		const DWORD gameTid = GetWindowThreadProcessId(game, nullptr);
+		const bool attach = gameTid && gameTid != myTid;
+		if (attach) AttachThreadInput(myTid, gameTid, TRUE);
+		SetForegroundWindow(game);
+		SetActiveWindow(game);
+		SetFocus(game);
+		if (attach) AttachThreadInput(myTid, gameTid, FALSE);
+	}
+
 	/// @brief (Re)create the render target view from the swap chain's back buffer. Flip-model buffer 0
 	/// always aliases the current back buffer, so one RTV stays valid across Presents.
 	inline void CreateRtv()
@@ -157,11 +175,18 @@ namespace ExternalWindow
 		else
 			ex |= (WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
 		SetWindowLongPtrW(Hwnd, GWL_EXSTYLE, ex);
+		// Commit the ex-style change so the click-through (WS_EX_TRANSPARENT) state is applied to hit-
+		// testing immediately, instead of only on the next natural frame change.
+		SetWindowPos(Hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
 
-		// Opening the menu pulls foreground onto the overlay so it takes input; closing it must hand
-		// foreground back to the game, otherwise the overlay stays the activated window (now just click-
-		// through) and the game never regains keyboard focus.
-		SetForegroundWindow(wantInteractive ? Hwnd : GameWindow());
+		// Opening the menu pulls foreground onto the overlay so it takes keyboard input; closing it hands
+		// foreground + focus back to the game. The handoff goes through FocusGame (AttachThreadInput)
+		// because a plain SetForegroundWindow for the game is ignored under the foreground lock, which
+		// left the overlay activated and the game ignoring input.
+		if (wantInteractive)
+			SetForegroundWindow(Hwnd);
+		else
+			FocusGame();
 	}
 
 	/// @brief Keep the overlay positioned over the game's client area and sized to it; resize the swap
