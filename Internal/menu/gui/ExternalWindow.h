@@ -128,6 +128,11 @@ namespace ExternalWindow
 	/// essentially no input messages and drives nothing from them. Nothing to handle here.
 	inline LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		// Force click-through at the hit-test level. WS_EX_TRANSPARENT alone doesn't reliably pass the
+		// mouse through a DirectComposition (WS_EX_NOREDIRECTIONBITMAP) window, so this topmost overlay
+		// was swallowing clicks to the game and to other apps beneath it. HTTRANSPARENT routes the mouse
+		// to the window underneath instead.
+		if (msg == WM_NCHITTEST) return HTTRANSPARENT;
 		return DefWindowProcW(hWnd, msg, wParam, lParam);
 	}
 
