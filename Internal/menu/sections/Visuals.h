@@ -23,7 +23,7 @@ namespace Menu
 			UI::SeparatorText("Renderer");
 			const char* renderers[] = {"UE Canvas", "ImGui (faster)", "None", "External (streamproof)"};
 			int renderer = static_cast<int>(Settings.MENU.Renderer);
-			if (UI::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
+			if (UI::Combo("Draw with", &renderer, renderers, UI::Count(renderers)))
 			{
 				Settings.MENU.Renderer = static_cast<RendererMode>(renderer);
 				changed = true;
@@ -34,7 +34,7 @@ namespace Menu
 
 			const char* backends[] = {"ImGui", "UE Canvas"};
 			int backend = static_cast<int>(Settings.MENU.Backend);
-			if (UI::Combo("Menu backend", &backend, backends, IM_ARRAYSIZE(backends)))
+			if (UI::Combo("Menu backend", &backend, backends, UI::Count(backends)))
 			{
 				Settings.MENU.Backend = static_cast<MenuBackend>(backend);
 				changed = true;

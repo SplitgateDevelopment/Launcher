@@ -24,7 +24,7 @@ namespace Menu
 			changed |= UI::SliderFloat("Smoothing", &a.AimSmooth, 0.05f, 1.f, "%.2f");
 			UI::Tooltip("1.0 snaps instantly; lower is smoother.");
 			const char* bones[] = {"Head", "Chest", "Pelvis"};
-			changed |= UI::Combo("Bone", &a.AimBone, bones, IM_ARRAYSIZE(bones));
+			changed |= UI::Combo("Bone", &a.AimBone, bones, UI::Count(bones));
 			changed |= UI::Toggle("Team check##aim", &a.AimTeamCheck);
 			changed |= UI::Toggle("Ignore bots", &a.IgnoreBots);
 			UI::Tooltip("Aimbot and triggerbot target only real players, never AI bots.");
