@@ -37,11 +37,11 @@ namespace GUI
 
 			colors[ImGuiCol_Text] = Palette::Text.To<ImVec4>();
 			colors[ImGuiCol_TextDisabled] = Palette::Text.Alpha(0.77f).To<ImVec4>();
-			colors[ImGuiCol_WindowBg] = Palette::Cream.Alpha(0.82f).To<ImVec4>();
+			colors[ImGuiCol_WindowBg] = Palette::Background.Alpha(0.82f).To<ImVec4>();
 			colors[ImGuiCol_ChildBg] = Palette::Frame.Alpha(0.58f).To<ImVec4>();
-			colors[ImGuiCol_PopupBg] = Palette::Cream.Alpha(0.92f).To<ImVec4>();
+			colors[ImGuiCol_PopupBg] = Palette::Background.Alpha(0.92f).To<ImVec4>();
 			colors[ImGuiCol_Border] = Palette::Border.Alpha(0.65f).To<ImVec4>();
-			colors[ImGuiCol_BorderShadow] = Palette::Cream.Alpha(0.00f).To<ImVec4>();
+			colors[ImGuiCol_BorderShadow] = Palette::Background.Alpha(0.00f).To<ImVec4>();
 			colors[ImGuiCol_FrameBg] = Palette::Frame.To<ImVec4>();
 			colors[ImGuiCol_FrameBgHovered] = ImVec4(1.00f, 0.40f, 0.40f, 0.78f); // one-off light red
 			colors[ImGuiCol_FrameBgActive] = Palette::Primary.To<ImVec4>();
