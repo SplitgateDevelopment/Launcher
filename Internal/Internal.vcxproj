@@ -132,6 +132,7 @@
     <ClInclude Include="scripting\modules\Game.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
+    <ClInclude Include="ue\custom.h" />
     <ClInclude Include="ue\sdk\AActor.h" />
     <ClInclude Include="ue\sdk\ABaseGun.h" />
     <ClInclude Include="ue\sdk\ACharacter.h" />
@@ -261,6 +262,23 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ue\Engine.cpp" />
     <ClCompile Include="ue\UObjects.cpp" />
+    <ClCompile Include="ue\custom.cpp" />
+    <ClCompile Include="ue\sdk\AActor.cpp" />
+    <ClCompile Include="ue\sdk\ABaseGun.cpp" />
+    <ClCompile Include="ue\sdk\ACharacter.cpp" />
+    <ClCompile Include="ue\sdk\AController.cpp" />
+    <ClCompile Include="ue\sdk\APlayerCameraManager.cpp" />
+    <ClCompile Include="ue\sdk\APlayerController.cpp" />
+    <ClCompile Include="ue\sdk\APortalWarsCharacter.cpp" />
+    <ClCompile Include="ue\sdk\APortalWarsPlayerController.cpp" />
+    <ClCompile Include="ue\sdk\UCanvas.cpp" />
+    <ClCompile Include="ue\sdk\UGameplayStatics.cpp" />
+    <ClCompile Include="ue\sdk\UKismetStringLibrary.cpp" />
+    <ClCompile Include="ue\sdk\UKismetTextLibrary.cpp" />
+    <ClCompile Include="ue\sdk\UPortalWarsNotificationManager.cpp" />
+    <ClCompile Include="ue\sdk\UPrimitiveComponent.cpp" />
+    <ClCompile Include="ue\sdk\USceneComponent.cpp" />
+    <ClCompile Include="ue\sdk\USkinnedMeshComponent.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>

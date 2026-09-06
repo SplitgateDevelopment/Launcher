@@ -57,6 +57,9 @@
     <ClInclude Include="ue\Engine.h">
       <Filter>ue</Filter>
     </ClInclude>
+    <ClInclude Include="ue\custom.h">
+      <Filter>ue</Filter>
+    </ClInclude>
     <ClInclude Include="ue\UObjects.h">
       <Filter>ue</Filter>
     </ClInclude>
@@ -510,6 +513,57 @@
     </ClCompile>
     <ClCompile Include="ue\UObjects.cpp">
       <Filter>ue</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\custom.cpp">
+      <Filter>ue</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\AActor.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\ABaseGun.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\ACharacter.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\AController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APlayerCameraManager.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APlayerController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APortalWarsCharacter.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APortalWarsPlayerController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UCanvas.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UGameplayStatics.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UKismetStringLibrary.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UKismetTextLibrary.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UPortalWarsNotificationManager.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UPrimitiveComponent.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\USceneComponent.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\USkinnedMeshComponent.cpp">
+      <Filter>ue\sdk</Filter>
     </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
       <Filter>settings</Filter>
