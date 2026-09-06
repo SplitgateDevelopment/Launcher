@@ -30,27 +30,30 @@ namespace PostRender
 	{
 		do
 		{
-			// Clear the shared controller when the walk fails (e.g. mid map-load, once the old controller
-			// is destroyed) instead of leaving it dangling: the external overlay renders the menu on its
-			// own thread and reads Globals::PlayerController, so a stale pointer here is an off-thread
-			// fault (the menu guards against null, but it can't detect a freed object).
+			// Clear the shared controller (and the cached IsInGame flag) when the walk fails (e.g. mid
+			// map-load, once the old controller is destroyed) instead of leaving it dangling: the external
+			// overlay renders the menu on its own thread and reads these, so a stale pointer here is an
+			// off-thread fault (the menu guards against null, but it can't detect a freed object).
 			UWorld* World = UWorld::GetWorld();
-			if (!World) { Globals::PlayerController = nullptr; break; }
+			if (!World) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
 
 			UGameInstance* OwningGameInstance = World->OwningGameInstance;
-			if (!OwningGameInstance) { Globals::PlayerController = nullptr; break; }
+			if (!OwningGameInstance) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
 
 			TArray<ULocalPlayer*> LocalPlayers = OwningGameInstance->LocalPlayers;
 
 			UPortalWarsLocalPlayer* LocalPlayer = (UPortalWarsLocalPlayer*)LocalPlayers[0];
-			if (!LocalPlayer) { Globals::PlayerController = nullptr; break; }
+			if (!LocalPlayer) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
 
 			APlayerController* PlayerController = LocalPlayer->PlayerController;
-			if (!PlayerController) { Globals::PlayerController = nullptr; break; }
+			if (!PlayerController) { Globals::PlayerController = nullptr; Globals::IsInGame = false; break; }
 
 			Globals::World = World;
 			Globals::Canvas = Canvas;
 			Globals::PlayerController = (APortalWarsPlayerController*)PlayerController;
+			// Refresh the cached flag here on the game thread, where the controller is valid, so the
+			// off-thread menu can read it without touching the (possibly freed) controller itself.
+			Globals::IsInGame = PlayerController->IsInGame();
 
 			// Edge-detect hotkeys once per frame → Events::HotKeyPressed (press-once actions subscribe).
 			Input::DispatchHotKeys();

@@ -10,6 +10,7 @@ namespace Globals
 	APortalWarsPlayerController* PlayerController = nullptr;
 	UGameplayStatics* GameplayStatics = nullptr;
 	UCanvas* Canvas = nullptr;
+	std::atomic<bool> IsInGame = false;
 
 	void Init()
 	{
