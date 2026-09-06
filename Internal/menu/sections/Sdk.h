@@ -41,24 +41,17 @@ namespace Menu
 		/// @brief Renders the SDK tab.
 		void SdkTab()
 		{
-			// The object explorer is search boxes + clipped, scrollable result lists (InputText / child /
-			// clipper), so this whole tab is ImGui-only; the Canvas backend shows a note.
-			if (!UI::IsImGui())
-			{
-				UI::Text("The SDK object explorer uses the ImGui menu backend.");
-				return;
-			}
 
-			ImGui::SeparatorText("Object search");
-			ImGui::Tooltip("Scan every GObject and list those whose full name contains the text.\nOn demand (a full walk, like Dump GObjects).");
+			UI::SeparatorText("Object search");
+			UI::Tooltip("Scan every GObject and list those whose full name contains the text.\nOn demand (a full walk, like Dump GObjects).");
 
 			static char nameFilter[128] = "";
 			static std::vector<SdkRow> nameResults;
 			static int nameTotal = 0;
-			ImGui::SetNextItemWidth(260.f);
-			ImGui::InputText("##namefilter", nameFilter, sizeof(nameFilter));
-			ImGui::SameLine();
-			if (ImGui::Button("Search names") && nameFilter[0])
+			UI::SetNextItemWidth(260.f);
+			UI::InputText("##namefilter", nameFilter, sizeof(nameFilter));
+			UI::SameLine();
+			if (UI::Button("Search names") && nameFilter[0])
 			{
 				nameResults.clear();
 				nameTotal = 0;
@@ -76,51 +69,46 @@ namespace Menu
 				}
 				Logger::Log("INFO", std::format("[SDK] {} objects match \"{}\" ({} shown)", nameTotal, needle, nameResults.size()));
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Copy##names"))
+			UI::SameLine();
+			if (UI::Button("Copy##names"))
 			{
 				std::string out;
 				for (const auto& row : nameResults)
 					out += std::format("[{}] {}\n", row.index, row.name);
-				ImGui::SetClipboardText(out.c_str());
+				UI::SetClipboardText(out.c_str());
 			}
-			ImGui::Tooltip("Copy the listed results to the clipboard.");
+			UI::Tooltip("Copy the listed results to the clipboard.");
 
 			if (!nameResults.empty())
 			{
-				ImGui::Text("%d match(es)%s", nameTotal, nameTotal > (int)nameResults.size() ? " (first 1000)" : "");
-				ImGui::BeginChild("NameResults", ImVec2(0, 180), true, ImGuiWindowFlags_HorizontalScrollbar);
-				// Only lay out the rows actually on screen (a fixed-height Text list), so a 1000-row
-				// result doesn't cost 1000 widgets every frame.
-				ImGuiListClipper clipper;
-				clipper.Begin(static_cast<int>(nameResults.size()));
-				while (clipper.Step())
-					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-						ImGui::Text("[%d] %s", nameResults[i].index, nameResults[i].name.c_str());
-				ImGui::EndChild();
+				UI::Text("%d match(es)%s", nameTotal, nameTotal > (int)nameResults.size() ? " (first 1000)" : "");
+				UI::BeginChild("NameResults", 0, 180);
+				UI::ClippedList(static_cast<int>(nameResults.size()), [&](int i)
+							   { UI::Text("[%d] %s", nameResults[i].index, nameResults[i].name.c_str()); });
+				UI::EndChild();
 			}
 
-			ImGui::SeparatorText("Class search");
-			ImGui::Tooltip("Filter the cached list of every class (shared with the Misc spawn picker; built\nonce, Refresh to rebuild). Click a row to copy the exact name.");
+			UI::SeparatorText("Class search");
+			UI::Tooltip("Filter the cached list of every class (shared with the Misc spawn picker; built\nonce, Refresh to rebuild). Click a row to copy the exact name.");
 
 			static char classFilter[128] = "";
 			static std::vector<int> classFiltered;
 			static std::string lastClassKey = "\x01";	 // sentinel: forces the first filter build
 			static size_t lastClassCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
-			ImGui::SetNextItemWidth(260.f);
-			ImGui::InputText("##classfilter", classFilter, sizeof(classFilter));
-			ImGui::SameLine();
-			if (ImGui::Button("Refresh##classes")) ClassCache::Rebuild();
-			ImGui::SameLine();
-			if (ImGui::Button("Copy##classes"))
+			UI::SetNextItemWidth(260.f);
+			UI::InputText("##classfilter", classFilter, sizeof(classFilter));
+			UI::SameLine();
+			if (UI::Button("Refresh##classes")) ClassCache::Rebuild();
+			UI::SameLine();
+			if (UI::Button("Copy##classes"))
 			{
 				std::string out;
 				const std::string needle = classFilter;
 				for (const auto& entry : ClassCache::Get())
 					if (needle.empty() || entry.name.find(needle) != std::string::npos) out += entry.name + "\n";
-				ImGui::SetClipboardText(out.c_str());
+				UI::SetClipboardText(out.c_str());
 			}
-			ImGui::Tooltip("Copy the filtered class names to the clipboard.");
+			UI::Tooltip("Copy the filtered class names to the clipboard.");
 			{
 				const auto& classes = ClassCache::Get();
 				if (classFilter != lastClassKey || classes.size() != lastClassCacheSize)
@@ -134,21 +122,18 @@ namespace Menu
 							classFiltered.push_back(i);
 				}
 
-				ImGui::Text("%d / %d classes", static_cast<int>(classFiltered.size()), static_cast<int>(classes.size()));
-				ImGui::BeginChild("ClassResults", ImVec2(0, 160), true, ImGuiWindowFlags_HorizontalScrollbar);
-				ImGuiListClipper clipper;
-				clipper.Begin(static_cast<int>(classFiltered.size()));
-				while (clipper.Step())
-					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-					{
+				UI::Text("%d / %d classes", static_cast<int>(classFiltered.size()), static_cast<int>(classes.size()));
+				UI::BeginChild("ClassResults", 0, 160);
+				UI::ClippedList(static_cast<int>(classFiltered.size()), [&](int i)
+							   {
 						const std::string& name = classes[classFiltered[i]].name;
-						if (ImGui::Selectable(name.c_str())) ImGui::SetClipboardText(name.c_str());
-					}
-				ImGui::EndChild();
+						if (UI::Selectable(name.c_str())) UI::SetClipboardText(name.c_str());
+					});
+				UI::EndChild();
 			}
 
-			ImGui::SeparatorText("Name pool (FNames)");
-			ImGui::Tooltip("Search every interned FName, including names for content that isn't loaded\n(e.g. map/level names to travel to). Built once, Refresh to rebuild. Click a row to copy.");
+			UI::SeparatorText("Name pool (FNames)");
+			UI::Tooltip("Search every interned FName, including names for content that isn't loaded\n(e.g. map/level names to travel to). Built once, Refresh to rebuild. Click a row to copy.");
 			{
 				static char nameFilter2[128] = "";
 				static bool caseSensitive = false; // default: case-insensitive
@@ -159,15 +144,15 @@ namespace Menu
 				static size_t lastNameCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
 				static bool lastCase = false, lastRegex = false;
 
-				ImGui::SetNextItemWidth(260.f);
-				ImGui::InputText("##namepoolfilter", nameFilter2, sizeof(nameFilter2));
-				ImGui::SameLine();
-				if (ImGui::Button("Refresh##names")) NameCache::Rebuild();
+				UI::SetNextItemWidth(260.f);
+				UI::InputText("##namepoolfilter", nameFilter2, sizeof(nameFilter2));
+				UI::SameLine();
+				if (UI::Button("Refresh##names")) NameCache::Rebuild();
 
-				ImGui::Checkbox("Case sensitive##names", &caseSensitive);
-				ImGui::SameLine();
-				ImGui::Checkbox("Regex##names", &useRegex);
-				ImGui::Tooltip("ECMAScript regex, matched as a search (unanchored, so a bare pattern behaves like\n\"contains\"). Anchor with ^ and $ to constrain: ^/Game/Maps/[^/]+$ matches a map\npackage but not the assets nested under it.");
+				UI::Checkbox("Case sensitive##names", &caseSensitive);
+				UI::SameLine();
+				UI::Checkbox("Regex##names", &useRegex);
+				UI::Tooltip("ECMAScript regex, matched as a search (unanchored, so a bare pattern behaves like\n\"contains\"). Anchor with ^ and $ to constrain: ^/Game/Maps/[^/]+$ matches a map\npackage but not the assets nested under it.");
 
 				// Re-filter only when an input changes (text, cache, or a toggle), not every frame.
 				const auto& allNames = NameCache::Get();
@@ -218,42 +203,39 @@ namespace Menu
 				}
 
 				if (useRegex && !regexError.empty())
-					ImGui::TextColored(ImVec4(1.f, 0.4f, 0.4f, 1.f), "regex error: %s", regexError.c_str());
+					UI::Text("regex error: %s", regexError.c_str());
 
-				if (ImGui::Button("Copy##namepool"))
+				if (UI::Button("Copy##namepool"))
 				{
 					std::string out;
 					for (int idx : nameFiltered)
 						out += allNames[idx] + "\n";
-					ImGui::SetClipboardText(out.c_str());
+					UI::SetClipboardText(out.c_str());
 				}
-				ImGui::Tooltip("Copy the filtered names to the clipboard.");
-				ImGui::SameLine();
-				ImGui::Text("%d / %d names", static_cast<int>(nameFiltered.size()), static_cast<int>(allNames.size()));
+				UI::Tooltip("Copy the filtered names to the clipboard.");
+				UI::SameLine();
+				UI::Text("%d / %d names", static_cast<int>(nameFiltered.size()), static_cast<int>(allNames.size()));
 
-				ImGui::BeginChild("NamePoolResults", ImVec2(0, 160), true, ImGuiWindowFlags_HorizontalScrollbar);
-				ImGuiListClipper clipper;
-				clipper.Begin(static_cast<int>(nameFiltered.size()));
-				while (clipper.Step())
-					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-					{
+				UI::BeginChild("NamePoolResults", 0, 160);
+				UI::ClippedList(static_cast<int>(nameFiltered.size()), [&](int i)
+							   {
 						const std::string& name = allNames[nameFiltered[i]];
-						if (ImGui::Selectable(name.c_str())) ImGui::SetClipboardText(name.c_str());
-					}
-				ImGui::EndChild();
+						if (UI::Selectable(name.c_str())) UI::SetClipboardText(name.c_str());
+					});
+				UI::EndChild();
 			}
 
-			ImGui::SeparatorText("Class instances");
-			ImGui::Tooltip("Resolve a class by name, then list its live instances (IsA).\nAccepts a full name (\"Class PortalWars.PortalWarsCharacter\") or a bare class name.");
+			UI::SeparatorText("Class instances");
+			UI::Tooltip("Resolve a class by name, then list its live instances (IsA).\nAccepts a full name (\"Class PortalWars.PortalWarsCharacter\") or a bare class name.");
 
 			static char className[128] = "";
 			static std::vector<SdkRow> instanceResults;
 			static int instanceTotal = 0;
 			static std::string classStatus;
-			ImGui::SetNextItemWidth(260.f);
-			ImGui::InputText("##classname", className, sizeof(className));
-			ImGui::SameLine();
-			if (ImGui::Button("List instances") && className[0])
+			UI::SetNextItemWidth(260.f);
+			UI::InputText("##classname", className, sizeof(className));
+			UI::SameLine();
+			if (UI::Button("List instances") && className[0])
 			{
 				instanceResults.clear();
 				instanceTotal = 0;
@@ -282,29 +264,26 @@ namespace Menu
 				}
 				Logger::Log("INFO", "[SDK] " + classStatus);
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Copy##instances"))
+			UI::SameLine();
+			if (UI::Button("Copy##instances"))
 			{
 				std::string out;
 				for (const auto& row : instanceResults)
 					out += std::format("[{}] 0x{:x} {}\n", row.index, row.address, row.name);
-				ImGui::SetClipboardText(out.c_str());
+				UI::SetClipboardText(out.c_str());
 			}
-			ImGui::Tooltip("Copy the listed instances (index, address, name) to the clipboard.");
-			if (!classStatus.empty()) ImGui::TextUnformatted(classStatus.c_str());
+			UI::Tooltip("Copy the listed instances (index, address, name) to the clipboard.");
+			if (!classStatus.empty()) UI::Text("%s", classStatus.c_str());
 			if (!instanceResults.empty())
 			{
-				ImGui::BeginChild("InstanceResults", ImVec2(0, 180), true, ImGuiWindowFlags_HorizontalScrollbar);
-				ImGuiListClipper clipper;
-				clipper.Begin(static_cast<int>(instanceResults.size()));
-				while (clipper.Step())
-					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-						ImGui::Text("[%d] 0x%llx %s", instanceResults[i].index, static_cast<unsigned long long>(instanceResults[i].address), instanceResults[i].name.c_str());
-				ImGui::EndChild();
+				UI::BeginChild("InstanceResults", 0, 180);
+				UI::ClippedList(static_cast<int>(instanceResults.size()), [&](int i)
+							   { UI::Text("[%d] 0x%llx %s", instanceResults[i].index, static_cast<unsigned long long>(instanceResults[i].address), instanceResults[i].name.c_str()); });
+				UI::EndChild();
 			}
 
-			ImGui::SeparatorText("Dump");
-			if (ImGui::Button("Dump GObjects"))
+			UI::SeparatorText("Dump");
+			if (UI::Button("Dump GObjects"))
 			{
 				fs::path dumpsDir = Shared::AppDataPath(SettingsHelper::AppFolder) / "Dumps";
 				if (!fs::exists(dumpsDir)) fs::create_directories(dumpsDir);
@@ -333,7 +312,7 @@ namespace Menu
 				Logger::Log("SUCCESS", msg);
 				if (Engine::PlayerController) Engine::PlayerController->SendChatMessage(FString(msg));
 			}
-			ImGui::Tooltip("Write every GObject (index + full name) to Dumps/GObjects.txt.");
+			UI::Tooltip("Write every GObject (index + full name) to Dumps/GObjects.txt.");
 		}
 	} // namespace Sections
 } // namespace Menu
