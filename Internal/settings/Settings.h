@@ -53,7 +53,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
 										   })
 
 /// Which GUI engine draws the menu itself (independent of RendererMode, which is for the ESP/overlay).
-/// ImGui draws in the Present hook; Canvas draws through the UE canvas (ZeroGUI) in PostRender.
+/// ImGui draws in the Present hook; Canvas draws through the UE canvas (UCanvasGUI) in PostRender.
 enum class MenuBackend
 {
 	ImGui,
