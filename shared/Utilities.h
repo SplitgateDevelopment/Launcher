@@ -1,8 +1,8 @@
 #pragma once
 
 /// @file
-/// @brief Small cross-project helpers shared by the launcher and the DLL: putting text on the
-/// clipboard and opening a folder in the system file browser.
+/// @brief Small cross-project helpers shared by the launcher and the DLL: putting text on and
+/// reading text off the clipboard, and opening a folder in the system file browser.
 
 #include <Windows.h>
 #include <shellapi.h>
@@ -45,6 +45,27 @@ namespace Shared::Utilities
 
 		CloseClipboard();
 		return ok;
+	}
+
+	/**
+	 * Reads CF_TEXT off the clipboard. Best-effort — returns an empty string if the clipboard
+	 * couldn't be opened or holds no text.
+	 * @return the clipboard text (empty on failure).
+	 */
+	inline std::string PasteFromClipboard()
+	{
+		std::string text;
+		if (!OpenClipboard(nullptr)) return text;
+
+		if (HANDLE data = GetClipboardData(CF_TEXT))
+			if (const char* src = static_cast<const char*>(GlobalLock(data)))
+			{
+				text = src;
+				GlobalUnlock(data);
+			}
+
+		CloseClipboard();
+		return text;
 	}
 
 	/// Opens @p path in the system file browser (Explorer), creating the folder first so the call
