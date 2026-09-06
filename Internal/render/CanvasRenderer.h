@@ -6,13 +6,31 @@
 /// ImGuiRenderer exists.
 
 #include <cmath>
+#include <string>
 
 #include "Renderer.h"
 #include "adapters/Ue.h"
 #include "../ue/Engine.h"
+#include "../cache/FontCache.h"
+#include "../settings/Settings.h"
 
 class CanvasRenderer : public Renderer
 {
+	UFont* font = nullptr;	 ///< resolved render font (null = the engine default / Roboto)
+	std::string fontName;	 ///< the Settings.VISUALS.CanvasFont value `font` was resolved from
+
+	/// The UFont to draw/measure with, per Settings.VISUALS.CanvasFont. Re-resolves only when the
+	/// setting changes (so it's a cheap string compare per call, not a GObjects walk). Null = Roboto.
+	UFont* CurrentFont()
+	{
+		if (Settings.VISUALS.CanvasFont != fontName)
+		{
+			fontName = Settings.VISUALS.CanvasFont;
+			font = FontCache::Find(fontName);
+		}
+		return font;
+	}
+
   public:
 	void Line(const Render::Vec2& a, const Render::Vec2& b, float thickness, const Render::Color& color) override
 	{
@@ -22,19 +40,19 @@ class CanvasRenderer : public Renderer
 	void Text(const Render::Vec2& pos, const std::string& text, float scale, const Render::Color& color, bool centered) override
 	{
 		if (Engine::Canvas)
-			Engine::Canvas->K2_DrawText(0, FString(text), pos.To<FVector2D>(), {scale, scale}, color.To<FLinearColor>(), 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, centered, false, true, {0.f, 0.f, 0.f, 1.f});
+			Engine::Canvas->K2_DrawText(CurrentFont(), FString(text), pos.To<FVector2D>(), {scale, scale}, color.To<FLinearColor>(), 1.f, {0.f, 0.f, 0.f, 0.f}, {0.f, 0.f}, centered, false, true, {0.f, 0.f, 0.f, 1.f});
 	}
 
 	Render::Vec2 TextSize(const std::string& text, float scale) override
 	{
 		if (!Engine::Canvas) return {0.f, 0.f};
-		return Engine::Canvas->K2_TextSize(nullptr, FString(text), {scale, scale}); // null font -> Roboto fallback
+		return Engine::Canvas->K2_TextSize(CurrentFont(), FString(text), {scale, scale}); // null font -> Roboto fallback
 	}
 
 	Render::Vec2 StrLen(const std::string& text) override
 	{
 		if (!Engine::Canvas) return {0.f, 0.f};
-		return Engine::Canvas->K2_StrLen(nullptr, FString(text));
+		return Engine::Canvas->K2_StrLen(CurrentFont(), FString(text));
 	}
 
 	void RectFilled(const Render::Vec2& min, const Render::Vec2& max, const Render::Color& color) override
