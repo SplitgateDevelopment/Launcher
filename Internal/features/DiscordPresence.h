@@ -2,23 +2,19 @@
 
 /// @file
 /// The DiscordPresence feature: refreshes the Discord Rich Presence with live game state (map +
-/// K/D) on a throttle, so the presence stays current without spamming Discord every frame.
+/// K/D) whenever the local player enters a match or returns to the lobby. Event-driven (EnteredGame
+/// / EnteredLobby) rather than per-frame, so it only touches Discord on an actual state change.
 
 #include "Feature.h"
 #include "../discord/rpc.h"
 
-#include <chrono>
-
 class DiscordPresence : public Feature
 {
-  private:
-	std::chrono::steady_clock::time_point lastUpdate{};
-	static constexpr int IntervalSeconds = 5;
-
   public:
 	DiscordPresence()
 	{
 		Name = "DiscordPresence";
+		Triggers = {Events::Type::EnteredGame, Events::Type::EnteredLobby};
 		UpdateEnabled();
 		Log("Created");
 	};
@@ -42,12 +38,10 @@ class DiscordPresence : public Feature
 	void Destroy() {
 	};
 
-	void Run()
+	/// Push the current game state to Discord on the in-game / in-lobby transition that fired us.
+	void Run(Events::Type event) override
 	{
-		const auto now = std::chrono::steady_clock::now();
-		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate).count() < IntervalSeconds) return;
-
-		lastUpdate = now;
+		Log(event == Events::Type::EnteredGame ? "entered game" : "entered lobby");
 		DiscordRPC::UpdateGameState();
 	};
 };
