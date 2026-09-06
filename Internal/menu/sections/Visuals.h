@@ -70,19 +70,19 @@ namespace Menu
 						"ImGui = the Present overlay; UE Canvas = drawn on the game canvas (works at the main menu too).");
 
 			UI::SeparatorText("Player ESP");
-			changed |= UI::Toggle("Enable", &v.Esp);
+			UI::ToggleSetting("Enable", &v.Esp);
 
 			UI::SeparatorText("Elements");
-			changed |= UI::Toggle("Name", &v.Name);
-			changed |= UI::Toggle("Box", &v.Box);
-			changed |= UI::Toggle("3D Box", &v.Box3D);
-			changed |= UI::Toggle("Bones", &v.Bones);
-			changed |= UI::Toggle("Snaplines", &v.Snaplines);
-			changed |= UI::Toggle("Health", &v.Health);
-			changed |= UI::Toggle("Distance", &v.Distance);
-			changed |= UI::Toggle("K/D", &v.KD);
+			UI::ToggleSetting("Name", &v.Name);
+			UI::ToggleSetting("Box", &v.Box);
+			UI::ToggleSetting("3D Box", &v.Box3D);
+			UI::ToggleSetting("Bones", &v.Bones);
+			UI::ToggleSetting("Snaplines", &v.Snaplines);
+			UI::ToggleSetting("Health", &v.Health);
+			UI::ToggleSetting("Distance", &v.Distance);
+			UI::ToggleSetting("K/D", &v.KD);
 			UI::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
-			changed |= UI::Toggle("Rank", &v.Rank);
+			UI::ToggleSetting("Rank", &v.Rank);
 			UI::Tooltip("Draw each player's rank/level (from their player state).");
 
 			UI::SeparatorText("Range");
@@ -90,32 +90,32 @@ namespace Menu
 			UI::Tooltip("Only draw enemies within this many metres. 0 = unlimited.");
 
 			UI::SeparatorText("Visibility");
-			changed |= UI::Toggle("Visibility check", &v.EspVisibleCheck);
+			UI::ToggleSetting("Visibility check", &v.EspVisibleCheck);
 			UI::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
-			changed |= UI::Toggle("Hide bots", &v.HideBots);
+			UI::ToggleSetting("Hide bots", &v.HideBots);
 			UI::Tooltip("Don't draw AI bots in the ESP at all.");
-			changed |= UI::Toggle("Bot tag", &v.BotTag);
+			UI::ToggleSetting("Bot tag", &v.BotTag);
 			UI::Tooltip("Prefix an AI bot's name with a colored \"[BOT]\" tag.");
 			if (v.BotTag)
 				UI::ColorEdit("Bot tag color", &v.BotTagColor);
 
 			UI::SeparatorText("Teams");
-			changed |= UI::Toggle("Show teammates", &v.ShowFriendly);
+			UI::ToggleSetting("Show teammates", &v.ShowFriendly);
 			UI::Tooltip("Also draw teammates (ESP + radar), in the friendly color below.");
 
 			UI::SeparatorText("Radar");
-			changed |= UI::Toggle("Enable Radar", &v.Radar);
-			changed |= UI::Toggle("Radar teammates", &v.RadarShowFriendly);
+			UI::ToggleSetting("Enable Radar", &v.Radar);
+			UI::ToggleSetting("Radar teammates", &v.RadarShowFriendly);
 
 			UI::SeparatorText("Debug");
-			changed |= UI::Toggle("Draw all object names", &v.DrawAllNames);
+			UI::ToggleSetting("Draw all object names", &v.DrawAllNames);
 			UI::Tooltip("Draws the UObject name of every actor in the world (not just players).");
 
 			UI::SeparatorText("Text");
 			changed |= UI::SliderFloat("Font size", &v.FontScale, 0.5f, 3.f, "%.2f");
 
 			UI::SeparatorText("Crosshair");
-			changed |= UI::Toggle("Crosshair", &v.Crosshair);
+			UI::ToggleSetting("Crosshair", &v.Crosshair);
 			if (v.Crosshair)
 			{
 				changed |= UI::SliderFloat("Size", &v.CrosshairSize, 1.f, 30.f, "%.0f");
@@ -126,7 +126,7 @@ namespace Menu
 			}
 
 			UI::SeparatorText("Bullet traces");
-			changed |= UI::Toggle("Bullet traces", &v.BulletTraces);
+			UI::ToggleSetting("Bullet traces", &v.BulletTraces);
 			UI::Tooltip("Draw a fading trail behind each projectile (PortalWars.Projectile and subclasses).");
 			if (v.BulletTraces)
 			{
@@ -136,20 +136,20 @@ namespace Menu
 			}
 
 			UI::SeparatorText("Glow / chams");
-			changed |= UI::Toggle("Glow enemies", &v.GlowEnemy);
+			UI::ToggleSetting("Glow enemies", &v.GlowEnemy);
 			UI::Tooltip("Force a custom-depth outline on enemies, visible through walls.\nRides on the game's team-outline post-process (verify color mapping in-game).");
 			if (v.GlowEnemy)
 			{
 				UI::ColorEdit("Enemy glow", &v.GlowEnemyColor);
 				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
-			changed |= UI::Toggle("Glow teammates", &v.GlowFriendly);
+			UI::ToggleSetting("Glow teammates", &v.GlowFriendly);
 			if (v.GlowFriendly)
 			{
 				UI::ColorEdit("Teammate glow", &v.GlowFriendlyColor);
 				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
-			changed |= UI::Toggle("Glow self", &v.GlowSelf);
+			UI::ToggleSetting("Glow self", &v.GlowSelf);
 			UI::Tooltip("Outline your own pawn - only visible in third person.");
 			if (v.GlowSelf)
 			{

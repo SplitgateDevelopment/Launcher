@@ -80,7 +80,7 @@ namespace Menu
 				changed = true;
 			}
 
-			changed |= UI::Toggle("Bypass SSL verification", &Settings.NETWORK.BypassSslVerify);
+			UI::ToggleSetting("Bypass SSL verification", &Settings.NETWORK.BypassSslVerify);
 			UI::Tooltip("Force curl's cert/host verification off so a redirected host can serve a self-signed cert.\nDisables TLS verification for ALL curl traffic while on.");
 
 			// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
@@ -149,9 +149,9 @@ namespace Menu
 			}
 
 			UI::SeparatorText("HTTP logging");
-			changed |= UI::Toggle("Log HTTP calls", &Settings.NETWORK.HttpLogging);
-			changed |= UI::Toggle("Also log to http.log", &Settings.NETWORK.HttpLogToFile);
-			changed |= UI::Toggle("Redirected hosts only", &Settings.NETWORK.HttpLogRedirectedOnly);
+			UI::ToggleSetting("Log HTTP calls", &Settings.NETWORK.HttpLogging);
+			UI::ToggleSetting("Also log to http.log", &Settings.NETWORK.HttpLogToFile);
+			UI::ToggleSetting("Redirected hosts only", &Settings.NETWORK.HttpLogRedirectedOnly);
 
 			// Live request flow — populated while HTTP logging is on.
 			if (UI::CollapsingHeader("Request flow"))
