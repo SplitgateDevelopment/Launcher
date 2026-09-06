@@ -99,7 +99,7 @@ namespace GUI
 		// can't see them. Keep that thread running; the game window below still draws the MENU (it owns
 		// the working input path), but skips the Render flush + watermark so those are drawn only on the
 		// streamproof window - which is also where the command buffer is drained, not here.
-		const bool external = (Settings.VISUALS.Renderer == RendererMode::External);
+		const bool external = (Settings.MENU.Renderer == RendererMode::External);
 		if (external)
 			ExternalWindow::Start();
 		else if (ExternalWindow::Active())

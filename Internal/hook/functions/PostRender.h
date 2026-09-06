@@ -51,7 +51,7 @@ namespace PostRender
 
 			// Point the drawing backend at the selected renderer for this frame (features draw
 			// through Render::*). ImGui-recorded commands are replayed in the Present hook.
-			Render::Select(Settings.VISUALS.Renderer);
+			Render::Select(Settings.MENU.Renderer);
 
 			Features::Execute();
 		}

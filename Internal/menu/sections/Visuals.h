@@ -21,14 +21,15 @@ namespace Menu
 
 			ImGui::SeparatorText("Renderer");
 			const char* renderers[] = {"UE Canvas", "ImGui (faster)", "None", "External (streamproof)"};
-			int renderer = static_cast<int>(v.Renderer);
+			int renderer = static_cast<int>(Settings.MENU.Renderer);
 			if (ImGui::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
 			{
-				v.Renderer = static_cast<RendererMode>(renderer);
+				Settings.MENU.Renderer = static_cast<RendererMode>(renderer);
 				changed = true;
 			}
 			ImGui::Tooltip("ImGui draws the overlay without a ProcessEvent per line/text - much faster for a busy ESP.\n"
-						   "External draws the ESP + menu into a separate window hidden from screen capture (OBS, Game Bar).");
+						   "External draws the ESP, watermark, and everything the renderer produces into a separate\n"
+						   "window hidden from screen capture (OBS, Game Bar); the menu stays on the game window.");
 
 			ImGui::SeparatorText("Player ESP");
 			changed |= ImGui::ToggleButton("Enable", &v.Esp);

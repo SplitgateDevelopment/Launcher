@@ -35,17 +35,35 @@ struct Color
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Color, R, G, B, A)
 
-/// Menu appearance and the show/hide hotkey.
+/// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
+/// ImGui/DX11 (near-free), or replayed into a separate capture-excluded window (streamproof).
+enum class RendererMode
+{
+	Canvas,
+	ImGui,
+	Null,
+	External, ///< ImGui recorder, replayed into a separate capture-excluded overlay window (streamproof)
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
+											   {RendererMode::Canvas, "canvas"},
+											   {RendererMode::ImGui, "imgui"},
+											   {RendererMode::Null, "null"},
+											   {RendererMode::External, "external"},
+										   })
+
+/// Menu appearance, the show/hide hotkey, and how the overlays are rendered.
 struct MenuSettings
 {
 	bool ShowMenu = true;
 	bool ShowWatermark = true;
 	std::string Watermark = "github.com/SplitgateDevelopment/Launcher";
-	int ShowHotkey = VK_INSERT; ///< virtual-key code toggling the GUI (default Insert)
-	bool Rgb = false;			///< cycle the watermark, menu accent, and radar self-icon through a rainbow; off = their defaults (red / white)
+	int ShowHotkey = VK_INSERT;					  ///< virtual-key code toggling the GUI (default Insert)
+	bool Rgb = false;							  ///< cycle the watermark, menu accent, and radar self-icon through a rainbow; off = their defaults (red / white)
+	RendererMode Renderer = RendererMode::Canvas; ///< how the overlays are drawn (canvas / imgui / null / external)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Rgb)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(MenuSettings, ShowMenu, ShowWatermark, ShowHotkey, Rgb, Renderer)
 
 /// Gameplay feature toggles and tunables (the Exploits tab).
 /// Which camera the Camera feature drives. First person is the game default (no override).
@@ -127,28 +145,9 @@ struct DebugSettings
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(DebugSettings, LogProcessEvent, FeaturesLogging, ShowDemoWindow, ShowStyleEditor, DeleteSettingsOnCrash, NativeWorldToScreen, NativeBones, NativeActorLocation, CustomProjection)
 
-/// How the visual overlays are drawn: through the UE canvas (a ProcessEvent per primitive) or via
-/// ImGui/DX11 (near-free). Switchable live from the Visuals tab.
-enum class RendererMode
-{
-	Canvas,
-	ImGui,
-	Null,
-	External, ///< ImGui recorder, replayed into a separate capture-excluded overlay window (streamproof)
-};
-
-NLOHMANN_JSON_SERIALIZE_ENUM(RendererMode, {
-											   {RendererMode::Canvas, "canvas"},
-											   {RendererMode::ImGui, "imgui"},
-											   {RendererMode::Null, "null"},
-											   {RendererMode::External, "external"},
-										   })
-
 /// ESP element toggles and colors (the Visuals tab), plus the separate radar toggle.
 struct VisualsSettings
 {
-	RendererMode Renderer = RendererMode::Canvas; ///< how the overlays are drawn (canvas / imgui)
-
 	bool Esp = false; ///< master toggle for the ESP feature
 	bool Name = true;
 	bool Box = true;
@@ -198,7 +197,7 @@ struct VisualsSettings
 	Color GlowSelfColor{0.f, 1.f, 0.f, 1.f};	  ///< own-pawn glow color (overridden by RGB when on)
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Renderer, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, Rank, MaxDistance, EspVisibleCheck, BotTag, HideBots, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, BotTagColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VisualsSettings, Esp, Name, Box, Box3D, Bones, Snaplines, Health, Distance, KD, Rank, MaxDistance, EspVisibleCheck, BotTag, HideBots, Radar, ShowFriendly, RadarShowFriendly, DrawAllNames, FontScale, NameColor, BoxColor, BonesColor, SnaplineColor, FriendColor, VisibleColor, BotTagColor, Crosshair, CrosshairSize, CrosshairGap, CrosshairThickness, CrosshairColor, BulletTraces, BulletTraceDuration, BulletTraceColor, GlowEnemy, GlowFriendly, GlowSelf, GlowEnemyColor, GlowFriendlyColor, GlowSelfColor)
 
 /// Aimbot / triggerbot tunables (the Aim tab).
 struct AimSettings
