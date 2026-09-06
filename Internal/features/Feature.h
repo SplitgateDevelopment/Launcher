@@ -7,6 +7,7 @@
 /// contract.
 
 #include <vector>
+#include <chrono>
 
 #include "../settings/Settings.h"
 #include "../utils/Logger.h"
@@ -36,6 +37,7 @@ class Feature
 	bool Enabled = false;	  // toggled from settings via UpdateEnabled()
 	bool Initialized = false; ///< set true by Init() once setup succeeds; features guard on this
 	bool OneTime = false;	  // Run() fires once per enable instead of every frame
+	int ThrottleMs = 0;		  ///< minimum gap between Run() calls in ms; 0 = every tick/event
 
 	std::string Name = "BaseFeature"; ///< human-readable id, used in Log() output
 	// Which events drive this feature. Render runs every frame (the fast loop in
@@ -45,10 +47,22 @@ class Feature
 	std::vector<Events::Type> Triggers{Events::Type::Render};
 
 	// Bookkeeping owned by Features::Execute; subclasses should not touch these.
-	bool applied = false; // Run() has been applied and not yet reverted by Destroy()
-	bool hasRun = false;  // a OneTime feature has already run this enable cycle
+	bool applied = false;								  // Run() has been applied and not yet reverted by Destroy()
+	bool hasRun = false;								  // a OneTime feature has already run this enable cycle
+	std::chrono::steady_clock::time_point lastRun{};  // when Run() last fired, for ThrottleMs
 
 	Feature() {};
+
+	/// Whether the throttle interval has elapsed since the last Run() (and, if so, stamps it now).
+	/// Always true when ThrottleMs <= 0. Owned by the runner; features don't call this.
+	bool ThrottleReady()
+	{
+		if (ThrottleMs <= 0) return true;
+		const auto now = std::chrono::steady_clock::now();
+		if (now - lastRun < std::chrono::milliseconds(ThrottleMs)) return false;
+		lastRun = now;
+		return true;
+	}
 
 	/// One-time setup (resolve game objects, cache originals). Must set
 	/// Initialized to reflect success; the runner calls it on first use.

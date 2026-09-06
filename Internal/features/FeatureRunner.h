@@ -55,7 +55,7 @@ namespace Features
 
 			if (feature.Enabled)
 			{
-				if (!feature.OneTime || !feature.hasRun)
+				if ((!feature.OneTime || !feature.hasRun) && feature.ThrottleReady())
 				{
 					feature.Run(event, payload);
 					feature.hasRun = true;
