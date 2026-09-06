@@ -15,6 +15,8 @@
 #include <chrono>
 #include <ctime>
 
+#include "Utilities.h"
+
 #pragma comment(lib, "DbgHelp.lib")
 
 // Reusable last-chance crash handler shared by the launcher and the DLL. It installs a
@@ -179,18 +181,27 @@ namespace Shared::ExceptionHandler
 		const fs::path file = folder / "StackTrace.log";
 		logLine("ERROR", std::format("Crash stack trace located at: {}", file.string()));
 
+		// Build the report once so it can go to both the log file and the clipboard.
+		std::ostringstream report;
+		report << std::format("Exception: (0x{:x})\n", exceptionCode);
+		report << "== Stack Trace ==\n";
+		WriteStackTrace(context, report);
+		const std::string reportText = report.str();
+
 		std::ofstream out(file, std::ios::out);
 		if (out.is_open())
 		{
-			out << std::format("Exception: (0x{:x})\n", exceptionCode);
-			out << "== Stack Trace ==\n";
-			WriteStackTrace(context, out);
+			out << reportText;
 			out.close();
 		}
 		else
 		{
 			logLine("ERROR", "Failed to open crash log file for writing");
 		}
+
+		// Also copy the stack to the clipboard so it can be pasted straight into a bug report.
+		if (Shared::Utilities::CopyToClipboard(reportText))
+			logLine("INFO", "Crash stack copied to clipboard");
 
 		WriteMinidump(config, folder, exceptionInfo, logLine);
 
