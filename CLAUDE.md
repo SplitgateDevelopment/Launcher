@@ -177,10 +177,18 @@ Source folders (from the project file; contents documented as they are read):
 - `scripting/` — Python scripting via pybind11 (`Scripts.h`) and the C++ event bus
   (`Events.h`: `Events::Type` enum, `Events::Payload`, Register/Dispatch). Exposes `modules/`
   (Logger, Settings, Events) to user scripts.
-- `ue/` — Unreal Engine SDK (`Engine.h/.cpp`, `UObjects.h`).
+- `ue/` — Unreal Engine SDK, split per type. `sdk/` holds one header per type (~96) with
+  `Fwd.h` (forward decls), `Enums.h`, and `Values.h` (aggregates the `F*`/`T*` value types);
+  `Engine.h` is the umbrella that includes them all (include this, not the individual headers).
+  A class's `ProcessEvent` UFunction wrappers live in `sdk/<Type>.cpp`; the hand-added
+  convenience members and free helpers (`SpawnActor`, `LineTraceVisible`, `IsPostGameController`)
+  live in `custom.cpp`/`custom.h`. `namespace Engine` holds `Engine::Init` (the bootstrap, was
+  `EngineInit`), the resolved globals (`Engine::ObjObjects`/`NamePoolData`/`WRLD`/`GetBoneMatrixF`)
+  and `Engine::UObjects` (cached UFunction handles, `UObjects.h/.cpp`). `Globals.h/.cpp` (the
+  cached engine-object pointers in `namespace Globals`) lives here too.
 - `discord/` — Discord Rich Presence integration (`rpc.h`, `handlers.h`).
 - `settings/` — configuration (`Settings.h/.cpp`).
-- `utils/` — helpers (`Globals.h`, `Util.h/.cpp`, plus two facades over `shared/`: `Logger.h`
+- `utils/` — helpers (`Util.h/.cpp`, plus two facades over `shared/`: `Logger.h`
   is a `namespace Logger` facade (`Log`/`CreateConsole`/`DestroyConsole`/`SetConsoleVisibility`)
   over one `Shared::Logger` that spawns the in-game console and logs to `internal.log`; and
   `ExceptionHandler.h` wires `Shared::ExceptionHandler` with the game's crash folder, the

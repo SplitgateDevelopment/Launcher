@@ -31,8 +31,9 @@ absolute offsets.
   - **UE5:** `bone array = LODData - 0x8` (and the `FMatrix` elements are **doubles**, not floats)
   - *Example (the value in the original note):* `LODData` at `0x4a8` → bone array at `0x4a0` (that
     example is the `-0x8` / UE5 layout).
-  - In this repo bones are read the easy way instead — `GetBoneMatrix` is resolved by AOB and called
-    natively ([Engine.cpp](../Internal/ue/Engine.cpp)), so the bone-array offset isn't needed here.
+  - In this repo bones are read the easy way instead — `GetBoneMatrix` is resolved by AOB
+    ([Engine.cpp](../Internal/ue/Engine.cpp) `Engine::Init`) and called natively
+    ([custom.cpp](../Internal/ue/custom.cpp)), so the bone-array offset isn't needed here.
     Reading the array directly is the fully-offset (no function-call) alternative.
 - **LastSubmitTime** — `UPrimitiveComponent->BoundsScale + 0x4`.
   - *Example:* `BoundsScale` at `0x284` → `LastSubmitTime` at `0x288`.
@@ -83,7 +84,7 @@ std::string GetNameFromId(int id, uintptr_t base)
 ```
 
 This repo already resolves names through the SDK's `FName`/`FNamePool` path
-([Engine.cpp](../Internal/ue/Engine.cpp), see [game-dump.md](game-dump.md) for the `GNames` offset) —
+([custom.cpp](../Internal/ue/custom.cpp), see [game-dump.md](game-dump.md) for the `GNames` offset) —
 this raw version is the from-scratch equivalent for a game with no dumped SDK.
 
 ### Direction → UE rotation (aim math)

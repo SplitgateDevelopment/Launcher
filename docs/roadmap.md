@@ -220,35 +220,29 @@ autosave/handlers stay as-is. Expose the payload to the Python `Events` module t
 
 ---
 
-## Engine SDK refactor (large)
+## Engine SDK refactor (large) — DONE
 
-**Goal.** `ue/Engine.h` is one enormous generated header plus `Engine.cpp` of hand-written
+**Goal.** `ue/Engine.h` was one enormous generated header plus `Engine.cpp` of hand-written
 `ProcessEvent` wrappers, with free globals (`NamePoolData`, `ObjObjects`, `WRLD`, `GetBoneMatrixF`) and
-`EngineInit` floating at namespace scope. Restructure into folders by concern, move the globals behind a
-named namespace/class, and separate the reflection core from the game objects and their `ProcessEvent`
-method bodies.
+`EngineInit` floating at global scope. Split it into per-type files, separate the generated declarations
+from the hand-written logic, and move the init/objects/globals layer behind a namespace.
 
-**Approach (incremental — build between each step).**
-- `ue/math/` — `FVector`, `FVector2D`, `FRotator`, `FLinearColor`, `FMatrix`, `TArray`, `FString`.
-- `ue/core/` — `FName`/`FNamePool`, `UObject`, `UClass`/`UStruct`, `TUObjectArray` (the reflection core;
-  `IsA`, name lookup, `ProcessEvent`).
-- `ue/objects/` — one header (struct) + cpp (`ProcessEvent` wrappers) per game type: `UEngine`,
-  `UWorld`/`ULevel`, `APlayerController`, `APawn`/`ACharacter`, `USkeletalMeshComponent`, `UCanvas`, ...
-- Globals → a `UE` namespace (or a small `Runtime` class): `UE::NamePool`, `UE::Objects`, `UE::World`,
-  `UE::GetBoneMatrix`, `UE::Init()` — replacing `NamePoolData` / `ObjObjects` / `WRLD` / `GetBoneMatrixF`
-  / `EngineInit` with clearer names and one place to see the resolved globals.
-- Keep each type's `ProcessEvent` wrappers next to the type, not in one giant `Engine.cpp`.
+**Shipped.**
+- `ue/sdk/` — one header per type (~96), with `Fwd.h` (forward decls + std includes), `Enums.h`
+  (standalone enums) and `Values.h` (aggregates the `F*`/`T*` value types). `ue/Engine.h` is now an
+  umbrella that includes them in dependency order, so every `#include "ue/Engine.h"` site is unchanged.
+- Bodies split by origin: each class's `ProcessEvent` UFunction wrappers live in `ue/sdk/<Type>.cpp`
+  (16 files); the hand-added convenience members (`GetName`/`StaticClass`/`GetEngine`/`GetWorld`/bone
+  helpers/deferred spawn) plus the free helpers (`SpawnActor`, `LineTraceVisible`, `IsPostGameController`)
+  live in `ue/custom.cpp` (declared in `ue/custom.h`).
+- `namespace Engine` holds `Engine::Init` (was `EngineInit`), the resolved globals
+  (`Engine::NamePoolData`/`ObjObjects`/`WRLD`/`GetBoneMatrixF`) and `Engine::UObjects` (extern handles in
+  `ue/UObjects.h`, defined in `ue/UObjects.cpp`). SDK types stay global to keep the blast radius small.
+- `utils/Globals.h` moved to `ue/Globals.h` + `ue/Globals.cpp` (extern + defs, dead Kismet CDOs dropped);
+  the `Globals` namespace name is unchanged so call sites only shift their include path.
 
-**Caveats.**
-- Much of `Engine.h` is *generated* from the Dumpspace dump (see [game-dump.md](game-dump.md)); a split
-  must preserve the cross-references between structs and stay regenerable, or the generator/inputs get
-  updated to emit the new layout.
-- The forbidden files reference some of these names (e.g. `dllmain.cpp` via the init flow). Renaming
-  `EngineInit`/globals means a `TODO.md` entry for the forbidden side, done last.
-- Do it in small, buildable steps (math → core → objects → globals), never one commit.
-**Files.** All of `ue/`, plus every include site; `TODO.md` for the forbidden references.
-**Size.** XL, highest risk of everything here. Sequence it after the perf/scripting work so it isn't
-blocking features.
+**Note.** `ue/sdk/` mirrors the Dumpspace dump (see [game-dump.md](game-dump.md)); the split is manual,
+so regenerating the dump means re-applying this per-file layout (or teaching the generator to emit it).
 
 ---
 
