@@ -10,7 +10,7 @@ of gameplay features; the launcher is the companion executable used to start it.
 >
 > **`Internal/hook/Hook.h` is partially readable**: you may read lines **1–17** (includes,
 > `namespace Hook` opening, `g_hook`, and the `SetHook` signature) and lines **34 to the end**
-> (`Init` / `UnHook` / `isKeyPressed`). **Never read lines 18–33** — the body of
+> (`Init` / `UnHook`). **Never read lines 18–33** — the body of
 > `BYTE *SetHook(void **VTable, int index, void *TargetFunction)` and
 > `**Never read the full file**
 
@@ -155,8 +155,6 @@ Source folders (from the project file; contents documented as they are read):
     initializes the ImGui GUI (`GUI::Init()`), and registers features (`Features::Init()`).
   - `UnHook()` — teardown: disables/uninitializes MinHook, restores the `PostRender` vtable
     entry, destroys the console/GUI, disables the exception handler, removes the Win32 hook.
-  - `isKeyPressed(key)` — edge-detected key poll (just-pressed **and** held) for the `Ins`
-    menu toggle and hotkeys.
   - `hook/functions/` — the two hooked game functions: `ProcessEvent.h` (funnels UE events,
     driving the event bus) and `PostRender.h` (per-frame, drives `Features::Execute()` and
     the menu).
