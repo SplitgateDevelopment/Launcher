@@ -5,6 +5,7 @@
 
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -19,114 +20,124 @@ namespace Menu
 			bool changed = false;
 			auto& v = Settings.VISUALS;
 
-			ImGui::SeparatorText("Renderer");
+			UI::SeparatorText("Renderer");
 			const char* renderers[] = {"UE Canvas", "ImGui (faster)", "None", "External (streamproof)"};
 			int renderer = static_cast<int>(Settings.MENU.Renderer);
-			if (ImGui::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
+			if (UI::Combo("Draw with", &renderer, renderers, IM_ARRAYSIZE(renderers)))
 			{
 				Settings.MENU.Renderer = static_cast<RendererMode>(renderer);
 				changed = true;
 			}
-			ImGui::Tooltip("ImGui draws the overlay without a ProcessEvent per line/text - much faster for a busy ESP.\n"
-						   "External draws the ESP, watermark, and everything the renderer produces into a separate\n"
-						   "window hidden from screen capture (OBS, Game Bar); the menu stays on the game window.");
+			UI::Tooltip("ImGui draws the overlay without a ProcessEvent per line/text - much faster for a busy ESP.\n"
+						"External draws the ESP, watermark, and everything the renderer produces into a separate\n"
+						"window hidden from screen capture (OBS, Game Bar); the menu stays on the game window.");
 
-			ImGui::SeparatorText("Player ESP");
-			changed |= ImGui::ToggleButton("Enable", &v.Esp);
+			const char* backends[] = {"ImGui", "UE Canvas"};
+			int backend = static_cast<int>(Settings.MENU.Backend);
+			if (UI::Combo("Menu backend", &backend, backends, IM_ARRAYSIZE(backends)))
+			{
+				Settings.MENU.Backend = static_cast<MenuBackend>(backend);
+				changed = true;
+			}
+			UI::Tooltip("Which GUI engine draws THIS menu (independent of the ESP renderer above).\n"
+						"ImGui = the Present overlay; UE Canvas = drawn on the game canvas (works at the main menu too).");
 
-			ImGui::SeparatorText("Elements");
-			changed |= ImGui::ToggleButton("Name", &v.Name);
-			changed |= ImGui::ToggleButton("Box", &v.Box);
-			changed |= ImGui::ToggleButton("3D Box", &v.Box3D);
-			changed |= ImGui::ToggleButton("Bones", &v.Bones);
-			changed |= ImGui::ToggleButton("Snaplines", &v.Snaplines);
-			changed |= ImGui::ToggleButton("Health", &v.Health);
-			changed |= ImGui::ToggleButton("Distance", &v.Distance);
-			changed |= ImGui::ToggleButton("K/D", &v.KD);
-			ImGui::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
-			changed |= ImGui::ToggleButton("Rank", &v.Rank);
-			ImGui::Tooltip("Draw each player's rank/level (from their player state).");
+			UI::SeparatorText("Player ESP");
+			changed |= UI::Toggle("Enable", &v.Esp);
 
-			ImGui::SeparatorText("Range");
-			changed |= ImGui::SliderFloat("Max distance (m)", &v.MaxDistance, 0.f, 300.f, v.MaxDistance <= 0.f ? "unlimited" : "%.0f");
-			ImGui::Tooltip("Only draw enemies within this many metres. 0 = unlimited.");
+			UI::SeparatorText("Elements");
+			changed |= UI::Toggle("Name", &v.Name);
+			changed |= UI::Toggle("Box", &v.Box);
+			changed |= UI::Toggle("3D Box", &v.Box3D);
+			changed |= UI::Toggle("Bones", &v.Bones);
+			changed |= UI::Toggle("Snaplines", &v.Snaplines);
+			changed |= UI::Toggle("Health", &v.Health);
+			changed |= UI::Toggle("Distance", &v.Distance);
+			changed |= UI::Toggle("K/D", &v.KD);
+			UI::Tooltip("Draw each player's kills/deaths, and [killstreak] for the current life.");
+			changed |= UI::Toggle("Rank", &v.Rank);
+			UI::Tooltip("Draw each player's rank/level (from their player state).");
 
-			ImGui::SeparatorText("Visibility");
-			changed |= ImGui::ToggleButton("Visibility check", &v.EspVisibleCheck);
-			ImGui::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
-			changed |= ImGui::ToggleButton("Hide bots", &v.HideBots);
-			ImGui::Tooltip("Don't draw AI bots in the ESP at all.");
-			changed |= ImGui::ToggleButton("Bot tag", &v.BotTag);
-			ImGui::Tooltip("Prefix an AI bot's name with a colored \"[BOT]\" tag.");
+			UI::SeparatorText("Range");
+			changed |= UI::SliderFloat("Max distance (m)", &v.MaxDistance, 0.f, 300.f, v.MaxDistance <= 0.f ? "unlimited" : "%.0f");
+			UI::Tooltip("Only draw enemies within this many metres. 0 = unlimited.");
+
+			UI::SeparatorText("Visibility");
+			changed |= UI::Toggle("Visibility check", &v.EspVisibleCheck);
+			UI::Tooltip("Recolor visible (recently-rendered) enemies in the Visible color below;\noccluded enemies keep the normal box/bone/snapline colors.");
+			changed |= UI::Toggle("Hide bots", &v.HideBots);
+			UI::Tooltip("Don't draw AI bots in the ESP at all.");
+			changed |= UI::Toggle("Bot tag", &v.BotTag);
+			UI::Tooltip("Prefix an AI bot's name with a colored \"[BOT]\" tag.");
 			if (v.BotTag)
-				ImGui::ColorEdit4("Bot tag color", &v.BotTagColor.R);
+				UI::ColorEdit("Bot tag color", &v.BotTagColor);
 
-			ImGui::SeparatorText("Teams");
-			changed |= ImGui::ToggleButton("Show teammates", &v.ShowFriendly);
-			ImGui::Tooltip("Also draw teammates (ESP + radar), in the friendly color below.");
+			UI::SeparatorText("Teams");
+			changed |= UI::Toggle("Show teammates", &v.ShowFriendly);
+			UI::Tooltip("Also draw teammates (ESP + radar), in the friendly color below.");
 
-			ImGui::SeparatorText("Radar");
-			changed |= ImGui::ToggleButton("Enable Radar", &v.Radar);
-			changed |= ImGui::ToggleButton("Radar teammates", &v.RadarShowFriendly);
+			UI::SeparatorText("Radar");
+			changed |= UI::Toggle("Enable Radar", &v.Radar);
+			changed |= UI::Toggle("Radar teammates", &v.RadarShowFriendly);
 
-			ImGui::SeparatorText("Debug");
-			changed |= ImGui::ToggleButton("Draw all object names", &v.DrawAllNames);
-			ImGui::Tooltip("Draws the UObject name of every actor in the world (not just players).");
+			UI::SeparatorText("Debug");
+			changed |= UI::Toggle("Draw all object names", &v.DrawAllNames);
+			UI::Tooltip("Draws the UObject name of every actor in the world (not just players).");
 
-			ImGui::SeparatorText("Text");
-			changed |= ImGui::SliderFloat("Font size", &v.FontScale, 0.5f, 3.f, "%.2f");
+			UI::SeparatorText("Text");
+			changed |= UI::SliderFloat("Font size", &v.FontScale, 0.5f, 3.f, "%.2f");
 
-			ImGui::SeparatorText("Crosshair");
-			changed |= ImGui::ToggleButton("Crosshair", &v.Crosshair);
+			UI::SeparatorText("Crosshair");
+			changed |= UI::Toggle("Crosshair", &v.Crosshair);
 			if (v.Crosshair)
 			{
-				changed |= ImGui::SliderFloat("Size", &v.CrosshairSize, 1.f, 30.f, "%.0f");
-				changed |= ImGui::SliderFloat("Gap", &v.CrosshairGap, 0.f, 20.f, "%.0f");
-				changed |= ImGui::SliderFloat("Thickness", &v.CrosshairThickness, 1.f, 6.f, "%.0f");
-				ImGui::ColorEdit4("Crosshair color", &v.CrosshairColor.R);
-				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+				changed |= UI::SliderFloat("Size", &v.CrosshairSize, 1.f, 30.f, "%.0f");
+				changed |= UI::SliderFloat("Gap", &v.CrosshairGap, 0.f, 20.f, "%.0f");
+				changed |= UI::SliderFloat("Thickness", &v.CrosshairThickness, 1.f, 6.f, "%.0f");
+				UI::ColorEdit("Crosshair color", &v.CrosshairColor);
+				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
 
-			ImGui::SeparatorText("Bullet traces");
-			changed |= ImGui::ToggleButton("Bullet traces", &v.BulletTraces);
-			ImGui::Tooltip("Draw a fading trail behind each projectile (PortalWars.Projectile and subclasses).");
+			UI::SeparatorText("Bullet traces");
+			changed |= UI::Toggle("Bullet traces", &v.BulletTraces);
+			UI::Tooltip("Draw a fading trail behind each projectile (PortalWars.Projectile and subclasses).");
 			if (v.BulletTraces)
 			{
-				changed |= ImGui::SliderFloat("Trail duration", &v.BulletTraceDuration, 0.5f, 6.f, "%.1fs");
-				ImGui::ColorEdit4("Trail color", &v.BulletTraceColor.R);
-				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+				changed |= UI::SliderFloat("Trail duration", &v.BulletTraceDuration, 0.5f, 6.f, "%.1fs");
+				UI::ColorEdit("Trail color", &v.BulletTraceColor);
+				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
 
-			ImGui::SeparatorText("Glow / chams");
-			changed |= ImGui::ToggleButton("Glow enemies", &v.GlowEnemy);
-			ImGui::Tooltip("Force a custom-depth outline on enemies, visible through walls.\nRides on the game's team-outline post-process (verify color mapping in-game).");
+			UI::SeparatorText("Glow / chams");
+			changed |= UI::Toggle("Glow enemies", &v.GlowEnemy);
+			UI::Tooltip("Force a custom-depth outline on enemies, visible through walls.\nRides on the game's team-outline post-process (verify color mapping in-game).");
 			if (v.GlowEnemy)
 			{
-				ImGui::ColorEdit4("Enemy glow", &v.GlowEnemyColor.R);
-				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+				UI::ColorEdit("Enemy glow", &v.GlowEnemyColor);
+				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
-			changed |= ImGui::ToggleButton("Glow teammates", &v.GlowFriendly);
+			changed |= UI::Toggle("Glow teammates", &v.GlowFriendly);
 			if (v.GlowFriendly)
 			{
-				ImGui::ColorEdit4("Teammate glow", &v.GlowFriendlyColor.R);
-				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+				UI::ColorEdit("Teammate glow", &v.GlowFriendlyColor);
+				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
-			changed |= ImGui::ToggleButton("Glow self", &v.GlowSelf);
-			ImGui::Tooltip("Outline your own pawn - only visible in third person.");
+			changed |= UI::Toggle("Glow self", &v.GlowSelf);
+			UI::Tooltip("Outline your own pawn - only visible in third person.");
 			if (v.GlowSelf)
 			{
-				ImGui::ColorEdit4("Self glow", &v.GlowSelfColor.R);
-				ImGui::Tooltip("Overridden by the RGB rainbow when RGB is on.");
+				UI::ColorEdit("Self glow", &v.GlowSelfColor);
+				UI::Tooltip("Overridden by the RGB rainbow when RGB is on.");
 			}
 
-			ImGui::SeparatorText("Colors");
-			ImGui::ColorEdit4("Name", &v.NameColor.R);
-			ImGui::ColorEdit4("Box", &v.BoxColor.R);
-			ImGui::ColorEdit4("Bones", &v.BonesColor.R);
-			ImGui::ColorEdit4("Snaplines", &v.SnaplineColor.R);
-			ImGui::ColorEdit4("Friendly", &v.FriendColor.R);
-			ImGui::ColorEdit4("Visible", &v.VisibleColor.R);
-			ImGui::Tooltip("Color for visible enemies when the visibility check is on.");
+			UI::SeparatorText("Colors");
+			UI::ColorEdit("Name", &v.NameColor);
+			UI::ColorEdit("Box", &v.BoxColor);
+			UI::ColorEdit("Bones", &v.BonesColor);
+			UI::ColorEdit("Snaplines", &v.SnaplineColor);
+			UI::ColorEdit("Friendly", &v.FriendColor);
+			UI::ColorEdit("Visible", &v.VisibleColor);
+			UI::Tooltip("Color for visible enemies when the visibility check is on.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 		}

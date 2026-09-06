@@ -24,6 +24,7 @@
 #include "../../cache/NameCache.h"
 #include "../../ue/Engine.h"
 #include "../../utils/Logger.h"
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -40,6 +41,14 @@ namespace Menu
 		/// @brief Renders the SDK tab.
 		void SdkTab()
 		{
+			// The object explorer is search boxes + clipped, scrollable result lists (InputText / child /
+			// clipper), so this whole tab is ImGui-only; the Canvas backend shows a note.
+			if (!UI::IsImGui())
+			{
+				UI::Text("The SDK object explorer uses the ImGui menu backend.");
+				return;
+			}
+
 			ImGui::SeparatorText("Object search");
 			ImGui::Tooltip("Scan every GObject and list those whose full name contains the text.\nOn demand (a full walk, like Dump GObjects).");
 
@@ -71,7 +80,8 @@ namespace Menu
 			if (ImGui::Button("Copy##names"))
 			{
 				std::string out;
-				for (const auto& row : nameResults) out += std::format("[{}] {}\n", row.index, row.name);
+				for (const auto& row : nameResults)
+					out += std::format("[{}] {}\n", row.index, row.name);
 				ImGui::SetClipboardText(out.c_str());
 			}
 			ImGui::Tooltip("Copy the listed results to the clipboard.");
@@ -144,8 +154,8 @@ namespace Menu
 				static bool caseSensitive = false; // default: case-insensitive
 				static bool useRegex = false;	   // plain substring by default
 				static std::vector<int> nameFiltered;
-				static std::string regexError;				 // last regex compile error, shown when useRegex
-				static std::string lastNameKey = "\x01";	 // sentinel: forces the first filter build
+				static std::string regexError;				// last regex compile error, shown when useRegex
+				static std::string lastNameKey = "\x01";	// sentinel: forces the first filter build
 				static size_t lastNameCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
 				static bool lastCase = false, lastRegex = false;
 
@@ -173,7 +183,8 @@ namespace Menu
 					const std::string needle = nameFilter2;
 					if (needle.empty())
 					{
-						for (int i = 0; i < static_cast<int>(allNames.size()); i++) nameFiltered.push_back(i);
+						for (int i = 0; i < static_cast<int>(allNames.size()); i++)
+							nameFiltered.push_back(i);
 					}
 					else if (useRegex)
 					{
@@ -212,7 +223,8 @@ namespace Menu
 				if (ImGui::Button("Copy##namepool"))
 				{
 					std::string out;
-					for (int idx : nameFiltered) out += allNames[idx] + "\n";
+					for (int idx : nameFiltered)
+						out += allNames[idx] + "\n";
 					ImGui::SetClipboardText(out.c_str());
 				}
 				ImGui::Tooltip("Copy the filtered names to the clipboard.");
@@ -274,7 +286,8 @@ namespace Menu
 			if (ImGui::Button("Copy##instances"))
 			{
 				std::string out;
-				for (const auto& row : instanceResults) out += std::format("[{}] 0x{:x} {}\n", row.index, row.address, row.name);
+				for (const auto& row : instanceResults)
+					out += std::format("[{}] 0x{:x} {}\n", row.index, row.address, row.name);
 				ImGui::SetClipboardText(out.c_str());
 			}
 			ImGui::Tooltip("Copy the listed instances (index, address, name) to the clipboard.");

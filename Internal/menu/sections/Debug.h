@@ -7,6 +7,7 @@
 #include "../../scripting/Events.h"
 #include "../../hook/Hook.h"
 #include "../../../shared/Utilities.h"
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -22,33 +23,41 @@ namespace Menu
 		{
 			bool changed = false;
 
-			ImGui::SeparatorText("Logging");
-			changed |= ImGui::ToggleButton("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
-			changed |= ImGui::ToggleButton("Features Logging", &Settings.DEBUG.FeaturesLogging);
+			UI::SeparatorText("Logging");
+			changed |= UI::Toggle("Log ProcessEvent", &Settings.DEBUG.LogProcessEvent);
+			changed |= UI::Toggle("Features Logging", &Settings.DEBUG.FeaturesLogging);
 
-			ImGui::SeparatorText("GUI");
-			changed |= ImGui::ToggleButton("Show demo window", &Settings.DEBUG.ShowDemoWindow);
-			changed |= ImGui::ToggleButton("Show style editor", &Settings.DEBUG.ShowStyleEditor);
+			UI::SeparatorText("GUI");
+			changed |= UI::Toggle("Show demo window", &Settings.DEBUG.ShowDemoWindow);
+			changed |= UI::Toggle("Show style editor", &Settings.DEBUG.ShowStyleEditor);
 
-			ImGui::SeparatorText("Performance");
-			changed |= ImGui::ToggleButton("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
-			ImGui::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
+			UI::SeparatorText("Performance");
+			changed |= UI::Toggle("Native WorldToScreen", &Settings.DEBUG.NativeWorldToScreen);
+			UI::Tooltip("Project overlays with math instead of the game's ProjectWorldLocationToScreen UFunction. Turn off if boxes/names are misplaced.");
 			if (!Settings.DEBUG.NativeWorldToScreen)
 			{
-				changed |= ImGui::ToggleButton("Custom projection", &Settings.DEBUG.CustomProjection);
-				ImGui::Tooltip("With native off: use PortalWars' ProjectWorldLocationToScreenCustom instead of the stock UFunction.");
+				changed |= UI::Toggle("Custom projection", &Settings.DEBUG.CustomProjection);
+				UI::Tooltip("With native off: use PortalWars' ProjectWorldLocationToScreenCustom instead of the stock UFunction.");
 			}
-			changed |= ImGui::ToggleButton("Native bones", &Settings.DEBUG.NativeBones);
-			ImGui::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
-			changed |= ImGui::ToggleButton("Native actor location", &Settings.DEBUG.NativeActorLocation);
-			ImGui::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
+			changed |= UI::Toggle("Native bones", &Settings.DEBUG.NativeBones);
+			UI::Tooltip("Project the ESP skeleton via native GetBoneMatrix + WorldToScreen. Off falls back to the game's bone projection.");
+			changed |= UI::Toggle("Native actor location", &Settings.DEBUG.NativeActorLocation);
+			UI::Tooltip("Read actor location from RootComponent->RelativeLocation (no ProcessEvent). Off uses K2_GetActorLocation.");
 
 			if (changed) Events::Dispatch(Events::Type::SettingsChanged);
 
-			ImGui::SeparatorText("Files");
-			if (ImGui::Button("Open app folder"))
+			UI::SeparatorText("Files");
+			if (UI::Button("Open app folder"))
 				Shared::Utilities::OpenFolder(Shared::AppDataPath(SettingsHelper::AppFolder));
-			ImGui::Tooltip("Open the SplitgateInternal data folder (settings, logs, dumps).");
+			UI::Tooltip("Open the SplitgateInternal data folder (settings, logs, dumps).");
+
+			// The console-command input, feature tree and log child region use ImGui InputText /
+			// TreeNode / child regions — ImGui-only. The Canvas backend shows a note.
+			if (!UI::IsImGui())
+			{
+				UI::Text("Console command, feature tree and logs use the ImGui menu backend.");
+				return;
+			}
 
 			ImGui::SeparatorText("Console command");
 			static char consoleBuffer[256] = "";
@@ -76,7 +85,8 @@ namespace Menu
 				if (ImGui::Button("Copy##logs"))
 				{
 					std::string out;
-					for (const auto& line : Logger::Recent()) out += line + "\n";
+					for (const auto& line : Logger::Recent())
+						out += line + "\n";
 					ImGui::SetClipboardText(out.c_str());
 				}
 				ImGui::Tooltip("Copy the recent log lines to the clipboard.");

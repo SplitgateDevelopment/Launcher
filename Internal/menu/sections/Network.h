@@ -11,6 +11,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../../shared/LauncherSettings.h" // Shared::LauncherSettings (launcher.settings)
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -38,6 +39,14 @@ namespace Menu
 		/// SettingsChanged on any change.
 		void NetworkTab()
 		{
+			// The redirect-map editor and mitmproxy config are InputText / multiline / child-based, so
+			// this whole tab is ImGui-only; the Canvas backend shows a note.
+			if (!UI::IsImGui())
+			{
+				UI::Text("The backend-redirect editor uses the ImGui menu backend.");
+				return;
+			}
+
 			bool changed = false;
 
 			ImGui::SeparatorText("Backend redirect");
@@ -78,11 +87,11 @@ namespace Menu
 				changed = true;
 			}
 
-				changed |= ImGui::ToggleButton("Bypass SSL verification", &Settings.NETWORK.BypassSslVerify);
-				ImGui::Tooltip("Force curl's cert/host verification off so a redirected host can serve a self-signed cert.\nDisables TLS verification for ALL curl traffic while on.");
+			changed |= ImGui::ToggleButton("Bypass SSL verification", &Settings.NETWORK.BypassSslVerify);
+			ImGui::Tooltip("Force curl's cert/host verification off so a redirected host can serve a self-signed cert.\nDisables TLS verification for ALL curl traffic while on.");
 
-				// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
-				// the DLL's SETTINGS. Only relevant when the launcher will spawn mitmproxy.
+			// Mitmproxy script — a launcher-only setting (launcher.settings), so it lives outside
+			// the DLL's SETTINGS. Only relevant when the launcher will spawn mitmproxy.
 			if (Settings.NETWORK.Proxy == ProxyMode::Mitmproxy)
 			{
 				ImGui::SeparatorText("Mitmproxy script");

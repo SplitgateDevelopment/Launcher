@@ -11,6 +11,7 @@
 #include "../../scripting/Events.h"
 #include "../../cache/ClassCache.h" // shared class list for the spawn picker
 #include "../../utils/Logger.h"		// Logger::SetConsoleVisibility
+#include "../ui/UI.h"
 
 // Forward-declared instead of including hook/Hook.h: that header transitively includes this menu
 // (via Features -> GUI -> Menu), so including it here would be circular. The inline definition in
@@ -36,315 +37,329 @@ namespace Menu
 			// can't catch. Everything below already gates on isInGame.
 			bool isInGame = Engine::IsInGame;
 
-			ImGui::SeparatorText("Player");
+			UI::SeparatorText("Player");
 
-			ImGui::SetNextItemWidth(180.f);
-			ImGui::SliderFloat("##fov", &Settings.EXPLOITS.FOV, 80.0f, 160.0f, "FOV %.0f");
-			ImGui::SameLine();
-			if (ImGui::SmallButton("Reset##fov"))
+			if (UI::IsImGui()) ImGui::SetNextItemWidth(180.f);
+			UI::SliderFloat("##fov", &Settings.EXPLOITS.FOV, 80.0f, 160.0f, "FOV %.0f");
+			UI::SameLine();
+			if (UI::SmallButton("Reset##fov"))
 			{
 				Settings.EXPLOITS.FOV = ExploitsSettings{}.FOV;
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
 
-			if (!isInGame) ImGui::BeginDisabled();
-			ImGui::SetNextItemWidth(180.f);
-			ImGui::SliderFloat("##speed", &Settings.EXPLOITS.PlayerSpeed, 0.2f, 4.f, "Speed %.2f");
-			ImGui::SameLine();
-			if (ImGui::SmallButton("Reset##speed"))
+			if (UI::IsImGui() && !isInGame) ImGui::BeginDisabled();
+			if (UI::IsImGui()) ImGui::SetNextItemWidth(180.f);
+			UI::SliderFloat("##speed", &Settings.EXPLOITS.PlayerSpeed, 0.2f, 4.f, "Speed %.2f");
+			UI::SameLine();
+			if (UI::SmallButton("Reset##speed"))
 			{
 				Settings.EXPLOITS.PlayerSpeed = ExploitsSettings{}.PlayerSpeed;
 				Events::Dispatch(Events::Type::SettingsChanged);
 			}
-			if (!isInGame) ImGui::EndDisabled();
+			if (UI::IsImGui() && !isInGame) ImGui::EndDisabled();
 
-			ImGui::SeparatorText("Game");
+			UI::SeparatorText("Game");
 
-			// "Load into map" is usable whenever you're out of a game (e.g. back in the menu after a
-			// match), disabled only while already in one. The dropdown beside it picks the target level
-			// SwitchLevel travels to. These are the game's Content/Maps package names (leaf, no path or
-			// .BuiltData); Simulation_Alpha (the firing range) is index 0 and the default. The selection
-			// rides in on the event payload. Enumerated from the FName pool via the SDK tab.
-			static const char* const levels[] = {
-				// Simulation / firing-range maps
-				"Simulation_Alpha", // default
-				"Simulation_Bravo",
-				"Simulation_Charlie",
-				"Simulation_Delta",
-				"Simulation_Echo",
-				"Simulation_Foxtrot",
-				"Simulation_Golf",
-				"Simulation_Hotel",
-				"Simulation_India",
-				"Simulation_Juliet",
-				// Arena maps
-				"Abyss",
-				"Atlantis",
-				"Crag",
-				"Foregone_Destruction",
-				"Helix",
-				"Highwind",
-				"Impact",
-				"Karman_Station",
-				"Lavawell",
-				"Oasis",
-				"Olympus",
-				"Pantheon",
-				"Silo",
-				"Stadium",
-				// Special / system maps
-				"MainMenu",
-				"Lobby",
-				"Tutorial",
-				"PracticeRange",
-				"TravelMap",
-				"Forge_Island",
-				"Forge_Flat_Earth",
-				"Abyss_Cinematics",
-				// Blockout / work-in-progress maps
-				"Maya_Blockout",
-				"Noboru_Temple_Blockout",
-				"Decay_Blockout_WIP",
-				"Drift_Blockout_WIP",
-				"Titan_Blockout_WIP",
-				"Toxic_Blockout_Wip",
-				"Vessel_Blockout_WIP",
-				"Vintage_Blockout_WIP",
-			};
-			// Searchable dropdown (same pattern as the spawn picker): filter the static list, click a
-			// row to select. selectedLevel points into the static array above, so it stays valid to hand
-			// to the event payload.
-			static std::vector<int> levelFiltered;
-			static char levelSearch[128] = "";
-			static std::string levelLastKey = "\x01"; // sentinel: forces the first filter build
-			static const char* selectedLevel = levels[0];
-
-			if (isInGame) ImGui::BeginDisabled();
-			ImGui::SetNextItemWidth(220.f);
-			if (ImGui::BeginCombo("##level", selectedLevel))
+			// Load-into-map, the spawn picker and the cosmetics pickers are all searchable dropdowns
+			// (BeginCombo + InputText + clipped Selectable list) — ImGui-only. In the Canvas backend the
+			// tab shows a short note instead.
+			if (!UI::IsImGui())
 			{
-				ImGui::SetNextItemWidth(-1.f);
-				ImGui::InputTextWithHint("##levelsearch", "filter maps...", levelSearch, sizeof(levelSearch));
-
-				// Rebuild the filtered index list only when the search text changes.
-				if (levelSearch != levelLastKey)
-				{
-					levelLastKey = levelSearch;
-					levelFiltered.clear();
-					const std::string needle = levelSearch;
-					for (int i = 0; i < IM_ARRAYSIZE(levels); i++)
-						if (needle.empty() || std::string(levels[i]).find(needle) != std::string::npos)
-							levelFiltered.push_back(i);
-				}
-
-				ImGui::BeginChild("##levellist", ImVec2(240, 200));
-				ImGuiListClipper clipper;
-				clipper.Begin(static_cast<int>(levelFiltered.size()));
-				while (clipper.Step())
-					for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
-					{
-						const char* name = levels[levelFiltered[r]];
-						if (ImGui::Selectable(name, name == selectedLevel)) selectedLevel = name;
-					}
-				ImGui::EndChild();
-				ImGui::EndCombo();
+				UI::Text("Load into map, spawning and cosmetics use the ImGui menu backend.");
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Load into map"))
+			else
 			{
-				Events::Payload payload;
-				payload.name = selectedLevel;
-				Events::Dispatch(Events::Type::LoadIntoMap, payload);
-			}
-			if (isInGame) ImGui::EndDisabled();
+				// "Load into map" is usable whenever you're out of a game (e.g. back in the menu after a
+				// match), disabled only while already in one. The dropdown beside it picks the target level
+				// SwitchLevel travels to. These are the game's Content/Maps package names (leaf, no path or
+				// .BuiltData); Simulation_Alpha (the firing range) is index 0 and the default. The selection
+				// rides in on the event payload. Enumerated from the FName pool via the SDK tab.
+				static const char* const levels[] = {
+					// Simulation / firing-range maps
+					"Simulation_Alpha", // default
+					"Simulation_Bravo",
+					"Simulation_Charlie",
+					"Simulation_Delta",
+					"Simulation_Echo",
+					"Simulation_Foxtrot",
+					"Simulation_Golf",
+					"Simulation_Hotel",
+					"Simulation_India",
+					"Simulation_Juliet",
+					// Arena maps
+					"Abyss",
+					"Atlantis",
+					"Crag",
+					"Foregone_Destruction",
+					"Helix",
+					"Highwind",
+					"Impact",
+					"Karman_Station",
+					"Lavawell",
+					"Oasis",
+					"Olympus",
+					"Pantheon",
+					"Silo",
+					"Stadium",
+					// Special / system maps
+					"MainMenu",
+					"Lobby",
+					"Tutorial",
+					"PracticeRange",
+					"TravelMap",
+					"Forge_Island",
+					"Forge_Flat_Earth",
+					"Abyss_Cinematics",
+					// Blockout / work-in-progress maps
+					"Maya_Blockout",
+					"Noboru_Temple_Blockout",
+					"Decay_Blockout_WIP",
+					"Drift_Blockout_WIP",
+					"Titan_Blockout_WIP",
+					"Toxic_Blockout_Wip",
+					"Vessel_Blockout_WIP",
+					"Vintage_Blockout_WIP",
+				};
+				// Searchable dropdown (same pattern as the spawn picker): filter the static list, click a
+				// row to select. selectedLevel points into the static array above, so it stays valid to hand
+				// to the event payload.
+				static std::vector<int> levelFiltered;
+				static char levelSearch[128] = "";
+				static std::string levelLastKey = "\x01"; // sentinel: forces the first filter build
+				static const char* selectedLevel = levels[0];
 
-			ImGui::SameLine();
-			if (!isInGame) ImGui::BeginDisabled();
-			if (ImGui::Button("Respawn"))
-				if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character))
-					character->RequestSuicide();
-			if (!isInGame) ImGui::EndDisabled();
-			ImGui::Tooltip("Kill your character so it respawns (RequestSuicide).");
-
-			// Spawn picker: a searchable dropdown of spawnable actor classes (bots, pawns, guns, ...)
-			// scanned from GObjects, plus a Spawn button that spawns the selection in front of you.
-			{
-				static std::vector<int> filtered;	   // indices into the shared ClassCache
-				static char search[128] = "";
-				static std::string lastKey = "\x01";   // sentinel: forces the first filter build
-				static size_t lastCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
-				static std::string selected;
-				static const char* keywords[] = {"Bot", "Pawn", "Gun", "Weapon", "Character", "Projectile", "Grenade", "Vehicle"};
-
-				ImGui::SetNextItemWidth(240.f);
-				if (ImGui::BeginCombo("##spawnclass", selected.empty() ? "Spawn class..." : selected.c_str()))
+				if (isInGame) ImGui::BeginDisabled();
+				ImGui::SetNextItemWidth(220.f);
+				if (ImGui::BeginCombo("##level", selectedLevel))
 				{
-					const auto& classes = ClassCache::Get(); // shared, built once
-
 					ImGui::SetNextItemWidth(-1.f);
-					ImGui::InputTextWithHint("##spawnsearch", "filter: bot, gun, pawn...", search, sizeof(search));
+					ImGui::InputTextWithHint("##levelsearch", "filter maps...", levelSearch, sizeof(levelSearch));
 
-					// Rebuild the filtered index list only when the search or the underlying cache changes.
-					if (search != lastKey || classes.size() != lastCacheSize)
+					// Rebuild the filtered index list only when the search text changes.
+					if (levelSearch != levelLastKey)
 					{
-						lastKey = search;
-						lastCacheSize = classes.size();
-						filtered.clear();
-						const std::string needle = search;
-						for (int i = 0; i < static_cast<int>(classes.size()); i++)
-						{
-							const std::string& name = classes[i].name;
-							bool spawnable = false; // narrow to bots/pawns/guns/... so it's a spawn list, not every class
-							for (const char* kw : keywords)
-								if (name.find(kw) != std::string::npos) { spawnable = true; break; }
-							if (!spawnable) continue;
-							if (!needle.empty() && name.find(needle) == std::string::npos) continue;
-							filtered.push_back(i);
-						}
+						levelLastKey = levelSearch;
+						levelFiltered.clear();
+						const std::string needle = levelSearch;
+						for (int i = 0; i < IM_ARRAYSIZE(levels); i++)
+							if (needle.empty() || std::string(levels[i]).find(needle) != std::string::npos)
+								levelFiltered.push_back(i);
 					}
 
-					// Clip to the visible rows so a few-thousand-class list isn't laid out in full each frame.
-					ImGui::BeginChild("##spawnlist", ImVec2(340, 220));
+					ImGui::BeginChild("##levellist", ImVec2(240, 200));
 					ImGuiListClipper clipper;
-					clipper.Begin(static_cast<int>(filtered.size()));
+					clipper.Begin(static_cast<int>(levelFiltered.size()));
 					while (clipper.Step())
 						for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
 						{
-							const std::string& name = classes[filtered[r]].name;
-							if (ImGui::Selectable(name.c_str(), name == selected)) selected = name;
+							const char* name = levels[levelFiltered[r]];
+							if (ImGui::Selectable(name, name == selectedLevel)) selectedLevel = name;
 						}
 					ImGui::EndChild();
 					ImGui::EndCombo();
 				}
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Refresh##spawn")) ClassCache::Rebuild();
+				if (ImGui::Button("Load into map"))
+				{
+					Events::Payload payload;
+					payload.name = selectedLevel;
+					Events::Dispatch(Events::Type::LoadIntoMap, payload);
+				}
+				if (isInGame) ImGui::EndDisabled();
 
 				ImGui::SameLine();
-				if (!isInGame || selected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Spawn") && isInGame && !selected.empty() && Engine::PlayerController)
+				if (!isInGame) ImGui::BeginDisabled();
+				if (ImGui::Button("Respawn"))
+					if (auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character))
+						character->RequestSuicide();
+				if (!isInGame) ImGui::EndDisabled();
+				ImGui::Tooltip("Kill your character so it respawns (RequestSuicide).");
+
+				// Spawn picker: a searchable dropdown of spawnable actor classes (bots, pawns, guns, ...)
+				// scanned from GObjects, plus a Spawn button that spawns the selection in front of you.
 				{
-					UObject* cls = Engine::GObjects->FindObject(selected.c_str());
-					auto* pawn = Engine::PlayerController->AcknowledgedPawn;
-					if (cls && pawn)
+					static std::vector<int> filtered; // indices into the shared ClassCache
+					static char search[128] = "";
+					static std::string lastKey = "\x01";	// sentinel: forces the first filter build
+					static size_t lastCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
+					static std::string selected;
+					static const char* keywords[] = {"Bot", "Pawn", "Gun", "Weapon", "Character", "Projectile", "Grenade", "Vehicle"};
+
+					ImGui::SetNextItemWidth(240.f);
+					if (ImGui::BeginCombo("##spawnclass", selected.empty() ? "Spawn class..." : selected.c_str()))
 					{
-						FVector loc = reinterpret_cast<AActor*>(pawn)->K2_GetActorLocation();
-						loc.X += 200.f; // a bit in front of the player
-						AActor* actor = SpawnActor(reinterpret_cast<UObject*>(Engine::PlayerController), reinterpret_cast<UClass*>(cls),
-												   loc, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn, nullptr);
-						Logger::Log(actor ? "SUCCESS" : "ERROR", (actor ? "Spawned " : "Spawn failed: ") + selected);
-					}
-					else
-						Logger::Log("ERROR", "Spawn: class not found: " + selected);
-				}
-				if (!isInGame || selected.empty()) ImGui::EndDisabled();
-				ImGui::Tooltip("Pick a spawnable class (searchable — bots, pawns, guns, ...) and Spawn it in front\nof you. Refresh rescans GObjects. Uses the deferred SpawnActor.");
-			}
+						const auto& classes = ClassCache::Get(); // shared, built once
 
-			ImGui::SeparatorText("Cosmetics");
-			{
-				static std::vector<int> skinFiltered; // indices into the shared ClassCache
-				static char skinSearch[128] = "";
-				static std::string skinLastKey = "\x01";
-				static size_t skinLastCacheSize = SIZE_MAX;
-				static std::string skinSelected;
+						ImGui::SetNextItemWidth(-1.f);
+						ImGui::InputTextWithHint("##spawnsearch", "filter: bot, gun, pawn...", search, sizeof(search));
 
-				ImGui::SetNextItemWidth(240.f);
-				if (ImGui::BeginCombo("##skinclass", skinSelected.empty() ? "Skin class..." : skinSelected.c_str()))
-				{
-					const auto& classes = ClassCache::Get();
-
-					ImGui::SetNextItemWidth(-1.f);
-					ImGui::InputTextWithHint("##skinsearch", "filter: skin name...", skinSearch, sizeof(skinSearch));
-
-					if (skinSearch != skinLastKey || classes.size() != skinLastCacheSize)
-					{
-						skinLastKey = skinSearch;
-						skinLastCacheSize = classes.size();
-						skinFiltered.clear();
-						const std::string needle = skinSearch;
-						for (int i = 0; i < static_cast<int>(classes.size()); i++)
+						// Rebuild the filtered index list only when the search or the underlying cache changes.
+						if (search != lastKey || classes.size() != lastCacheSize)
 						{
-							const std::string& name = classes[i].name;
-							if (name.find("Skin") == std::string::npos) continue; // skins only
-							if (!needle.empty() && name.find(needle) == std::string::npos) continue;
-							skinFiltered.push_back(i);
+							lastKey = search;
+							lastCacheSize = classes.size();
+							filtered.clear();
+							const std::string needle = search;
+							for (int i = 0; i < static_cast<int>(classes.size()); i++)
+							{
+								const std::string& name = classes[i].name;
+								bool spawnable = false; // narrow to bots/pawns/guns/... so it's a spawn list, not every class
+								for (const char* kw : keywords)
+									if (name.find(kw) != std::string::npos)
+									{
+										spawnable = true;
+										break;
+									}
+								if (!spawnable) continue;
+								if (!needle.empty() && name.find(needle) == std::string::npos) continue;
+								filtered.push_back(i);
+							}
+						}
+
+						// Clip to the visible rows so a few-thousand-class list isn't laid out in full each frame.
+						ImGui::BeginChild("##spawnlist", ImVec2(340, 220));
+						ImGuiListClipper clipper;
+						clipper.Begin(static_cast<int>(filtered.size()));
+						while (clipper.Step())
+							for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+							{
+								const std::string& name = classes[filtered[r]].name;
+								if (ImGui::Selectable(name.c_str(), name == selected)) selected = name;
+							}
+						ImGui::EndChild();
+						ImGui::EndCombo();
+					}
+					ImGui::SameLine();
+					if (ImGui::SmallButton("Refresh##spawn")) ClassCache::Rebuild();
+
+					ImGui::SameLine();
+					if (!isInGame || selected.empty()) ImGui::BeginDisabled();
+					if (ImGui::Button("Spawn") && isInGame && !selected.empty() && Engine::PlayerController)
+					{
+						UObject* cls = Engine::GObjects->FindObject(selected.c_str());
+						auto* pawn = Engine::PlayerController->AcknowledgedPawn;
+						if (cls && pawn)
+						{
+							FVector loc = reinterpret_cast<AActor*>(pawn)->K2_GetActorLocation();
+							loc.X += 200.f; // a bit in front of the player
+							AActor* actor = SpawnActor(reinterpret_cast<UObject*>(Engine::PlayerController), reinterpret_cast<UClass*>(cls),
+													   loc, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn, nullptr);
+							Logger::Log(actor ? "SUCCESS" : "ERROR", (actor ? "Spawned " : "Spawn failed: ") + selected);
+						}
+						else
+							Logger::Log("ERROR", "Spawn: class not found: " + selected);
+					}
+					if (!isInGame || selected.empty()) ImGui::EndDisabled();
+					ImGui::Tooltip("Pick a spawnable class (searchable — bots, pawns, guns, ...) and Spawn it in front\nof you. Refresh rescans GObjects. Uses the deferred SpawnActor.");
+				}
+
+				ImGui::SeparatorText("Cosmetics");
+				{
+					static std::vector<int> skinFiltered; // indices into the shared ClassCache
+					static char skinSearch[128] = "";
+					static std::string skinLastKey = "\x01";
+					static size_t skinLastCacheSize = SIZE_MAX;
+					static std::string skinSelected;
+
+					ImGui::SetNextItemWidth(240.f);
+					if (ImGui::BeginCombo("##skinclass", skinSelected.empty() ? "Skin class..." : skinSelected.c_str()))
+					{
+						const auto& classes = ClassCache::Get();
+
+						ImGui::SetNextItemWidth(-1.f);
+						ImGui::InputTextWithHint("##skinsearch", "filter: skin name...", skinSearch, sizeof(skinSearch));
+
+						if (skinSearch != skinLastKey || classes.size() != skinLastCacheSize)
+						{
+							skinLastKey = skinSearch;
+							skinLastCacheSize = classes.size();
+							skinFiltered.clear();
+							const std::string needle = skinSearch;
+							for (int i = 0; i < static_cast<int>(classes.size()); i++)
+							{
+								const std::string& name = classes[i].name;
+								if (name.find("Skin") == std::string::npos) continue; // skins only
+								if (!needle.empty() && name.find(needle) == std::string::npos) continue;
+								skinFiltered.push_back(i);
+							}
+						}
+
+						ImGui::BeginChild("##skinlist", ImVec2(340, 220));
+						ImGuiListClipper clipper;
+						clipper.Begin(static_cast<int>(skinFiltered.size()));
+						while (clipper.Step())
+							for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+							{
+								const std::string& name = classes[skinFiltered[r]].name;
+								if (ImGui::Selectable(name.c_str(), name == skinSelected)) skinSelected = name;
+							}
+						ImGui::EndChild();
+						ImGui::EndCombo();
+					}
+					ImGui::SameLine();
+					if (ImGui::SmallButton("Refresh##skin")) ClassCache::Rebuild();
+
+					ImGui::SameLine();
+					if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
+					if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
+					{
+						UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
+						auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
+						if (cls && character)
+						{
+							character->CharacterSkinClass = reinterpret_cast<ACharacterSkin*>(cls);
+							character->UpdateSkins();
+							Logger::Log("SUCCESS", "Applied skin: " + skinSelected);
+						}
+						else
+							Logger::Log("ERROR", "Apply skin: class not found: " + skinSelected);
+					}
+					if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
+					ImGui::Tooltip("Pick a skin class, then apply it to your character, gun or jetpack.\nClient-side (sets the *SkinClass + UpdateSkins); the server may re-assert your real skins. Refresh rescans classes.");
+
+					// Apply the selected class to the gun / jetpack too (they use their own skin types).
+					if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
+					if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
+					{
+						UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
+						auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
+						if (cls && character && character->CurrentWeapon)
+						{
+							character->CurrentWeapon->WeaponSkinClass = reinterpret_cast<ABaseGunSkin*>(cls);
+							character->CurrentWeapon->UpdateSkins();
+							Logger::Log("SUCCESS", "Applied gun skin: " + skinSelected);
 						}
 					}
-
-					ImGui::BeginChild("##skinlist", ImVec2(340, 220));
-					ImGuiListClipper clipper;
-					clipper.Begin(static_cast<int>(skinFiltered.size()));
-					while (clipper.Step())
-						for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+					ImGui::SameLine();
+					if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
+					{
+						UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
+						auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
+						if (cls && character)
 						{
-							const std::string& name = classes[skinFiltered[r]].name;
-							if (ImGui::Selectable(name.c_str(), name == skinSelected)) skinSelected = name;
+							character->JetpackSkinClass = reinterpret_cast<AJetpackSkin*>(cls);
+							character->UpdateSkins();
+							Logger::Log("SUCCESS", "Applied jetpack skin: " + skinSelected);
 						}
-					ImGui::EndChild();
-					ImGui::EndCombo();
-				}
-				ImGui::SameLine();
-				if (ImGui::SmallButton("Refresh##skin")) ClassCache::Rebuild();
-
-				ImGui::SameLine();
-				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
-				{
-					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
-					if (cls && character)
-					{
-						character->CharacterSkinClass = reinterpret_cast<ACharacterSkin*>(cls);
-						character->UpdateSkins();
-						Logger::Log("SUCCESS", "Applied skin: " + skinSelected);
 					}
-					else
-						Logger::Log("ERROR", "Apply skin: class not found: " + skinSelected);
+					if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
 				}
-				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
-				ImGui::Tooltip("Pick a skin class, then apply it to your character, gun or jetpack.\nClient-side (sets the *SkinClass + UpdateSkins); the server may re-assert your real skins. Refresh rescans classes.");
 
-				// Apply the selected class to the gun / jetpack too (they use their own skin types).
-				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
-				if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
-				{
-					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
-					if (cls && character && character->CurrentWeapon)
-					{
-						character->CurrentWeapon->WeaponSkinClass = reinterpret_cast<ABaseGunSkin*>(cls);
-						character->CurrentWeapon->UpdateSkins();
-						Logger::Log("SUCCESS", "Applied gun skin: " + skinSelected);
-					}
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Engine::PlayerController)
-				{
-					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
-					auto* character = reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character);
-					if (cls && character)
-					{
-						character->JetpackSkinClass = reinterpret_cast<AJetpackSkin*>(cls);
-						character->UpdateSkins();
-						Logger::Log("SUCCESS", "Applied jetpack skin: " + skinSelected);
-					}
-				}
-				if (!isInGame || skinSelected.empty()) ImGui::EndDisabled();
-			}
+			} // else (ImGui-only Game / Cosmetics)
 
-			ImGui::SeparatorText("Program");
-			if (ImGui::Button("Toggle Console"))
+			UI::SeparatorText("Program");
+			if (UI::Button("Toggle Console"))
 			{
 				Settings.MISC.ShowConsole = !Settings.MISC.ShowConsole;
 				Logger::SetConsoleVisibility(Settings.MISC.ShowConsole);
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Unload")) Hook::RequestUnload();
+			UI::SameLine();
+			if (UI::Button("Unload")) Hook::RequestUnload();
 
-			if (ImGui::ToggleButton("Announce toggles in chat", &Settings.MISC.AnnounceToggles))
+			if (UI::Toggle("Announce toggles in chat", &Settings.MISC.AnnounceToggles))
 				Events::Dispatch(Events::Type::SettingsChanged);
-			ImGui::Tooltip("Post a local (client-only) chat line when you toggle a feature, e.g. \"[ESP] Enabled\".\nShown only to you, not sent to the server.");
-
+			UI::Tooltip("Post a local (client-only) chat line when you toggle a feature, e.g. \"[ESP] Enabled\".\nShown only to you, not sent to the server.");
 		}
 	} // namespace Sections
 } // namespace Menu

@@ -8,6 +8,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
 #include "../../discord/rpc.h"
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -16,9 +17,9 @@ namespace Menu
 		/// @brief Renders the Discord tab.
 		void DiscordTab()
 		{
-			ImGui::SeparatorText("Rich Presence");
+			UI::SeparatorText("Rich Presence");
 
-			if (ImGui::ToggleButton("Enable", &Settings.MISC.DiscordRPCEnabled))
+			if (UI::Toggle("Enable", &Settings.MISC.DiscordRPCEnabled))
 			{
 				Events::Dispatch(Events::Type::SettingsChanged); // features (incl. DiscordPresence) refresh
 				if (Settings.MISC.DiscordRPCEnabled)
@@ -26,23 +27,26 @@ namespace Menu
 				else
 					Discord_ClearPresence(); // hide it from your profile while off
 			}
-			ImGui::Tooltip("Show a Rich Presence on your Discord profile. Updates with the live game state\n(map + K/D) every few seconds.");
+			UI::Tooltip("Show a Rich Presence on your Discord profile. Updates with the live game state\n(map + K/D) every few seconds.");
 
-			if (!Settings.MISC.DiscordRPCEnabled) ImGui::BeginDisabled();
+			// BeginDisabled/EndDisabled greys out the block in ImGui; the Canvas backend has no equivalent,
+			// so it's only applied under the ImGui backend.
+			const bool disabled = !Settings.MISC.DiscordRPCEnabled;
+			if (UI::IsImGui() && disabled) ImGui::BeginDisabled();
 
-			ImGui::SeparatorText("Live");
+			UI::SeparatorText("Live");
 			const char* state = DiscordRPC::GetState();
-			ImGui::Text("State:   %s", (state && state[0]) ? state : "(none)");
-			ImGui::Text("Details: %s", Settings.MENU.Watermark.c_str());
-			if (ImGui::Button("Refresh now")) DiscordRPC::UpdateGameState();
-			ImGui::Tooltip("Push the current map + K/D to Discord immediately (also happens automatically ~every 5s).");
+			UI::Text("State:   %s", (state && state[0]) ? state : "(none)");
+			UI::Text("Details: %s", Settings.MENU.Watermark.c_str());
+			if (UI::Button("Refresh now")) DiscordRPC::UpdateGameState();
+			UI::Tooltip("Push the current map + K/D to Discord immediately (also happens automatically ~every 5s).");
 
-			ImGui::SeparatorText("Info");
-			ImGui::Text("App ID:  %s", Settings.MISC.DiscordAppID.c_str());
-			ImGui::Text("Image:   %s", "icon");
-			ImGui::TextDisabled("App ID / Steam app id are runtime-only and set at startup.");
+			UI::SeparatorText("Info");
+			UI::Text("App ID:  %s", Settings.MISC.DiscordAppID.c_str());
+			UI::Text("Image:   %s", "icon");
+			UI::TextDisabled("App ID / Steam app id are runtime-only and set at startup.");
 
-			if (!Settings.MISC.DiscordRPCEnabled) ImGui::EndDisabled();
+			if (UI::IsImGui() && disabled) ImGui::EndDisabled();
 		}
 	} // namespace Sections
 } // namespace Menu

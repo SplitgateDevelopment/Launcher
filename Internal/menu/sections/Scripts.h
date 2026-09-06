@@ -9,6 +9,7 @@
 #include "../../settings/Settings.h"
 #include "../../scripting/Scripts.h"
 #include "../../scripting/Events.h"
+#include "../ui/UI.h"
 
 namespace Menu
 {
@@ -17,18 +18,26 @@ namespace Menu
 		/// @brief Renders the Scripts tab.
 		void ScriptsTab()
 		{
-			ImGui::SeparatorText("User Scripts");
-			ImGui::Tooltip("Python scripts from Documents\\SplitgateInternal\\UserScripts. See docs/scripting.md.");
+			UI::SeparatorText("User Scripts");
+			UI::Tooltip("Python scripts from Documents\\SplitgateInternal\\UserScripts. See docs/scripting.md.");
 
-			if (ImGui::ToggleButton("Enable", &Settings.MISC.UserScriptsEnabled))
+			if (UI::Toggle("Enable", &Settings.MISC.UserScriptsEnabled))
 				Events::Dispatch(Events::Type::SettingsChanged);
-			ImGui::SameLine();
-			if (ImGui::Button("Reload")) Scripts::Reload();
-			ImGui::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
-						   "without a relaunch). Previously-registered script event handlers are cleared\n"
-						   "first, so reloading doesn't stack duplicates.");
+			UI::SameLine();
+			if (UI::Button("Reload")) Scripts::Reload();
+			UI::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
+						"without a relaunch). Previously-registered script event handlers are cleared\n"
+						"first, so reloading doesn't stack duplicates.");
 
-			ImGui::SeparatorText("Loaded Scripts");
+			UI::SeparatorText("Loaded Scripts");
+
+			// The scrollable list with per-script Run buttons uses ImGui child regions — ImGui-only.
+			if (!UI::IsImGui())
+			{
+				UI::Text("The loaded-script list uses the ImGui menu backend.");
+				return;
+			}
+
 			if (Scripts::scriptList.empty())
 			{
 				ImGui::TextDisabled("No scripts found. Drop a .py with a main() into the UserScripts folder, then Reload.");
