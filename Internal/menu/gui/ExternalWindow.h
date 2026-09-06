@@ -12,20 +12,21 @@
 /// window hides the whole game from capture — useless for streaming. To hide only the overlay's
 /// drawing it must live in its own window with that affinity set on it.
 ///
-/// Same device, same thread. This window reuses the *game's* D3D11 device (Window::Device) for its
-/// DirectComposition swap chain, and is created, rendered and presented entirely from the game thread
-/// (GUI::Overlay, inside the Present hook) — GUI calls Start()/Render()/Stop(). An earlier version ran
-/// a second D3D device on a second thread, presenting concurrently with the game; that contended on
-/// the GPU/compositor and could hang the display driver (a TDR), and the cross-thread ImGui lock then
-/// froze the game with it. One device + one thread removes both hazards: nothing runs on the GPU
-/// concurrently, and the two ImGui contexts (game menu + this overlay) are switched serially with no
-/// lock. Present uses no vsync so it never blocks the game thread.
+/// Own BGRA device, game thread. DirectComposition requires the D3D11 device to be created with
+/// D3D11_CREATE_DEVICE_BGRA_SUPPORT, which the game's device may lack (its composition then silently
+/// never displays), so this owns its own small BGRA device for the composition swap chain. But it is
+/// created, rendered and presented entirely from the game thread (GUI::Overlay drives Start/Render/
+/// Stop in the Present hook) — never a second thread. An earlier version ran the second device on a
+/// second thread, presenting concurrently with the game; that contended on the GPU and hung the
+/// display driver (a TDR), and its cross-thread ImGui lock froze the game with it. One thread removes
+/// both: nothing runs on the GPU concurrently, and the two ImGui contexts (game menu + this overlay)
+/// are switched serially with no lock. Present uses no vsync so the game thread never blocks.
 ///
 /// Why display-only / click-through. Making this window interactive needs input, which means either
-/// stealing the game's focus (can't be handed back reliably) or global low-level hooks (can lock
-/// input system-wide). Both proved unshippable, so this window never takes focus or input; it is
-/// permanently click-through (WM_NCHITTEST -> HTTRANSPARENT, since WS_EX_TRANSPARENT alone doesn't
-/// pass the mouse through a no-redirection-bitmap window).
+/// stealing focus (can't be handed back reliably) or global low-level hooks (can lock input system-
+/// wide). Both proved unshippable, so this window never takes focus or input; it is permanently
+/// click-through (WM_NCHITTEST -> HTTRANSPARENT, since WS_EX_TRANSPARENT alone doesn't pass the mouse
+/// through a no-redirection-bitmap window).
 ///
 /// Per-pixel transparency uses a composition swap chain (DXGI_ALPHA_MODE_PREMULTIPLIED) presented
 /// through DirectComposition; ImGui's DX11 blend writes premultiplied-correct alpha, so clearing the
@@ -45,19 +46,21 @@
 #include "imgui_Impl_dx11.h"
 #include "imgui_Impl_Win32.h"
 
-#include "Window.h" // Window::Device / Window::DeviceContext (the game's) + WindowHandle + WDA fallback
+#include "Window.h" // Window::WindowHandle (the game window) + the WDA_EXCLUDEFROMCAPTURE fallback
 #include "../../render/Render.h"
 #include "../../settings/Settings.h"
 #include "../../utils/Logger.h"
 
-/// @brief The streamproof external overlay window, its DirectComposition swap chain (on the game's
-/// D3D11 device), its own ImGui context (draw list + font only), and the Start/Render/Stop surface
+/// @brief The streamproof external overlay window, its own BGRA D3D11 device + DirectComposition swap
+/// chain, its own ImGui context (draw list + font only), and the Start/Render/Stop surface that
 /// GUI::Overlay drives from the game thread.
 namespace ExternalWindow
 {
-	inline HWND Hwnd = nullptr;					  ///< the overlay window (separate from the game window)
-	inline IDXGISwapChain1* SwapChain = nullptr;  ///< composition swap chain on the game's device (per-pixel alpha)
-	inline ID3D11RenderTargetView* Rtv = nullptr; ///< RTV over the swap chain's back buffer
+	inline HWND Hwnd = nullptr;					   ///< the overlay window (separate from the game window)
+	inline ID3D11Device* Device = nullptr;		   ///< overlay's own D3D11 device, created with BGRA support for DComp
+	inline ID3D11DeviceContext* Context = nullptr; ///< immediate context for @ref Device
+	inline IDXGISwapChain1* SwapChain = nullptr;   ///< composition swap chain (per-pixel alpha)
+	inline ID3D11RenderTargetView* Rtv = nullptr;  ///< RTV over the swap chain's back buffer
 	inline IDCompositionDevice* DcompDevice = nullptr;
 	inline IDCompositionTarget* DcompTarget = nullptr;
 	inline IDCompositionVisual* DcompVisual = nullptr;
@@ -84,13 +87,13 @@ namespace ExternalWindow
 		return fg && fg == GameWindow();
 	}
 
-	/// @brief (Re)create the RTV from the swap chain's back buffer, on the game's device.
+	/// @brief (Re)create the RTV from the swap chain's back buffer, on the overlay's device.
 	inline void CreateRtv()
 	{
-		if (!SwapChain || !Window::Device) return;
+		if (!SwapChain || !Device) return;
 		ID3D11Texture2D* backBuffer = nullptr;
 		if (FAILED(SwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))) || !backBuffer) return;
-		Window::Device->CreateRenderTargetView(backBuffer, nullptr, &Rtv);
+		Device->CreateRenderTargetView(backBuffer, nullptr, &Rtv);
 		backBuffer->Release();
 	}
 
@@ -176,14 +179,18 @@ namespace ExternalWindow
 		return true;
 	}
 
-	/// @brief Build the DirectComposition swap chain/visual on the *game's* D3D11 device and the RTV.
-	/// @return true on success.
+	/// @brief Build the overlay's own BGRA D3D11 device (DirectComposition requires BGRA, which the
+	/// game's device may not have), the composition swap chain/visual, and the RTV. @return true on
+	/// success.
 	inline bool CreatePipeline()
 	{
-		if (!Window::Device) return false;
+		const UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT; // required for DirectComposition
+		D3D_FEATURE_LEVEL featureLevel;
+		if (FAILED(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &Device, &featureLevel, &Context)))
+			return false;
 
 		IDXGIDevice* dxgiDevice = nullptr;
-		if (FAILED(Window::Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))) return false;
+		if (FAILED(Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))) return false;
 
 		IDXGIAdapter* adapter = nullptr;
 		IDXGIFactory2* factory = nullptr;
@@ -200,7 +207,7 @@ namespace ExternalWindow
 			desc.BufferCount = 2;
 			desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 			desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED; // per-pixel alpha over the desktop
-			ok = SUCCEEDED(factory->CreateSwapChainForComposition(Window::Device, &desc, nullptr, &SwapChain));
+			ok = SUCCEEDED(factory->CreateSwapChainForComposition(Device, &desc, nullptr, &SwapChain));
 		}
 
 		if (ok) ok = SUCCEEDED(DCompositionCreateDevice(dxgiDevice, IID_PPV_ARGS(&DcompDevice)));
@@ -220,8 +227,8 @@ namespace ExternalWindow
 	}
 
 	/// @brief Create the overlay's own ImGui context and its DX11/Win32 backends, bound to @ref Hwnd
-	/// and the *game's* device. A distinct context from the menu's, switched to serially on the game
-	/// thread (no lock needed). @return true on success.
+	/// and the overlay's own device. A distinct context from the menu's, switched to serially on the
+	/// game thread (no lock needed). @return true on success.
 	inline bool CreateImGui()
 	{
 		IMGUI_CHECKVERSION();
@@ -230,13 +237,13 @@ namespace ExternalWindow
 
 		ImGui::SetCurrentContext(Ctx);
 		if (!ImGui_ImplWin32_Init(Hwnd)) return false;
-		if (!ImGui_ImplDX11_Init(Window::Device, Window::DeviceContext)) return false;
+		if (!ImGui_ImplDX11_Init(Device, Context)) return false;
 		ImGui_ImplDX11_CreateDeviceObjects();
 		return true;
 	}
 
-	/// @brief Release everything the overlay owns, in reverse creation order. Does NOT release the
-	/// game's device/context (owned by the game-window overlay). Safe to call partially initialized.
+	/// @brief Release everything the overlay owns, in reverse creation order. Safe to call partially
+	/// initialized (each step is guarded).
 	inline void Teardown()
 	{
 		if (Ctx)
@@ -253,6 +260,8 @@ namespace ExternalWindow
 		if (DcompTarget) { DcompTarget->Release(); DcompTarget = nullptr; }
 		if (DcompDevice) { DcompDevice->Release(); DcompDevice = nullptr; }
 		if (SwapChain) { SwapChain->Release(); SwapChain = nullptr; }
+		if (Context) { Context->Release(); Context = nullptr; }
+		if (Device) { Device->Release(); Device = nullptr; }
 
 		if (Hwnd)
 		{
@@ -275,8 +284,7 @@ namespace ExternalWindow
 		}
 		Started = true;
 		Logger::Log("SUCCESS", "[Overlay] external streamproof overlay started");
-		// Diagnostic: did creating/showing the overlay window steal the game's foreground? If this logs
-		// WARN, that's the cause of "input dead until alt-tab" and "nothing draws" (both gate on focus).
+		// Diagnostic: did creating/showing the overlay window steal the game's foreground?
 		Logger::Log(GameFocused() ? "INFO" : "WARN",
 					GameFocused() ? "[Overlay] game is still the foreground window after Start"
 								  : "[Overlay] game is NOT the foreground window after Start (overlay took it?)");
@@ -338,8 +346,8 @@ namespace ExternalWindow
 		ImGui::Render();
 
 		const float transparent[4] = {0.f, 0.f, 0.f, 0.f};
-		Window::DeviceContext->OMSetRenderTargets(1, &Rtv, nullptr);
-		Window::DeviceContext->ClearRenderTargetView(Rtv, transparent);
+		Context->OMSetRenderTargets(1, &Rtv, nullptr);
+		Context->ClearRenderTargetView(Rtv, transparent);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		SwapChain->Present(0, 0); // no vsync: we're on the game thread and must not block on it
