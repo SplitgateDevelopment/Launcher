@@ -62,12 +62,12 @@ namespace ActorCache
 		projectiles.clear();
 
 		if (!Globals::World) return;
-		if (!characterClass) characterClass = Engine::ObjObjects->FindObject("Class PortalWars.PortalWarsCharacter");
+		if (!characterClass) characterClass = Engine::GObjects->FindObject("Class PortalWars.PortalWarsCharacter");
 		if (!characterClass) return;
 
 		// Collect projectiles in the same pass only when a projectile feature needs them.
 		const bool wantProjectiles = Settings.VISUALS.BulletTraces || Settings.EXPLOITS.BulletTp || Settings.EXPLOITS.BulletSpeed;
-		if (wantProjectiles && !projectileClass) projectileClass = Engine::ObjObjects->FindObject("Class PortalWars.Projectile");
+		if (wantProjectiles && !projectileClass) projectileClass = Engine::GObjects->FindObject("Class PortalWars.Projectile");
 
 		auto& Levels = Globals::World->Levels;
 		for (int l = 0, levelCount = Levels.Num(); l < levelCount; l++)
@@ -103,7 +103,7 @@ namespace ActorCache
 				APortalWarsPlayerState* state = nullptr;
 				{
 					static UObject* stateClass = nullptr;
-					if (!stateClass) stateClass = Engine::ObjObjects->FindObject("Class PortalWars.PortalWarsPlayerState");
+					if (!stateClass) stateClass = Engine::GObjects->FindObject("Class PortalWars.PortalWarsPlayerState");
 					auto* ps = character->PlayerState;
 					if (ps && stateClass && reinterpret_cast<UObject*>(ps)->IsA(stateClass))
 						state = reinterpret_cast<APortalWarsPlayerState*>(ps);

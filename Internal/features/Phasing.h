@@ -83,8 +83,8 @@ class Phasing : public Feature
 	/// Resolve the cover class once; stays idle until PortalWars.CullableActor is found.
 	void Init()
 	{
-		cullableClass = Engine::ObjObjects->FindObject("Class PortalWars.CullableActor");
-		baseGunClass = Engine::ObjObjects->FindObject("Class PortalWars.BaseGun");
+		cullableClass = Engine::GObjects->FindObject("Class PortalWars.CullableActor");
+		baseGunClass = Engine::GObjects->FindObject("Class PortalWars.BaseGun");
 
 		Initialized = (!!cullableClass);
 		Log("Initialized");

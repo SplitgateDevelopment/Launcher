@@ -7,7 +7,7 @@ using namespace Engine;
 
 struct FText UKismetTextLibrary::Conv_StringToText(struct FString InString)
 {
-	auto Func = ObjObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToText");
+	auto Func = GObjects->FindObject("Function Engine.KismetStringLibrary.Conv_StringToText");
 
 	struct
 	{

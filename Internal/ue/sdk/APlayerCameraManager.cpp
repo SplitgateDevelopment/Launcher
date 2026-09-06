@@ -7,7 +7,7 @@ using namespace Engine;
 
 FVector APlayerCameraManager::GetCameraLocation()
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraLocation");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraLocation");
 
 	struct
 	{
@@ -20,7 +20,7 @@ FVector APlayerCameraManager::GetCameraLocation()
 };
 FRotator APlayerCameraManager::GetCameraRotation()
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraRotation");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerCameraManager.GetCameraRotation");
 
 	struct
 	{
@@ -33,7 +33,7 @@ FRotator APlayerCameraManager::GetCameraRotation()
 };
 float APlayerCameraManager::GetFOVAngle()
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerCameraManager.GetFOVAngle");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerCameraManager.GetFOVAngle");
 
 	struct
 	{

@@ -7,7 +7,7 @@ using namespace Engine;
 
 struct FName USkinnedMeshComponent::GetBoneName(int32_t BoneIndex)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.SkinnedMeshComponent.GetBoneName");
+	static auto Function = GObjects->FindObject("Function Engine.SkinnedMeshComponent.GetBoneName");
 	struct
 	{
 		int32_t BoneIndex;

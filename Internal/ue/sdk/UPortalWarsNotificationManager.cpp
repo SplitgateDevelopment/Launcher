@@ -7,7 +7,7 @@ using namespace Engine;
 
 void UPortalWarsNotificationManager::OpenNoticeDialog(FErrorInfo& ErrorInfo)
 {
-	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenNoticeDialog");
+	auto Function = GObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenNoticeDialog");
 
 	struct
 	{
@@ -19,7 +19,7 @@ void UPortalWarsNotificationManager::OpenNoticeDialog(FErrorInfo& ErrorInfo)
 }
 void UPortalWarsNotificationManager::OpenErrorDialog(FErrorInfo& ErrorInfo)
 {
-	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenErrorDialog");
+	auto Function = GObjects->FindObject("Function PortalWars.PortalWarsNotificationManager.OpenErrorDialog");
 
 	struct
 	{

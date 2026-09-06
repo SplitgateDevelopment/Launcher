@@ -32,8 +32,8 @@ namespace Scripts
 			// Returns the object address as an int (0 if not found) for advanced use.
 			engine.def("find_object", [](std::string name) -> std::uintptr_t
 					   {
-				if (!Engine::ObjObjects) return 0;
-				return reinterpret_cast<std::uintptr_t>(Engine::ObjObjects->FindObject(name.c_str())); }, py::arg("name"));
+				if (!Engine::GObjects) return 0;
+				return reinterpret_cast<std::uintptr_t>(Engine::GObjects->FindObject(name.c_str())); }, py::arg("name"));
 
 			// Project a world point to screen space; returns (x, y) or None if behind the camera /
 			// not ready. Honors the Debug native/UFunction projection toggle.

@@ -7,7 +7,7 @@ using namespace Engine;
 
 void ACharacter::LaunchCharacter(FVector LaunchVelocity, bool bXYOverride, bool bZOverride)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.Character.LaunchCharacter");
+	static auto Function = GObjects->FindObject("Function Engine.Character.LaunchCharacter");
 	if (!Function) return;
 
 	struct

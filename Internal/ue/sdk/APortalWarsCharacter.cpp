@@ -7,21 +7,21 @@ using namespace Engine;
 
 void APortalWarsCharacter::UpdateSkins()
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.UpdateSkins");
+	static auto Function = GObjects->FindObject("Function PortalWars.PortalWarsCharacter.UpdateSkins");
 	if (!Function) return;
 
 	ProcessEvent(Function, nullptr);
 }
 void APortalWarsCharacter::RequestSuicide()
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.RequestSuicide");
+	static auto Function = GObjects->FindObject("Function PortalWars.PortalWarsCharacter.RequestSuicide");
 	if (!Function) return;
 
 	ProcessEvent(Function, nullptr);
 }
 char APortalWarsCharacter::GetTeamNum()
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsCharacter.GetTeamNum");
+	static auto Function = GObjects->FindObject("Function PortalWars.PortalWarsCharacter.GetTeamNum");
 
 	struct
 	{

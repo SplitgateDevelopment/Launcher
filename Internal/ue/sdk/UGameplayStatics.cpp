@@ -7,7 +7,7 @@ using namespace Engine;
 
 struct UObject* UGameplayStatics::SpawnObject(struct UObject* ObjectClass, struct UObject* Outer)
 {
-	UObject* SpawnObject = ObjObjects->FindObject("Function Engine.GameplayStatics.SpawnObject");
+	UObject* SpawnObject = GObjects->FindObject("Function Engine.GameplayStatics.SpawnObject");
 
 	struct
 	{

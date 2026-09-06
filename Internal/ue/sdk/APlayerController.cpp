@@ -13,7 +13,7 @@ void APlayerController::SwitchLevel(FString URL)
 	} Parameters;
 	Parameters.URL = URL;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerController.SwitchLevel");
 	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::FOV(float NewFOV)
@@ -24,7 +24,7 @@ void APlayerController::FOV(float NewFOV)
 	} Parameters;
 	Parameters.NewFOV = NewFOV;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.FOV");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerController.FOV");
 	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::SetName(FString S)
@@ -35,12 +35,12 @@ void APlayerController::SetName(FString S)
 	} Parameters;
 	Parameters.S = S;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SetName");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerController.SetName");
 	ProcessEvent(Function, &Parameters);
 }
 void APlayerController::ConsoleKey(struct FKey Key)
 {
-	auto Func = ObjObjects->FindObject("Function Engine.PlayerController.ConsoleKey");
+	auto Func = GObjects->FindObject("Function Engine.PlayerController.ConsoleKey");
 
 	struct
 	{
@@ -53,7 +53,7 @@ void APlayerController::ConsoleKey(struct FKey Key)
 };
 void APlayerController::ClientSetCameraMode(struct FName NewCameraMode)
 {
-	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
+	auto Function = GObjects->FindObject("Function Engine.PlayerController.ClientSetCameraMode");
 
 	struct
 	{
@@ -65,7 +65,7 @@ void APlayerController::ClientSetCameraMode(struct FName NewCameraMode)
 }
 void APlayerController::SendToConsole(FString Command)
 {
-	auto Function = ObjObjects->FindObject("Function Engine.PlayerController.SendToConsole");
+	auto Function = GObjects->FindObject("Function Engine.PlayerController.SendToConsole");
 
 	struct
 	{
@@ -86,7 +86,7 @@ bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVec
 {
 	// Resolve the UFunction once and reuse it. This is on the ESP hot path (one call per bone per
 	// enemy per frame); doing the object-array lookup every call was the main ESP frame-rate cost.
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerController.ProjectWorldLocationToScreen");
 
 	struct
 	{
@@ -108,7 +108,7 @@ bool APlayerController::ProjectWorldLocationToScreen(FVector WorldLocation, FVec
 };
 void APlayerController::ClientMessage(FString S, FName Type, float MsgLifeTime)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.PlayerController.ClientMessage");
+	static auto Function = GObjects->FindObject("Function Engine.PlayerController.ClientMessage");
 	if (!Function) return;
 
 	struct

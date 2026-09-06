@@ -19,6 +19,6 @@ void USceneComponent::K2_SetRelativeRotation(struct FRotator NewRotation, bool b
 	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.SceneComponent.K2_SetRelativeRotation");
+	static auto Function = GObjects->FindObject("Function Engine.SceneComponent.K2_SetRelativeRotation");
 	ProcessEvent(Function, &Parameters);
 }

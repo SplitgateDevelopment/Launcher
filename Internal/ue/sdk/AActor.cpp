@@ -16,7 +16,7 @@ bool AActor::K2_TeleportTo(struct FVector DestLocation, struct FRotator DestRota
 	Parameters.DestLocation = DestLocation;
 	Parameters.DestRotation = DestRotation;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_TeleportTo");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.K2_TeleportTo");
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
@@ -27,7 +27,7 @@ FVector AActor::K2_GetActorLocation()
 		FVector ReturnValue;
 	} Parameters;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorLocation");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.K2_GetActorLocation");
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
@@ -38,7 +38,7 @@ FRotator AActor::K2_GetActorRotation()
 		FRotator ReturnValue;
 	} Parameters;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_GetActorRotation");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.K2_GetActorRotation");
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
@@ -50,7 +50,7 @@ void AActor::SetActorEnableCollision(bool bNewActorEnableCollision)
 	} Parameters;
 	Parameters.bNewActorEnableCollision = bNewActorEnableCollision;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.SetActorEnableCollision");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.SetActorEnableCollision");
 	ProcessEvent(Function, &Parameters);
 };
 bool AActor::GetActorEnableCollision()
@@ -60,7 +60,7 @@ bool AActor::GetActorEnableCollision()
 		bool ReturnValue;
 	} Parameters;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.GetActorEnableCollision");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.GetActorEnableCollision");
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 };
@@ -80,13 +80,13 @@ bool AActor::K2_SetActorLocation(struct FVector NewLocation, bool bSweep, struct
 	Parameters.SweepHitResult = SweepHitResult;
 	Parameters.bTeleport = bTeleport;
 
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.K2_SetActorLocation");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.K2_SetActorLocation");
 	ProcessEvent(Function, &Parameters);
 	return Parameters.ReturnValue;
 }
 void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origin, struct FVector& BoxExtent, bool bIncludeFromChildActors)
 {
-	auto Function = ObjObjects->FindObject("Function Engine.Actor.GetActorBounds");
+	auto Function = GObjects->FindObject("Function Engine.Actor.GetActorBounds");
 
 	struct
 	{
@@ -104,7 +104,7 @@ void AActor::GetActorBounds(bool bOnlyCollidingComponents, struct FVector& Origi
 };
 bool AActor::WasRecentlyRendered(float Tolerance)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.WasRecentlyRendered");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.WasRecentlyRendered");
 	if (!Function) return true; // if the check can't run, don't hide the actor
 
 	struct
@@ -120,7 +120,7 @@ bool AActor::WasRecentlyRendered(float Tolerance)
 }
 FVector AActor::GetVelocity()
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.Actor.GetVelocity");
+	static auto Function = GObjects->FindObject("Function Engine.Actor.GetVelocity");
 	if (!Function) return FVector{0.f, 0.f, 0.f};
 
 	struct

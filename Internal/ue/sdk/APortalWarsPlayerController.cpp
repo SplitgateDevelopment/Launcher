@@ -7,7 +7,7 @@ using namespace Engine;
 
 void APortalWarsPlayerController::ClientUpdateChat(struct FTextChatData InData)
 {
-	auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
+	auto Function = GObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientUpdateChat");
 
 	struct
 	{
@@ -34,7 +34,7 @@ void APortalWarsPlayerController::SendChatMessage(FString Message, enum class EC
 }
 bool APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector WorldLocation, FVector2D& ScreenLocation, bool bPlayerViewportRelative)
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ProjectWorldLocationToScreenCustom");
+	static auto Function = GObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ProjectWorldLocationToScreenCustom");
 	if (!Function) return false;
 
 	struct
@@ -55,7 +55,7 @@ bool APortalWarsPlayerController::ProjectWorldLocationToScreenCustom(FVector Wor
 }
 void APortalWarsPlayerController::ClientSetSpectatorCamera(FVector CameraLocation, FRotator CameraRotation)
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientSetSpectatorCamera");
+	static auto Function = GObjects->FindObject("Function PortalWars.PortalWarsPlayerController.ClientSetSpectatorCamera");
 	if (!Function) return;
 
 	struct

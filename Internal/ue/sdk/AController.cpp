@@ -7,7 +7,7 @@ using namespace Engine;
 
 void AController::SetControlRotation(FRotator& NewRotation)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.Controller.SetControlRotation");
+	static auto Function = GObjects->FindObject("Function Engine.Controller.SetControlRotation");
 	if (!Function) return;
 
 	struct

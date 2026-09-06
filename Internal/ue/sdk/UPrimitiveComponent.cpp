@@ -7,7 +7,7 @@ using namespace Engine;
 
 void UPrimitiveComponent::SetRenderCustomDepth(bool bValue)
 {
-	static auto Function = ObjObjects->FindObject("Function Engine.PrimitiveComponent.SetRenderCustomDepth");
+	static auto Function = GObjects->FindObject("Function Engine.PrimitiveComponent.SetRenderCustomDepth");
 	if (!Function) return;
 
 	struct

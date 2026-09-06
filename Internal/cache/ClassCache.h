@@ -30,16 +30,16 @@ namespace ClassCache
 	inline void Rebuild()
 	{
 		classes.clear();
-		if (!Engine::ObjObjects) return;
+		if (!Engine::GObjects) return;
 
-		UObject* classMeta = Engine::ObjObjects->FindObject("Class CoreUObject.Class");
-		UObject* bgcMeta = Engine::ObjObjects->FindObject("Class Engine.BlueprintGeneratedClass");
+		UObject* classMeta = Engine::GObjects->FindObject("Class CoreUObject.Class");
+		UObject* bgcMeta = Engine::GObjects->FindObject("Class Engine.BlueprintGeneratedClass");
 		const bool fast = (classMeta || bgcMeta);
 
-		const auto count = Engine::ObjObjects->NumElements;
+		const auto count = Engine::GObjects->NumElements;
 		for (auto i = 0u; i < count; i++)
 		{
-			auto* obj = Engine::ObjObjects->GetObjectPtr(i);
+			auto* obj = Engine::GObjects->GetObjectPtr(i);
 			if (!obj) continue;
 			auto* cls = reinterpret_cast<UObject*>(obj->ClassPrivate);
 			if (fast && cls != classMeta && cls != bgcMeta) continue;

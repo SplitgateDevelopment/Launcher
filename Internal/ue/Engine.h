@@ -77,10 +77,10 @@
 /// Engine bootstrap surface: the signature-resolved globals and the one-time init.
 namespace Engine
 {
-	extern FNamePool* NamePoolData;	  ///< the FName pool, resolved by Init()
-	extern TUObjectArray* ObjObjects; ///< the global UObject array, resolved by Init()
-	extern UWorld* WRLD;			  ///< address of the game's UWorld* slot, resolved by Init()
-	extern uintptr_t GetBoneMatrixF;  ///< scanned GetBoneMatrix function pointer (bone projection)
+	inline FNamePool* GNames = nullptr;		 ///< the FName pool, resolved by Init()
+	inline TUObjectArray* GObjects = nullptr; ///< the global UObject array, resolved by Init()
+	inline UWorld* GWorld = nullptr;		 ///< address of the game's UWorld* slot, resolved by Init()
+	inline uintptr_t GetBoneMatrixFn = 0;	 ///< scanned GetBoneMatrix function pointer (bone projection)
 
 	/// One-time bootstrap: resolve the globals from byte signatures. Returns false if any fails.
 	/// (UFunctions are resolved lazily at each wrapper's first call via a function-local static.)

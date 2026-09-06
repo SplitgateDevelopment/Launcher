@@ -132,7 +132,7 @@ namespace Menu
 				if (!isInGame || selected.empty()) ImGui::BeginDisabled();
 				if (ImGui::Button("Spawn") && isInGame && !selected.empty() && Globals::PlayerController)
 				{
-					UObject* cls = Engine::ObjObjects->FindObject(selected.c_str());
+					UObject* cls = Engine::GObjects->FindObject(selected.c_str());
 					auto* pawn = Globals::PlayerController->AcknowledgedPawn;
 					if (cls && pawn)
 					{
@@ -199,7 +199,7 @@ namespace Menu
 				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
 				if (ImGui::Button("Apply skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
 				{
-					UObject* cls = Engine::ObjObjects->FindObject(skinSelected.c_str());
+					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
 					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 					if (cls && character)
 					{
@@ -217,7 +217,7 @@ namespace Menu
 				if (!isInGame || skinSelected.empty()) ImGui::BeginDisabled();
 				if (ImGui::Button("Apply gun skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
 				{
-					UObject* cls = Engine::ObjObjects->FindObject(skinSelected.c_str());
+					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
 					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 					if (cls && character && character->CurrentWeapon)
 					{
@@ -229,7 +229,7 @@ namespace Menu
 				ImGui::SameLine();
 				if (ImGui::Button("Apply jetpack skin") && isInGame && !skinSelected.empty() && Globals::PlayerController)
 				{
-					UObject* cls = Engine::ObjObjects->FindObject(skinSelected.c_str());
+					UObject* cls = Engine::GObjects->FindObject(skinSelected.c_str());
 					auto* character = reinterpret_cast<APortalWarsCharacter*>(Globals::PlayerController->Character);
 					if (cls && character)
 					{

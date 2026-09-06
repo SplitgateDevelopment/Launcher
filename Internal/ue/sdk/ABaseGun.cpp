@@ -7,7 +7,7 @@ using namespace Engine;
 
 void ABaseGun::UpdateSkins()
 {
-	static auto Function = ObjObjects->FindObject("Function PortalWars.BaseGun.UpdateSkins");
+	static auto Function = GObjects->FindObject("Function PortalWars.BaseGun.UpdateSkins");
 	if (!Function) return;
 
 	ProcessEvent(Function, nullptr);
