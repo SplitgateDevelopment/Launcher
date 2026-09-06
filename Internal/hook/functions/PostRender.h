@@ -42,8 +42,13 @@ namespace PostRender
 		Engine::World = World;
 		Engine::Canvas = Canvas;
 
-		if (Settings.MENU.Backend == MenuBackend::Canvas)
-			Menu::Tick(); // ZeroGUI menu, drawn immediately through Render::canvas
+		// Point the drawing backend at the selected renderer for this frame — the menu and the features
+		// both draw through Render::*. Selected unconditionally so the Canvas menu renders correctly even
+		// at the main menu (no player controller). ImGui-recorded commands are replayed in the Present hook.
+		Render::Select(Settings.MENU.Renderer);
+
+		// Draw the menu for the PostRender-driven backend (the Canvas backend); a no-op if ImGui is active.
+		Menu::Frame(Menu::Phase::PostRender);
 
 		if (PlayerController)
 		{
@@ -52,10 +57,6 @@ namespace PostRender
 
 			// One shared actor pass per frame, consumed by the visual features below.
 			ActorCache::Update();
-
-			// Point the drawing backend at the selected renderer for this frame (features draw
-			// through Render::*). ImGui-recorded commands are replayed in the Present hook.
-			Render::Select(Settings.MENU.Renderer);
 
 			Features::Execute();
 		}
