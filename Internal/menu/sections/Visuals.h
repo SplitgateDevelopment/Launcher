@@ -3,8 +3,11 @@
 /// @file
 /// @brief Visuals tab: player ESP element toggles, radar, and per-element colors.
 
+#include <vector>
+
 #include "../../settings/Settings.h"
 #include "../../scripting/Events.h"
+#include "../../cache/FontCache.h"
 #include "../ui/UI.h"
 
 namespace Menu
@@ -31,6 +34,30 @@ namespace Menu
 			UI::Tooltip("ImGui draws the overlay without a ProcessEvent per line/text - much faster for a busy ESP.\n"
 						"External draws the ESP, watermark, and everything the renderer produces into a separate\n"
 						"window hidden from screen capture (OBS, Game Bar); the menu stays on the game window.");
+
+			// Font picker — only the UE-canvas renderer draws text through a UFont (ImGui uses its own
+			// atlas), so this applies to canvas-mode text (ESP + the canvas menu). Index 0 = Roboto default.
+			if (Settings.MENU.Renderer == RendererMode::Canvas)
+			{
+				const auto& faces = FontCache::Get();
+				std::vector<const char*> items{"Default (Roboto)"};
+				int fontIdx = 0;
+				for (int i = 0; i < static_cast<int>(faces.size()); i++)
+				{
+					items.push_back(faces[i].name.c_str());
+					if (faces[i].name == Settings.VISUALS.CanvasFont) fontIdx = i + 1;
+				}
+
+				UI::SetNextItemWidth(220.f);
+				if (UI::Combo("Canvas font", &fontIdx, items.data(), static_cast<int>(items.size())))
+				{
+					Settings.VISUALS.CanvasFont = fontIdx == 0 ? "" : faces[fontIdx - 1].name;
+					changed = true;
+				}
+				UI::SameLine();
+				if (UI::SmallButton("Refresh##fonts")) FontCache::Rebuild();
+				UI::Tooltip("Text font for the UE-canvas renderer (ESP + the canvas menu). Default is the engine Roboto.\nRefresh rescans GObjects for newly-loaded fonts.");
+			}
 
 			const char* backends[] = {"ImGui", "UE Canvas"};
 			int backend = static_cast<int>(Settings.MENU.Backend);
