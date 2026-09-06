@@ -97,7 +97,7 @@ namespace DiscordRPC
 		static std::string stateBuffer; // persists so discordPresence.state stays valid across updates
 
 		auto* controller = Engine::PlayerController;
-		if (controller && controller->IsInGame())
+		if (controller && Engine::IsInGame)
 		{
 			const std::string map = Engine::World ? Engine::World->GetName() : "";
 			int kills = 0, deaths = 0;

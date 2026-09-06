@@ -102,7 +102,7 @@ namespace Features
 		Events::Register(Events::Type::LoadIntoMap, []
 						 {
 			auto* controller = Engine::PlayerController;
-			if (controller && !controller->IsInGame())
+			if (controller && !Engine::IsInGame)
 			{
 				Logger::Log("INFO", "Loading into map");
 				controller->SwitchLevel(L"Simulation_Alpha");

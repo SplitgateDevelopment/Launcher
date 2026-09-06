@@ -139,8 +139,9 @@ namespace ActorCache
 		// (APortalWarsPostPlayerController) the actor list is large and nothing consumes the cache,
 		// so the per-frame walk is pure cost — this is the post-game FPS drop. Features already skip
 		// via their own IsInGame() Check(), so clearing here is safe.
-		auto* pc = Engine::PlayerController;
-		if (!pc || !pc->IsInGame() || IsPostGameController(reinterpret_cast<UObject*>(pc)))
+		// Engine::IsInGame is the cached PlayerController->IsInGame(), which already excludes the
+		// post-match lobby controller, so it covers the whole "only scan during a live match" gate.
+		if (!Engine::IsInGame)
 		{
 			players.clear();
 			projectiles.clear();
