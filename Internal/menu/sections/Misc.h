@@ -111,16 +111,49 @@ namespace Menu
 				"Vessel_Blockout_WIP",
 				"Vintage_Blockout_WIP",
 			};
-			static int selectedLevel = 0;
+			// Searchable dropdown (same pattern as the spawn picker): filter the static list, click a
+			// row to select. selectedLevel points into the static array above, so it stays valid to hand
+			// to the event payload.
+			static std::vector<int> levelFiltered;
+			static char levelSearch[128] = "";
+			static std::string levelLastKey = "\x01"; // sentinel: forces the first filter build
+			static const char* selectedLevel = levels[0];
 
 			if (isInGame) ImGui::BeginDisabled();
-			ImGui::SetNextItemWidth(180.f);
-			ImGui::Combo("##level", &selectedLevel, levels, IM_ARRAYSIZE(levels));
+			ImGui::SetNextItemWidth(220.f);
+			if (ImGui::BeginCombo("##level", selectedLevel))
+			{
+				ImGui::SetNextItemWidth(-1.f);
+				ImGui::InputTextWithHint("##levelsearch", "filter maps...", levelSearch, sizeof(levelSearch));
+
+				// Rebuild the filtered index list only when the search text changes.
+				if (levelSearch != levelLastKey)
+				{
+					levelLastKey = levelSearch;
+					levelFiltered.clear();
+					const std::string needle = levelSearch;
+					for (int i = 0; i < IM_ARRAYSIZE(levels); i++)
+						if (needle.empty() || std::string(levels[i]).find(needle) != std::string::npos)
+							levelFiltered.push_back(i);
+				}
+
+				ImGui::BeginChild("##levellist", ImVec2(240, 200));
+				ImGuiListClipper clipper;
+				clipper.Begin(static_cast<int>(levelFiltered.size()));
+				while (clipper.Step())
+					for (int r = clipper.DisplayStart; r < clipper.DisplayEnd; r++)
+					{
+						const char* name = levels[levelFiltered[r]];
+						if (ImGui::Selectable(name, name == selectedLevel)) selectedLevel = name;
+					}
+				ImGui::EndChild();
+				ImGui::EndCombo();
+			}
 			ImGui::SameLine();
 			if (ImGui::Button("Load into map"))
 			{
 				Events::Payload payload;
-				payload.name = levels[selectedLevel];
+				payload.name = selectedLevel;
 				Events::Dispatch(Events::Type::LoadIntoMap, payload);
 			}
 			if (isInGame) ImGui::EndDisabled();
