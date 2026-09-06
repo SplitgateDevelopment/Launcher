@@ -74,12 +74,21 @@ rather than every frame. It re-arms when disabled.
 
 ### Event-driven features
 
-Every feature has an `Event` (an `Events::Type`, default `Render`). `Render`
-features run from the per-frame `Features::Execute` loop. A feature with any
-other `Event` is instead subscribed to the [event bus](scripting.md#events) in
+Every feature has `Triggers` — a `std::vector<Events::Type>`, default
+`{Render}`. `Render` triggers run from the per-frame `Features::Execute` loop.
+Every other trigger is subscribed to the [event bus](scripting.md#events) in
 `Features::Init` and driven by `Features::RunFeature` when that event is
-dispatched — e.g. set `Event = Events::Type::PlayerDeath` to run a feature when
-the player dies. Same toggle/Check/Run/Destroy contract, just a different clock.
+dispatched. A feature may list **several** triggers (and may mix `Render` with
+bus events) — e.g. `DiscordPresence` sets
+`Triggers = {Events::Type::EnteredGame, Events::Type::EnteredLobby}` to refresh
+only when the in-game/in-lobby state flips. Same toggle/Check/Run/Destroy
+contract, just a different clock.
+
+The triggering event and its `Events::Payload` are forwarded to `Run()`. Override
+whichever arity you need: `Run()` to ignore the trigger (the common case),
+`Run(Events::Type event)` for the event only, or
+`Run(Events::Type event, const Events::Payload& payload)` for both — the base
+delegates down the chain, so existing nullary `Run()` overrides keep working.
 
 One-shot **actions** that don't need a toggle (like the "Load into map" button)
 are better as a plain event handler than a feature — see the `LoadIntoMap`
