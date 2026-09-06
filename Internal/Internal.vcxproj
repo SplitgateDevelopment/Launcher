@@ -264,9 +264,28 @@
     <ClInclude Include="memory\Memory.h" />
     <ClInclude Include="utils\Rgb.h" />
     <ClInclude Include="menu\Menu.h" />
-    <ClInclude Include="menu\canvas\ZeroInput.h" />
-    <ClInclude Include="menu\canvas\ZeroGUI.h" />
+    <ClInclude Include="menu\canvas\Colors.h" />
+    <ClInclude Include="menu\canvas\UCanvasGUI.h" />
+    <ClInclude Include="menu\canvas\components\Core.h" />
+    <ClInclude Include="menu\canvas\components\Window.h" />
+    <ClInclude Include="menu\canvas\components\Text.h" />
+    <ClInclude Include="menu\canvas\components\Tab.h" />
+    <ClInclude Include="menu\canvas\components\Button.h" />
+    <ClInclude Include="menu\canvas\components\Checkbox.h" />
+    <ClInclude Include="menu\canvas\components\Slider.h" />
+    <ClInclude Include="menu\canvas\components\Combobox.h" />
+    <ClInclude Include="menu\canvas\components\Hotkey.h" />
+    <ClInclude Include="menu\canvas\components\ColorPicker.h" />
+    <ClInclude Include="menu\canvas\components\TextField.h" />
+    <ClInclude Include="menu\canvas\components\Selectable.h" />
+    <ClInclude Include="menu\canvas\components\CollapsingHeader.h" />
+    <ClInclude Include="menu\canvas\components\Combo.h" />
+    <ClInclude Include="menu\canvas\components\Child.h" />
     <ClInclude Include="menu\ui\UI.h" />
+    <ClInclude Include="menu\backend\Backend.h" />
+    <ClInclude Include="menu\backend\ImGuiBackend.h" />
+    <ClInclude Include="menu\backend\CanvasBackend.h" />
+    <ClInclude Include="menu\backend\Backends.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
