@@ -32,7 +32,11 @@ namespace Network::WinHttp
 	}
 	inline std::string Narrow(const std::wstring& s)
 	{
-		return std::string(s.begin(), s.end());
+		std::string out;
+		out.reserve(s.size());
+		for (wchar_t c : s)
+			out.push_back(static_cast<char>(c)); // explicit ASCII narrowing (hosts are ASCII)
+		return out;
 	}
 
 	using Connect_t = HINTERNET(WINAPI*)(HINTERNET, LPCWSTR, INTERNET_PORT, DWORD);
