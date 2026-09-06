@@ -59,53 +59,46 @@ namespace Menu
 			}
 			UI::Tooltip("Reset all hotkeys (menu, no-clip, aim, trigger) to their defaults.");
 
-			// Named profiles and share codes use InputText / multiline / clipboard — ImGui-only.
-			if (!UI::IsImGui())
-			{
-				UI::Text("Profiles and share codes use the ImGui menu backend.");
-				return;
-			}
-
-			ImGui::SeparatorText("Save current config");
+			UI::SeparatorText("Save current config");
 			static char nameBuffer[64] = "";
-			ImGui::SetNextItemWidth(200.f);
-			ImGui::InputText("##name", nameBuffer, sizeof(nameBuffer));
-			ImGui::SameLine();
-			if (ImGui::Button("Save as") && nameBuffer[0])
+			UI::SetNextItemWidth(200.f);
+			UI::InputText("##name", nameBuffer, sizeof(nameBuffer));
+			UI::SameLine();
+			if (UI::Button("Save as") && nameBuffer[0])
 			{
 				Profiles::Save(nameBuffer);
 				nameBuffer[0] = '\0';
 			}
 
-			ImGui::SeparatorText("Profiles");
+			UI::SeparatorText("Profiles");
 			std::string toLoad, toDelete;
 			for (const auto& name : Profiles::List())
 			{
-				ImGui::PushID(name.c_str());
-				if (ImGui::SmallButton("Load")) toLoad = name;
-				ImGui::SameLine();
-				if (ImGui::SmallButton("Delete")) toDelete = name;
-				ImGui::SameLine();
-				ImGui::TextUnformatted(name.c_str());
-				ImGui::PopID();
+				UI::PushID(name.c_str());
+				if (UI::SmallButton("Load")) toLoad = name;
+				UI::SameLine();
+				if (UI::SmallButton("Delete")) toDelete = name;
+				UI::SameLine();
+				UI::Text("%s", name.c_str());
+				UI::PopID();
 			}
 			if (!toLoad.empty()) Profiles::Load(toLoad);
 			if (!toDelete.empty()) Profiles::Delete(toDelete);
 
-			ImGui::SeparatorText("Share code");
-			ImGui::Tooltip("A portable code for the current config. Copy to share; paste + import to apply.");
-			if (ImGui::Button("Copy current config")) ImGui::SetClipboardText(Profiles::Export().c_str());
+			UI::SeparatorText("Share code");
+			UI::Tooltip("A portable code for the current config. Copy to share; paste + import to apply.");
+			if (UI::Button("Copy current config")) UI::SetClipboardText(Profiles::Export().c_str());
 
 			static char codeBuffer[8192] = "";
-			ImGui::InputTextMultiline("##code", codeBuffer, sizeof(codeBuffer), ImVec2(0, 80));
+			UI::InputTextMultiline("##code", codeBuffer, sizeof(codeBuffer), 80);
 
-			if (ImGui::Button("Paste"))
+			if (UI::Button("Paste"))
 			{
-				const char* clip = ImGui::GetClipboardText();
+				const char* clip = UI::GetClipboardText();
 				if (clip) strncpy_s(codeBuffer, clip, _TRUNCATE);
 			}
-			ImGui::SameLine();
-			if (ImGui::Button("Import") && codeBuffer[0])
+			UI::SameLine();
+			if (UI::Button("Import") && codeBuffer[0])
 			{
 				if (Profiles::Import(codeBuffer)) codeBuffer[0] = '\0';
 			}
