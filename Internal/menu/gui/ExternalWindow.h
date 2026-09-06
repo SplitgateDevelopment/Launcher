@@ -158,7 +158,10 @@ namespace ExternalWindow
 			ex |= (WS_EX_TRANSPARENT | WS_EX_NOACTIVATE);
 		SetWindowLongPtrW(Hwnd, GWL_EXSTYLE, ex);
 
-		if (wantInteractive) SetForegroundWindow(Hwnd);
+		// Opening the menu pulls foreground onto the overlay so it takes input; closing it must hand
+		// foreground back to the game, otherwise the overlay stays the activated window (now just click-
+		// through) and the game never regains keyboard focus.
+		SetForegroundWindow(wantInteractive ? Hwnd : GameWindow());
 	}
 
 	/// @brief Keep the overlay positioned over the game's client area and sized to it; resize the swap
