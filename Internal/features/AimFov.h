@@ -14,9 +14,6 @@
 /// Draws a circle of radius AimFov (px) at screen centre through the active render backend.
 class AimFov : public Feature
 {
-  private:
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
-
   public:
 	AimFov()
 	{
@@ -55,7 +52,7 @@ class AimFov : public Feature
 		const float cy = Engine::Canvas->ClipY * 0.5f;
 		const float radius = Settings.AIM.AimFov;
 		// RGB overrides the configured color with the cycling rainbow, like the ESP box/lines.
-		const FLinearColor color = ToColor(Settings.MENU.Rgb ? Rgb::Current() : Settings.AIM.AimFovColor);
+		const Render::Color color = Settings.MENU.Rgb ? Render::Color(Rgb::Current()) : Render::Color(Settings.AIM.AimFovColor);
 
 		// Approximate the circle with a fixed number of segments (drawn through Render so it
 		// follows whichever renderer is active).

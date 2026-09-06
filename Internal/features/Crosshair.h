@@ -11,9 +11,6 @@
 
 class Crosshair : public Feature
 {
-  private:
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
-
   public:
 	Crosshair()
 	{
@@ -54,7 +51,7 @@ class Crosshair : public Feature
 		const float gap = v.CrosshairGap;
 		const float len = v.CrosshairSize;
 		const float t = v.CrosshairThickness;
-		const FLinearColor color = ToColor(Settings.MENU.Rgb ? Rgb::Current() : v.CrosshairColor);
+		const Render::Color color = Settings.MENU.Rgb ? Render::Color(Rgb::Current()) : Render::Color(v.CrosshairColor);
 
 		Render::Line({cx - gap - len, cy}, {cx - gap, cy}, t, color); // left
 		Render::Line({cx + gap, cy}, {cx + gap + len, cy}, t, color); // right

@@ -9,6 +9,9 @@
 #include "../ue/Engine.h"
 #include "../cache/ActorCache.h"
 #include "../utils/Rgb.h"
+#include "../render/Color.h"
+#include "../render/adapters/Ue.h"		 // Render::Color -> FLinearColor for the outline fields
+#include "../render/adapters/Settings.h" // settings ::Color -> Render::Color
 
 // Chams / glow: for each cached enemy (and optionally teammate) character, turns on the mesh's
 // custom-depth rendering and sets its stencil value + outline color, so the game's outline
@@ -22,9 +25,6 @@
 class Glow : public Feature
 {
   private:
-	/// Convert a settings Color (0-1 RGBA) into the engine FLinearColor.
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
-
 	/// Turn custom-depth on/off for one mesh at a stencil value.
 	static void SetMesh(USkeletalMeshComponent* mesh, bool on, int stencil)
 	{
@@ -97,7 +97,7 @@ class Glow : public Feature
 	{
 		const auto& v = Settings.VISUALS;
 		const bool rgb = Settings.MENU.Rgb;
-		const FLinearColor rgbColor = rgb ? ToColor(Rgb::Current()) : FLinearColor{};
+		const FLinearColor rgbColor = rgb ? Render::Color(Rgb::Current()).To<FLinearColor>() : FLinearColor{};
 
 		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
@@ -121,12 +121,12 @@ class Glow : public Feature
 			const bool friendly = (localTeam >= 0 && cached.team == localTeam);
 			if (!(friendly ? v.GlowFriendly : v.GlowEnemy)) continue; // this team's glow is off
 
-			const FLinearColor color = rgb ? rgbColor : ToColor(friendly ? v.GlowFriendlyColor : v.GlowEnemyColor);
+			const FLinearColor color = rgb ? rgbColor : Render::Color(friendly ? v.GlowFriendlyColor : v.GlowEnemyColor).To<FLinearColor>();
 			Apply(character, friendly ? friendlyStencil : enemyStencil, color);
 		}
 
 		// The local player's own pawn (its 3P mesh — only visible in third person).
 		if (v.GlowSelf)
-			Apply(self, friendlyStencil, rgb ? rgbColor : ToColor(v.GlowSelfColor));
+			Apply(self, friendlyStencil, rgb ? rgbColor : Render::Color(v.GlowSelfColor).To<FLinearColor>());
 	};
 };

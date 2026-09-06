@@ -53,7 +53,7 @@ class DebugNames : public Feature
 	void Run()
 	{
 		auto* controller = Engine::PlayerController;
-		const FLinearColor color{1.f, 1.f, 1.f, 1.f};
+		const Render::Color color{1.f, 1.f, 1.f, 1.f};
 		const float scale = Settings.VISUALS.FontScale;
 
 		auto& Levels = Engine::World->Levels;

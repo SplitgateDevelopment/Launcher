@@ -27,8 +27,6 @@ class BulletTraces : public Feature
 
 	std::unordered_map<void*, std::vector<Point>> trails; ///< keyed by actor pointer
 
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
-
 	static float Now()
 	{
 		using namespace std::chrono;
@@ -80,7 +78,7 @@ class BulletTraces : public Feature
 			trails[actor].push_back({actor->K2_GetActorLocation(), now});
 
 		// 2. Prune expired points, draw the rest (fading by age), and drop empty trails.
-		const FLinearColor base = ToColor(Settings.MENU.Rgb ? Rgb::Current() : Settings.VISUALS.BulletTraceColor);
+		const Render::Color base = Settings.MENU.Rgb ? Render::Color(Rgb::Current()) : Render::Color(Settings.VISUALS.BulletTraceColor);
 
 		for (auto it = trails.begin(); it != trails.end();)
 		{
@@ -112,8 +110,8 @@ class BulletTraces : public Feature
 				if (havePrev)
 				{
 					const float age = now - point.time;
-					const float alpha = base.A * (1.f - age / duration); // fade with age
-					Render::Line(prevScreen, screen, 1.f, FLinearColor{base.R, base.G, base.B, alpha});
+					const float alpha = base.a * (1.f - age / duration); // fade with age
+					Render::Line(prevScreen, screen, 1.f, Render::Color{base.r, base.g, base.b, alpha});
 				}
 				prevScreen = screen;
 				havePrev = true;

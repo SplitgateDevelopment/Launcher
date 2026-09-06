@@ -9,6 +9,7 @@
 #include "../ue/Engine.h"
 #include "../utils/Rgb.h"
 #include "../cache/ActorCache.h"
+#include "../render/Render.h"
 
 #include <cmath>
 
@@ -28,7 +29,7 @@ class Radar : public Feature
 	static constexpr float Range = 6000.f; // world units mapped to the radar radius
 
 	/// Draw a small plus sign centred at (x, y) with arm length @p half.
-	void Cross(float x, float y, float half, float thickness, const FLinearColor& color)
+	void Cross(float x, float y, float half, float thickness, const Render::Color& color)
 	{
 		Render::Line({x - half, y}, {x + half, y}, thickness, color);
 		Render::Line({x, y - half}, {x, y + half}, thickness, color);
@@ -80,7 +81,7 @@ class Radar : public Feature
 		if (!localPawn) return;
 
 		const bool showFriendly = Settings.VISUALS.RadarShowFriendly;
-		const FLinearColor friendColor{Settings.VISUALS.FriendColor.R, Settings.VISUALS.FriendColor.G, Settings.VISUALS.FriendColor.B, Settings.VISUALS.FriendColor.A};
+		const Render::Color friendColor = Settings.VISUALS.FriendColor;
 
 		// The local player's team, so teammates plot in FriendColor (and only when shown).
 		char localTeam = -1;
@@ -97,9 +98,8 @@ class Radar : public Feature
 		const float cy = Margin + radius;
 
 		// Panel border + own marker: the cycling RGB color when enabled, else the default white.
-		const Color self = Settings.MENU.Rgb ? Rgb::Current() : Color{1.f, 1.f, 1.f, 1.f};
-		const FLinearColor border{self.R, self.G, self.B, self.A};
-		const FLinearColor dot{1.f, 0.f, 0.f, 1.f};
+		const Render::Color border = Settings.MENU.Rgb ? Render::Color(Rgb::Current()) : Render::Color{1.f, 1.f, 1.f, 1.f};
+		const Render::Color dot{1.f, 0.f, 0.f, 1.f};
 
 		// Panel border + player marker at the centre.
 		const FVector2D tl{cx - radius, cy - radius}, tr{cx + radius, cy - radius};
@@ -118,7 +118,7 @@ class Radar : public Feature
 			const char team = cached.team;
 			const bool friendly = (localTeam >= 0 && team == localTeam);
 			if (friendly && !showFriendly) continue;
-			const FLinearColor color = friendly ? friendColor : dot;
+			const Render::Color color = friendly ? friendColor : dot;
 
 			const FVector enemyPos = cached.location;
 			const float dx = enemyPos.X - playerPos.X;

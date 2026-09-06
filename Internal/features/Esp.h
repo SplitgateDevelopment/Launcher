@@ -28,16 +28,13 @@ class Esp : public Feature
   private:
 	UObject* CharacterClass = 0; ///< resolved PortalWarsCharacter UClass, used as the actor filter
 
-	/// Convert a settings Color (0-1 RGBA) into the canvas FLinearColor.
-	static FLinearColor ToColor(const Color& c) { return FLinearColor{c.R, c.G, c.B, c.A}; }
-
 	/// Treat an exactly-zero projected point as off-screen (world-to-screen
 	/// returns {0,0} when the point is behind the camera or failed to project).
 	static bool OffScreen(const FVector2D& p) { return !p.X && !p.Y; }
 
 	// 2D bounding box from the head (top) down to the root/feet (bottom). The 3D variant is
 	// DrawBox3D below.
-	void DrawBox(const FVector2D& head, const FVector2D& feet, const FLinearColor& color)
+	void DrawBox(const FVector2D& head, const FVector2D& feet, const Render::Color& color)
 	{
 		const float height = feet.Y - head.Y;
 		const float width = height * 0.5f;
@@ -56,7 +53,7 @@ class Esp : public Feature
 
 	// A true 3D box: project the 8 corners of a world-space box centred on the actor and connect
 	// them. Extents are approximate character half-sizes (cm) and may want in-game tuning.
-	void DrawBox3D(APlayerController* controller, const FVector& origin, const FLinearColor& color)
+	void DrawBox3D(APlayerController* controller, const FVector& origin, const Render::Color& color)
 	{
 		static constexpr float ex = 34.f, ey = 34.f, ez = 92.f; // half-extents (x, y, z)
 
@@ -106,7 +103,7 @@ class Esp : public Feature
 		const float width = height * 0.5f;
 		const float barX = (head.X + feet.X) * 0.5f - width * 0.5f - 5.f;
 
-		const FLinearColor color{1.f - pct, pct, 0.f, 1.f};
+		const Render::Color color{1.f - pct, pct, 0.f, 1.f};
 		Render::Line({barX, feet.Y}, {barX, feet.Y - height * pct}, 3.f, color);
 	}
 
@@ -121,7 +118,7 @@ class Esp : public Feature
 	/// Draw the bone skeleton by projecting each bone pair to screen space and
 	/// connecting them; segments with an off-screen endpoint are skipped.
 	template <typename Mesh>
-	void DrawSkeleton(Mesh mesh, APlayerController* controller, const FLinearColor& color)
+	void DrawSkeleton(Mesh mesh, APlayerController* controller, const Render::Color& color)
 	{
 		static constexpr int pairs[][2] = {
 			{BoneFNames::head, BoneFNames::neck_01},
@@ -196,17 +193,17 @@ class Esp : public Feature
 	void Run()
 	{
 		const auto& visuals = Settings.VISUALS;
-		const FLinearColor nameColor = ToColor(visuals.NameColor);
-		const FLinearColor boxColor = ToColor(visuals.BoxColor);
-		const FLinearColor bonesColor = ToColor(visuals.BonesColor);
-		const FLinearColor snaplineColor = ToColor(visuals.SnaplineColor);
-		const FLinearColor friendColor = ToColor(visuals.FriendColor);
-		const FLinearColor visibleColor = ToColor(visuals.VisibleColor);
+		const Render::Color nameColor = visuals.NameColor;
+		const Render::Color boxColor = visuals.BoxColor;
+		const Render::Color bonesColor = visuals.BonesColor;
+		const Render::Color snaplineColor = visuals.SnaplineColor;
+		const Render::Color friendColor = visuals.FriendColor;
+		const Render::Color visibleColor = visuals.VisibleColor;
 
 		// RGB overrides the box/bone/snapline colors (for enemies and teammates alike) with the
 		// cycling rainbow, computed once per frame. Name and health keep their own colors.
 		const bool rgb = Settings.MENU.Rgb;
-		const FLinearColor rgbColor = rgb ? ToColor(Rgb::Current()) : FLinearColor{};
+		const Render::Color rgbColor = rgb ? Render::Color(Rgb::Current()) : Render::Color{};
 
 		auto* controller = Engine::PlayerController;
 		auto* localPawn = controller->AcknowledgedPawn;
@@ -231,7 +228,7 @@ class Esp : public Feature
 		{
 			auto* Character = cached.character;
 			if (reinterpret_cast<AActor*>(Character) == reinterpret_cast<AActor*>(localPawn)) continue;
-			if (ActorCache::IsDead(cached)) continue; // stop drawing a dead body on the ground
+			if (ActorCache::IsDead(cached)) continue;		// stop drawing a dead body on the ground
 			if (cached.isBot && visuals.HideBots) continue; // hide AI bots entirely
 
 			// Team filtering / recoloring: skip teammates unless ShowFriendly, and draw them
@@ -248,14 +245,14 @@ class Esp : public Feature
 			// keep the normal box/bone/snapline colors. One line trace per enemy, so only paid when the
 			// check is on and the enemy isn't a teammate.
 			const bool visible = (visuals.EspVisibleCheck && !friendly && hasPlayer) ? Visibility::IsVisible(Character, eye) : false;
-			const FLinearColor enemyBox = visible ? visibleColor : boxColor;
-			const FLinearColor enemyBones = visible ? visibleColor : bonesColor;
-			const FLinearColor enemySnap = visible ? visibleColor : snaplineColor;
+			const Render::Color enemyBox = visible ? visibleColor : boxColor;
+			const Render::Color enemyBones = visible ? visibleColor : bonesColor;
+			const Render::Color enemySnap = visible ? visibleColor : snaplineColor;
 
-			const FLinearColor boxC = rgb ? rgbColor : (friendly ? friendColor : enemyBox);
-			const FLinearColor bonesC = rgb ? rgbColor : (friendly ? friendColor : enemyBones);
-			const FLinearColor snapC = rgb ? rgbColor : (friendly ? friendColor : enemySnap);
-			const FLinearColor nameC = friendly ? friendColor : nameColor;
+			const Render::Color boxC = rgb ? rgbColor : (friendly ? friendColor : enemyBox);
+			const Render::Color bonesC = rgb ? rgbColor : (friendly ? friendColor : enemyBones);
+			const Render::Color snapC = rgb ? rgbColor : (friendly ? friendColor : enemySnap);
+			const Render::Color nameC = friendly ? friendColor : nameColor;
 
 			auto Mesh = Character->Mesh;
 
@@ -297,7 +294,7 @@ class Esp : public Feature
 					float left = feet.X - total * 0.5f; // left edge of the whole label
 					if (showTag)
 					{
-						Render::Text({left + wTag * 0.5f, feet.Y}, "[BOT]", visuals.FontScale, ToColor(visuals.BotTagColor));
+						Render::Text({left + wTag * 0.5f, feet.Y}, "[BOT]", visuals.FontScale, visuals.BotTagColor);
 						left += wTag + gap;
 					}
 					if (!playerName.empty())
