@@ -94,32 +94,27 @@ namespace ExternalWindow
 	/// @brief Hand the foreground and keyboard focus back to the game window when the menu closes.
 	///
 	/// The reliable step is hiding the overlay first: SW_HIDE forces Windows to move the foreground to
-	/// the window beneath it (the game), which the foreground lock cannot refuse — a plain
-	/// SetForegroundWindow from the overlay thread was being ignored, leaving the overlay activated and
-	/// the game ignoring mouse + keyboard. The window is then reshown non-activating (still topmost,
-	/// click-through). Handing the game a real foreground change also makes it re-lock the cursor for
-	/// mouse-look. AttachThreadInput lets the follow-up SetActiveWindow/SetFocus land on the game's
-	/// (separate) UI thread. Whether the game actually regained the foreground is logged, so a lingering
-	/// failure shows up in internal.log instead of being guessed at.
+	/// the window beneath it (the game), which a plain SetForegroundWindow from the overlay thread was
+	/// being denied. Handing the game a real foreground change also makes it re-lock the cursor for
+	/// mouse-look. The window is then reshown non-activating (still topmost, click-through). Whether the
+	/// game actually regained the foreground is logged, so a lingering failure shows up in internal.log
+	/// instead of being guessed at.
 	inline void FocusGame()
 	{
 		const HWND game = GameWindow();
 		if (!game) return;
 
-		const DWORD myTid = GetCurrentThreadId();
-		const DWORD gameTid = GetWindowThreadProcessId(game, nullptr);
-		const bool attach = gameTid && gameTid != myTid;
-		if (attach) AttachThreadInput(myTid, gameTid, TRUE);
-
-		ShowWindow(Hwnd, SW_HIDE); // makes Windows reassign the foreground to the game
+		// Hide the overlay so Windows reassigns the foreground to the window beneath it (the game); that
+		// forced reactivation is what makes the game's viewport re-capture the mouse. Then reshow the
+		// overlay non-activating and topmost.
+		//
+		// Deliberately NO AttachThreadInput here: attaching this thread's input queue to the game UI
+		// thread's froze input for EVERY window until the game was restarted (a merged-input-queue
+		// wedge). SW_HIDE + SetForegroundWindow returns the foreground without corrupting global input.
+		ShowWindow(Hwnd, SW_HIDE);
 		SetForegroundWindow(game);
-		BringWindowToTop(game);
-		SetActiveWindow(game);
-		SetFocus(game);
 		ShowWindow(Hwnd, SW_SHOWNOACTIVATE);
 		SetWindowPos(Hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-		if (attach) AttachThreadInput(myTid, gameTid, FALSE);
 
 		const bool ok = GetForegroundWindow() == game;
 		Logger::Log(ok ? "SUCCESS" : "ERROR",
