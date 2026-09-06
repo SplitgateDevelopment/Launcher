@@ -357,27 +357,36 @@ ESP blending looks right; focus/alt-tab/resize edge cases.
 
 ## Aim
 
-### True (trace-redirect) silent aim — BLOCKED (needs the native fire/trace function)
+### True (trace-redirect) silent aim — UNBLOCKED (reflected hit RPCs found in the dump)
 
 The current silent aim snaps the view on fire. A truly invisible one redirects the *shot*, not the
-view: hook the fire/trace path and rewrite the trace start/direction (or the hit result) toward the
-selected target before the original runs, leaving `ControlRotation` untouched.
+view: rewrite the hit result / shot direction toward the selected target before it reaches the server,
+leaving `ControlRotation` untouched.
 
-**Why it isn't built yet.** The SDK dump exposes no clean hook point: the shot's trace is computed in
-the `Gun`'s **native** fire code, and the plausible reflected sources (`APlayerController::StartFire`,
-`APawn::GetBaseAimRotation`) are called *natively*, so the `ProcessEvent` hook — which only sees
-reflected/Blueprint calls (as `EnableAllInput` does) — never observes them. (A dump search confirms
-this: the only reflected `Gun` fire-path entry is `Function PortalWars.Gun.ServerGoToState`, no
-`Fire`/`HitScan`/`ProcessHit` UFunction.) Redirecting the shot therefore needs a **MinHook on the
-native function**, which can't be found/verified blind.
+**What the dump shows (`FunctionsInfo.json`, hash `d2a5bd8c`).** Contrary to the earlier note (which
+saw only `Gun.ServerGoToState`), the hit path **is** reflected. The client reports its hits/shots to
+the server through `Server*` UFunctions, and on the client a `Server*` RPC is dispatched through
+`UObject::ProcessEvent` (that is how it serializes the params to send) — so the **existing ProcessEvent
+funnel already sees them** and can rewrite their params before `Original` runs, exactly like the
+`BroadcastDeath` / `ClientUpdateChat` decodes already do. No native AOB hook is needed:
+- `ALineTraceGun::ServerNotifyHit` — the hitscan base's per-shot hit report.
+- `AMultiKillGun::ServerNotifyHits` / `AShotgun::ServerProcessHits` — multi-pellet hit arrays.
+- `AProjectileGun::ServerSpawnProjectile` — projectile weapons' spawn (redirect the direction).
+- `APortalWarsCharacter::ServerApplyMeleeDamage` — melee damage.
+- `AGunSkin::OnStartFire_BP` / `OnStopFire_BP` — reflected fire start/stop edges (a firing signal).
 
-**Next step (one in-game pass unblocks it).** Enable **Debug → Log ProcessEvent** and fire: if *any*
-reflected fire/hit event appears (e.g. a `Server*Fire` / `ProcessHit` / weapon-fire UFunction), hook
-it via the event bus / a `ProcessEvent` intercept and rewrite its trace params. If nothing reflected
-shows, RE the `Gun` native fire (an AOB like the `curl_easy_setopt` one in
-[ue4-cheatsheet.md](ue4-cheatsheet.md)) and MinHook it. Then a `bool TrueSilentAim` gates the rewrite.
-**Files.** the fire hook, `settings/Settings.h`, `menu/sections/Aim.h`. **Size:** Medium; **depends
-on:** identifying the fire/trace function in-game.
+**Remaining work.** (1) **Param layouts** — these classes/RPCs aren't in the SDK yet (only `AGun` /
+`ABaseGun` are), so add `ALineTraceGun` / `AShotgun` / `AProjectileGun` and decode each RPC's param
+block (an `FHitResult` / target + hit location/bone), from `ClassesInfo`/`StructsInfo` or one
+`LogProcessEvent` pass while firing (the `BroadcastDeath` decode in
+[ProcessEvent.h](../Internal/hook/functions/ProcessEvent.h) is the template). (2) A `bool TrueSilentAim`
+gates the rewrite toward the aimbot's selected target (reuse its target pick). (3) Server-side
+validation may still reject implausible hits (line-of-sight / angle / range) — best against the private
+backend; verify in-game. This same `ServerNotifyHit`/`ServerProcessHits` rewrite also enables the
+**wallbang** (Phasing Approach B) without disturbing world physics.
+**Files.** `hook/functions/ProcessEvent.h` (the intercept), `ue/sdk/` (the gun classes + param
+structs), `settings/Settings.h`, `menu/sections/Aim.h`. **Size:** Medium. **Depends on:** the hit-RPC
+param layout + in-game validation (the reflected hook point itself is confirmed).
 
 ### Phasing bullets (wallbang) toggle — Approach A DONE
 
