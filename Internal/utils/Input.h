@@ -29,6 +29,22 @@ namespace Input
 		return GameFocused() && (GetAsyncKeyState(vk) & 0x8000) != 0;
 	}
 
+	/// Whether @p vk went from up to down since the last poll of that key — a single up->down edge,
+	/// reported only while the game is focused. Uses the GetAsyncKeyState high bit + its own previous-
+	/// state table (indexed by vk), so it is immune to the `& 1` "pressed since last call" bit that any
+	/// other poller (e.g. @ref DispatchHotKeys, which sweeps every key each frame) clears. Use for
+	/// press-once actions that poll a known key directly instead of subscribing to HotKeyPressed — e.g.
+	/// the menu toggle. The state table is shared across callers, so poll any given key from one site.
+	inline bool Pressed(int vk)
+	{
+		if (vk < 0 || vk > 255) return false;
+		static bool prev[256] = {};
+		const bool down = Down(vk); // high bit AND game-focused; false (no edge) while unfocused
+		const bool pressed = down && !prev[vk];
+		prev[vk] = down;
+		return pressed;
+	}
+
 	/// Poll every key/mouse button once per frame and dispatch Events::HotKeyPressed on each
 	/// up->down edge (only while the game is focused, and only when something subscribes). payload.value
 	/// carries the vk code. Call once per frame before features run. Press-once actions (super jump,
