@@ -69,6 +69,7 @@
   <ItemGroup>
     <ClInclude Include="cache\ActorCache.h" />
     <ClInclude Include="cache\ClassCache.h" />
+    <ClInclude Include="cache\NameCache.h" />
     <ClInclude Include="render\Renderer.h" />
     <ClInclude Include="render\CanvasRenderer.h" />
     <ClInclude Include="render\ImGuiRenderer.h" />

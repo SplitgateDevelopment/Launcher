@@ -1,10 +1,12 @@
 #pragma once
 
 /// @file
-/// @brief SDK tab: a live UObject explorer (search object names, list a class's instances) plus the
-/// GObjects dump-to-file. All reads go through the already-resolved `Engine::GObjects` (TUObjectArray),
-/// `FindObject`, `IsA`, and `GetFullName` — no new offsets. Scans run on demand (button press), not
-/// per frame, since a full GObjects walk is the same cost as Dump GObjects.
+/// @brief SDK tab: a live UObject explorer (search object names, list a class's instances), a
+/// searchable FName-pool enumeration (via `Engine::GNames`, covering names for not-yet-loaded
+/// content such as map/level names), plus the GObjects dump-to-file. Object/class reads go through
+/// the already-resolved `Engine::GObjects` (TUObjectArray), `FindObject`, `IsA`, and `GetFullName` —
+/// no new offsets. Scans run on demand (button press), not per frame, since a full walk is the same
+/// cost as Dump GObjects.
 
 #include <cstdint>
 #include <cstring>
@@ -16,6 +18,7 @@
 
 #include "../../settings/Settings.h"
 #include "../../cache/ClassCache.h"
+#include "../../cache/NameCache.h"
 #include "../../ue/Engine.h"
 #include "../../utils/Logger.h"
 
@@ -126,6 +129,53 @@ namespace Menu
 					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 					{
 						const std::string& name = classes[classFiltered[i]].name;
+						if (ImGui::Selectable(name.c_str())) ImGui::SetClipboardText(name.c_str());
+					}
+				ImGui::EndChild();
+			}
+
+			ImGui::SeparatorText("Name pool (FNames)");
+			ImGui::Tooltip("Search every interned FName, including names for content that isn't loaded\n(e.g. map/level names to travel to). Built once, Refresh to rebuild. Click a row to copy.");
+			{
+				static char nameFilter2[128] = "";
+				static std::vector<int> nameFiltered;
+				static std::string lastNameKey = "\x01";	// sentinel: forces the first filter build
+				static size_t lastNameCacheSize = SIZE_MAX; // re-filter when the cache is rebuilt
+				ImGui::SetNextItemWidth(260.f);
+				ImGui::InputText("##namepoolfilter", nameFilter2, sizeof(nameFilter2));
+				ImGui::SameLine();
+				if (ImGui::Button("Refresh##names")) NameCache::Rebuild();
+				ImGui::SameLine();
+				if (ImGui::Button("Copy##namepool"))
+				{
+					std::string out;
+					const std::string needle = nameFilter2;
+					for (const auto& name : NameCache::Get())
+						if (needle.empty() || name.find(needle) != std::string::npos) out += name + "\n";
+					ImGui::SetClipboardText(out.c_str());
+				}
+				ImGui::Tooltip("Copy the filtered names to the clipboard.");
+
+				const auto& allNames = NameCache::Get();
+				if (nameFilter2 != lastNameKey || allNames.size() != lastNameCacheSize)
+				{
+					lastNameKey = nameFilter2;
+					lastNameCacheSize = allNames.size();
+					nameFiltered.clear();
+					const std::string needle = nameFilter2;
+					for (int i = 0; i < static_cast<int>(allNames.size()); i++)
+						if (needle.empty() || allNames[i].find(needle) != std::string::npos)
+							nameFiltered.push_back(i);
+				}
+
+				ImGui::Text("%d / %d names", static_cast<int>(nameFiltered.size()), static_cast<int>(allNames.size()));
+				ImGui::BeginChild("NamePoolResults", ImVec2(0, 160), true, ImGuiWindowFlags_HorizontalScrollbar);
+				ImGuiListClipper clipper;
+				clipper.Begin(static_cast<int>(nameFiltered.size()));
+				while (clipper.Step())
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+					{
+						const std::string& name = allNames[nameFiltered[i]];
 						if (ImGui::Selectable(name.c_str())) ImGui::SetClipboardText(name.c_str());
 					}
 				ImGui::EndChild();
