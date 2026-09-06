@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -48,6 +49,47 @@ namespace
 		{
 			runCount++;
 			if (throwOnRun) throw std::runtime_error("boom");
+		}
+	};
+
+	/// A feature that overrides the event-only Run(event) overload, to test the runner forwards the
+	/// triggering event and the base delegates the (event, payload) call down to it.
+	struct EventFake : public Feature
+	{
+		int runs = 0;
+		Events::Type lastEvent = Events::Type::Render;
+
+		EventFake() { Name = "EventFake"; }
+		void Init() override { Initialized = true; }
+		void UpdateEnabled() override {}
+		bool Check() override { return true; }
+		void Destroy() override {}
+		void Run(Events::Type event) override
+		{
+			runs++;
+			lastEvent = event;
+		}
+	};
+
+	/// A feature that overrides the full Run(event, payload) overload, to test both are forwarded.
+	struct PayloadFake : public Feature
+	{
+		int runs = 0;
+		Events::Type lastEvent = Events::Type::Render;
+		float lastValue = -1.f;
+		std::string lastName;
+
+		PayloadFake() { Name = "PayloadFake"; }
+		void Init() override { Initialized = true; }
+		void UpdateEnabled() override {}
+		bool Check() override { return true; }
+		void Destroy() override {}
+		void Run(Events::Type event, const Events::Payload& payload) override
+		{
+			runs++;
+			lastEvent = event;
+			lastValue = payload.value;
+			lastName = payload.name ? payload.name : "";
 		}
 	};
 
@@ -239,6 +281,56 @@ namespace
 
 		Events::Dispatch(Events::Type::Shutdown);
 		EXPECT_EQ(1, f.runCount); // fires on its event
+	}
+
+	// A feature can list several triggers; Execute() drives it as long as Render is one of them.
+	TEST_F(FeaturesTest, ExecuteRunsWhenRenderIsAmongTriggers)
+	{
+		FakeFeature* f = add();
+		f->Triggers = {Events::Type::Shutdown, Events::Type::Render};
+		f->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(1, f->runCount);
+	}
+
+	// ThrottleMs caps how often Run() fires: a second immediate tick is skipped, and it runs again
+	// once the interval has elapsed (simulated by back-dating lastRun rather than sleeping).
+	TEST_F(FeaturesTest, ThrottleGatesRepeatedRuns)
+	{
+		FakeFeature* f = add();
+		f->Enabled = true;
+		f->ThrottleMs = 10000;
+
+		Features::Execute(); // first run stamps lastRun
+		Features::Execute(); // within the interval -> throttled
+		EXPECT_EQ(1, f->runCount);
+
+		f->lastRun = std::chrono::steady_clock::now() - std::chrono::milliseconds(20000); // interval elapsed
+		Features::Execute();
+		EXPECT_EQ(2, f->runCount);
+	}
+
+	// The runner forwards the triggering event to a feature that overrides Run(event) (the base
+	// delegates its Run(event, payload) down to it).
+	TEST_F(FeaturesTest, ForwardsEventToRunOverload)
+	{
+		EventFake f;
+		f.Enabled = true;
+		Features::RunFeature(f, Events::Type::PlayerDeath);
+		EXPECT_EQ(1, f.runs);
+		EXPECT_EQ(Events::Type::PlayerDeath, f.lastEvent);
+	}
+
+	// The runner forwards both the event and the payload to a feature that overrides the full overload.
+	TEST_F(FeaturesTest, ForwardsEventAndPayloadToRunOverload)
+	{
+		PayloadFake f;
+		f.Enabled = true;
+		Features::RunFeature(f, Events::Type::HotKeyPressed, Events::Payload{.value = 3.f, .name = "hello"});
+		EXPECT_EQ(1, f.runs);
+		EXPECT_EQ(Events::Type::HotKeyPressed, f.lastEvent);
+		EXPECT_EQ(3.f, f.lastValue);
+		EXPECT_EQ("hello", f.lastName);
 	}
 
 } // namespace
