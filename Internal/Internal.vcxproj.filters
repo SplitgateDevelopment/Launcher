@@ -57,6 +57,9 @@
     <ClInclude Include="ue\Engine.h">
       <Filter>ue</Filter>
     </ClInclude>
+    <ClInclude Include="ue\sdk.h">
+      <Filter>ue</Filter>
+    </ClInclude>
     <ClInclude Include="ue\custom.h">
       <Filter>ue</Filter>
     </ClInclude>

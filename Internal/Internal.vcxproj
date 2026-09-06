@@ -132,6 +132,7 @@
     <ClInclude Include="scripting\modules\Game.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
+    <ClInclude Include="ue\sdk.h" />
     <ClInclude Include="ue\custom.h" />
     <ClInclude Include="ue\sdk\AActor.h" />
     <ClInclude Include="ue\sdk\ABaseGun.h" />
