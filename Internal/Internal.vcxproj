@@ -69,6 +69,7 @@
   <ItemGroup>
     <ClInclude Include="cache\ActorCache.h" />
     <ClInclude Include="cache\ClassCache.h" />
+    <ClInclude Include="cache\FontCache.h" />
     <ClInclude Include="cache\NameCache.h" />
     <ClInclude Include="render\Vec2.h" />
     <ClInclude Include="render\Color.h" />
