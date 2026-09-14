@@ -9,7 +9,7 @@
 namespace Launcher
 {
 	// Owns an HHOOK, removed with UnhookWindowsHookEx on destruction. After the DLL captures
-	// the handle (via Hook::g_hook), call release() so the launcher does NOT unhook on exit —
+	// the handle (via Hook::injectionHook), call release() so the launcher does NOT unhook on exit —
 	// the DLL owns teardown, and unhooking here could unload the injected module.
 	/// Move-only owner of an HHOOK; unhooks with UnhookWindowsHookEx on reset/destruction.
 	class UniqueHook

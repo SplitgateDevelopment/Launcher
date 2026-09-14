@@ -15,8 +15,8 @@
 
 namespace Hook
 {
-	inline HHOOK g_hook;
-	inline bool g_initialized = false;
+	inline HHOOK injectionHook;
+	inline bool initialized = false;
 
 	BYTE* SetHook(void** VTable, int index, void* TargetFunction)
 	{
@@ -212,16 +212,16 @@ namespace Hook
 		ExceptionHandler::Disable();
 		GUI::Destroy();
 
-		if (g_hook)
+		if (injectionHook)
 		{
-			UnhookWindowsHookEx(g_hook);
-			g_hook = nullptr;
+			UnhookWindowsHookEx(injectionHook);
+			injectionHook = nullptr;
 		}
 
 		// Reset the module state so a later re-injection re-runs Init cleanly instead of the callback
-		// bailing on a stale g_initialized (or re-registering features/handlers on top of the old set).
+		// bailing on a stale `initialized` (or re-registering features/handlers on top of the old set).
 		Features::Features.clear();
 		Events::Clear();
-		g_initialized = false;
+		initialized = false;
 	}
 }; // namespace Hook
