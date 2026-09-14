@@ -17,6 +17,12 @@
 /// Cross-process signaling helpers over named Win32 events (Local\ session namespace).
 namespace Ipc
 {
+	/// Export name of the DLL's WH_GETMESSAGE hook procedure (dllmain.cpp), resolved by the
+	/// launcher via GetProcAddress. The proc is `extern "C"`, so this plain, undecorated name is
+	/// stable across signature/scope changes instead of an MSVC-mangled string — see
+	/// docs/hooking.md.
+	inline constexpr char CallbackExport[] = "SplitgateCallBack";
+
 	/// Distinct signals that can cross the launcher/DLL boundary; each maps to one named event.
 	enum class Event
 	{

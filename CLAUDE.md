@@ -9,7 +9,7 @@ of gameplay features; the launcher is the companion executable used to start it.
 > need something from one of them, ask and it will be provided to you.
 >
 > **`Internal/hook/Hook.h` is partially readable**: you may read lines **1–17** (includes,
-> `namespace Hook` opening, `g_hook`, and the `SetHook` signature) and lines **34 to the end**
+> `namespace Hook` opening, `injectionHook`, and the `SetHook` signature) and lines **34 to the end**
 > (`Init` / `UnHook`). **Never read lines 18–33** — the body of
 > `BYTE *SetHook(void **VTable, int index, void *TargetFunction)` and
 > `**Never read the full file**
@@ -38,7 +38,7 @@ Longer-form docs live in [`docs/`](docs/) and are linked from the README:
 
 - [docs/settings.md](docs/settings.md) — configuration structs, persistence, file location.
 - [docs/features.md](docs/features.md) — the feature framework and how to add a feature.
-- [docs/hooking.md](docs/hooking.md) — injection (the `WH_GETMESSAGE` technique, the mangled
+- [docs/hooking.md](docs/hooking.md) — injection (the `WH_GETMESSAGE` technique, the `extern "C"`
   `SplitgateCallBack` export) and how the game's functions are hooked (`PostRender`,
   `ProcessEvent`).
 - [docs/debugging.md](docs/debugging.md) — reading logs (`launcher.log` / `internal.log`), the
@@ -70,18 +70,19 @@ via nightly.link; otherwise build from source.
 The launcher gets `Internal.dll` running inside the game via the classic `SetWindowsHookEx`
 injection technique, then the DLL takes over:
 
-1. **Launcher** loads `Internal.dll`, resolves the exported `SplitgateCallBack` (via its
-   *mangled* name, since it is not `extern "C"`), finds the `PortalWars` window and its UI
+1. **Launcher** loads `Internal.dll`, resolves the exported `SplitgateCallBack` (a plain,
+   undecorated name since it is `extern "C"`; shared as `Ipc::CallbackExport`), finds the
+   `PortalWars` window and its UI
    thread, and installs a **`WH_GETMESSAGE`** hook on that thread whose proc is
    `SplitgateCallBack`. This forces Windows to map `Internal.dll` into the **game process**.
    It then `PostThreadMessageW`s a trigger message whose `lParam` carries the returned
    `HHOOK`, and exits.
 2. Inside the game process, `SplitgateCallBack` (`dllmain.cpp`) runs when that message is
-   pulled from the queue. It captures the `HHOOK` from `msg->lParam` into `Hook::g_hook` (so
-   `UnHook()` can later remove the hook), guards against re-entry with `Hook::g_initialized`,
+   pulled from the queue. It captures the `HHOOK` from `msg->lParam` into `Hook::injectionHook`
+   (so `UnHook()` can later remove the hook), guards against re-entry with `Hook::initialized`,
    and calls **`Hook::Init()`** (see `hook/Hook.h`), which installs the `ProcessEvent` /
    `PostRender` hooks, the GUI, Python, and the features. `CallNextHookEx`'s first argument is
-   ignored by Windows, so a not-yet-set `g_hook` there is harmless — the handle only matters
+   ignored by Windows, so a not-yet-set `injectionHook` there is harmless — the handle only matters
    for the eventual `UnhookWindowsHookEx`.
 3. From then on the DLL drives everything: `PostRender` renders the menu + features each
    frame, `ProcessEvent` feeds the event bus, and Discord RPC runs in the background. The
@@ -120,7 +121,8 @@ self-contained relative to `Internal`. Preprocessor: `_CRT_SECURE_NO_WARNINGS;ND
 
 - `Launcher.cpp` — entry point / launcher logic. It is an **injector/bootstrapper**:
   `LoadLibraryA("Internal.dll")`, resolves the exported `SplitgateCallBack` via
-  `GetProcAddress` (using the C++-mangled symbol name, as the export is not `extern "C"`),
+  `GetProcAddress` (a plain, undecorated name since the export is `extern "C"`, referenced
+  through `Ipc::CallbackExport`),
   finds the game window (`PortalWars`), gets its UI thread + process id, installs a
   `WH_GETMESSAGE` hook (`SetWindowsHookExW`) pointing at that callback inside `Internal.dll`,
   posts a thread message (with the `HHOOK` in its `lParam`) to trigger it, then exits. Its
@@ -201,15 +203,14 @@ Source folders (from the project file; contents documented as they are read):
   surface unchanged).
 - `dllmain.cpp` — DLL entry point. Exports the `WH_GETMESSAGE` hook procedure the launcher
   installs — `LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam)`
-  (`lparam` is the `MSG*`, valid only when `code >= 0`). It is **not** `extern "C"`, so the
-  launcher resolves its **mangled** export name `?SplitgateCallBack@@YA_JH_K_J@Z`
-  (`__int64 __cdecl SplitgateCallBack(int, unsigned __int64, __int64)` on x64) — see
-  [docs/hooking.md](docs/hooking.md) for the full breakdown; changing the signature breaks
-  that lookup. On the trigger message it captures the `HHOOK` from `msg->lParam`
-  into `Hook::g_hook`, then (once, guarded by `Hook::g_initialized`) initializes the
-  `ExceptionHandler`, runs `Hook::Init()` (the bootstrap described above), logs the
-  injection + module base address + menu hotkey, initializes Discord RPC, and chains to
-  `CallNextHookEx`. `Hook::g_hook` / `Hook::g_initialized` are declared in `hook/Hook.h`.
+  (`lparam` is the `MSG*`, valid only when `code >= 0`). It is declared **`extern "C"`**, so the
+  launcher resolves its plain, undecorated export name `SplitgateCallBack` (shared as
+  `Ipc::CallbackExport` in `shared/Ipc.h`) — see [docs/hooking.md](docs/hooking.md) for why this
+  is stable where the old mangled name was not. On the trigger message it captures the `HHOOK`
+  from `msg->lParam` into `Hook::injectionHook`, then (once, guarded by `Hook::initialized`)
+  initializes the `ExceptionHandler`, runs `Hook::Init()` (the bootstrap described above), logs
+  the injection + module base address + menu hotkey, initializes Discord RPC, and chains to
+  `CallNextHookEx`. `Hook::injectionHook` / `Hook::initialized` are declared in `hook/Hook.h`.
 
 ## Conventions
 
