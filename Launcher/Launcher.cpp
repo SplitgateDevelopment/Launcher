@@ -36,7 +36,7 @@ int main()
 	}
 	logger.success("Loaded target module!");
 
-	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib.get(), "?SplitgateCallBack@@YA_JH_K_J@Z"));
+	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib.get(), Ipc::CallbackExport));
 	if (!proc)
 	{
 		logger.errorBox(TEXT("GetProcAddress"));
@@ -64,7 +64,7 @@ int main()
 	}
 	logger.success(std::format("Thread id: {}", threadId));
 	logger.success(std::format("Process id: {}", processId));
-	
+
 	if (network.Proxy == ProxyMode::Mitmproxy)
 	{
 		if (Launcher::Mitmproxy::Spawn(network.Redirects, processId, &logger))

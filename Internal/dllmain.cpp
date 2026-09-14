@@ -6,7 +6,7 @@
 #include "utils/ExceptionHandler.h"
 #include "../shared/Ipc.h"
 
-__declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam)
+extern "C" __declspec(dllexport) LRESULT CALLBACK SplitgateCallBack(int code, WPARAM wparam, LPARAM lparam)
 {
 	ExceptionHandler::Init();
 
