@@ -175,7 +175,7 @@ struct VisualsSettings
 	float MaxDistance = 0.f; ///< only draw enemies within this many metres (0 = unlimited)
 
 	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
-	bool BotTag = false;			///< draw a "[BOT]" label before an AI-bot player's name
+	bool BotTag = true;				///< draw a "[BOT]" label before an AI-bot player's name
 	bool HideBots = false;			///< don't draw AI bots in the ESP at all
 
 	bool Radar = false;				///< separate 2D radar feature
