@@ -1,5 +1,5 @@
-# Launcher
-🚀 Custom Splitgate launcher and ingame-dll coded in cpp
+# Splitgate Internal
+C++ internal library and launcher for Splitgate (UE4): injected overlay menu with exploits, cheats, qol gameplay features, and Python scripting.
 
 ## Preview
 
@@ -56,3 +56,17 @@ If Python is installed somewhere custom that isn't picked up, set the `SPLITGATE
 - [Testing](docs/testing.md) — the gtest project and how to run it
 - [Style & linting](docs/style.md) — clang-format / clang-tidy setup
 - [UE4 cheatsheet](docs/ue4-cheatsheet.md) — living RE reference: key objects, offsets, and snippets
+
+## Credits
+
+Inspiration and references:
+
+- [guttir14/CheatIt](https://github.com/guttir14/CheatIt)
+- [FlagHacks/Splitgate-Internal](https://github.com/FlagHacks/Splitgate-Internal)
+- [percpopper/Splitgate-Internal](https://github.com/percpopper/Splitgate-Internal)
+- [sg.dumps.host offsets](https://sg.dumps.host/offsets)
+- [Dumpspace — Splitgate (d2a5bd8c)](https://dumpspace.spuckwaffel.com/Games/?hash=d2a5bd8c&type=classes&idx=AAbstractNavData)
+- [projectnovafn/Sinum](https://github.com/projectnovafn/Sinum/)
+- [kem0x/Memcury](https://github.com/kem0x/Memcury)
+- [Spuckwaffel/UEDumper](https://github.com/Spuckwaffel/UEDumper#getting-started)
+- [Claude](https://claude.ai)
