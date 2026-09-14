@@ -53,5 +53,12 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: Release
-        path: ${{env.SOLUTION_FILE_PATH}}/x64/Release
+        # Ship the runtime files only: drop the test runner + its gtest DLLs,
+        # the linker byproducts (.exp/.lib), and any stray debug symbols.
+        path: |
+          ${{env.SOLUTION_FILE_PATH}}/x64/Release
+          !${{env.SOLUTION_FILE_PATH}}/x64/Release/test/**
+          !${{env.SOLUTION_FILE_PATH}}/x64/Release/**/*.exp
+          !${{env.SOLUTION_FILE_PATH}}/x64/Release/**/*.lib
+          !${{env.SOLUTION_FILE_PATH}}/x64/Release/**/*.pdb
         if-no-files-found: warn
