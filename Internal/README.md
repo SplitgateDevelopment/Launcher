@@ -10,7 +10,7 @@ and reports Discord Rich Presence. Root namespace `Splitgate`; exports are gated
 
 `dllmain.cpp` exports the `WH_GETMESSAGE` hook procedure the launcher installs,
 `SplitgateCallBack`. When the trigger message arrives it captures the `HHOOK` into
-`Hook::g_hook`, then (once, guarded by `Hook::g_initialized`) runs **`Hook::Init()`**, which:
+`Hook::injectionHook`, then (once, guarded by `Hook::initialized`) runs **`Hook::Init()`**, which:
 
 - opens the console and initializes the engine (`Engine::Init` — signature scan) and `Globals`;
 - walks `World → OwningGameInstance → LocalPlayers[0] → ViewportClient → VFTable` to capture the

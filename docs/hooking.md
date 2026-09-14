@@ -28,13 +28,13 @@ sequenceDiagram
     participant DLL as Internal.dll in game
 
     L->>L: Ipc::Create(Event::Initialized)
-    L->>L: LoadLibraryA + GetProcAddress(mangled name)
+    L->>L: LoadLibraryA + GetProcAddress("SplitgateCallBack")
     L->>OS: SetWindowsHookExW(WH_GETMESSAGE, proc, lib, threadId)
     Note over OS,DLL: Windows maps Internal.dll into the game process
     L->>OS: PostThreadMessageW(threadId, trigger, HHOOK)
     L->>L: Ipc::Wait(initEvent) — blocks
     OS->>DLL: SplitgateCallBack(code, wparam, lparam)
-    DLL->>DLL: capture HHOOK → Hook::g_hook, guard g_initialized
+    DLL->>DLL: capture HHOOK → Hook::injectionHook, guard initialized
     DLL->>DLL: ExceptionHandler::Init(), Hook::Init() (see §2)
     DLL-->>L: Ipc::Signal(Event::Initialized) (on success)
     DLL->>DLL: DiscordRPC::Init()
@@ -53,15 +53,15 @@ Key points:
   note below).
 - **Handing off the `HHOOK`.** `SetWindowsHookExW` returns the handle in the *launcher*, but
   the *DLL* is what tears everything down later. So the launcher passes the handle in the
-  message's `lParam`, and the callback stores it in `Hook::g_hook`. Without this, the handle
+  message's `lParam`, and the callback stores it in `Hook::injectionHook`. Without this, the handle
   is lost and `UnhookWindowsHookEx` at unload can't work.
 - **The launcher does not unhook.** Removing the hook could unload the DLL, so the launcher
   installs it and exits; the DLL owns cleanup in `Hook::UnHook()`. (What actually keeps the
   module resident after the launcher exits is the DLL's own running threads, not the hook.)
 - **`CallNextHookEx`'s first argument is ignored by Windows**, so it doesn't matter that
-  `g_hook` may still be null the first time through — the handle only matters for the
+  `injectionHook` may still be null the first time through — the handle only matters for the
   eventual `UnhookWindowsHookEx`.
-- **Re-entry guard.** The proc runs for *every* retrieved message, so `Hook::g_initialized`
+- **Re-entry guard.** The proc runs for *every* retrieved message, so `Hook::initialized`
   ensures `Hook::Init()` runs exactly once.
 
 ### Initialization handshake
@@ -102,7 +102,7 @@ The launcher's Win32 resources are wrapped in move-only RAII types (`UniqueLibra
 without a manual ladder. The hook is the interesting one: on any failure the `UniqueHook`
 destructor calls `UnhookWindowsHookEx` (init never completed, so removing the hook is
 correct), but after a **successful** handshake the launcher calls `hook.release()` to give up
-ownership *without* unhooking — the DLL now owns it via `Hook::g_hook`. (Freeing the
+ownership *without* unhooking — the DLL now owns it via `Hook::injectionHook`. (Freeing the
 launcher's own `UniqueLibrary` on exit only unloads the launcher's mapping of the DLL, not the
 copy injected into the game.)
 
@@ -123,36 +123,26 @@ Per the `WH_GETMESSAGE` contract:
   The launcher's posted values arrive as `msg->message` (our trigger id) and `msg->lParam`
   (the `HHOOK`).
 
-Because the function is **not** `extern "C"`, the symbol in the DLL's export table is the
-MSVC C++-mangled name, and the launcher resolves that exact string:
+The function is declared **`extern "C"`**, so on x64 the export table publishes a plain,
+undecorated symbol and the launcher resolves that exact string:
 
 ```
-?SplitgateCallBack@@YA_JH_K_J@Z
+SplitgateCallBack
 ```
 
-Decoded (x64):
+Both sides reference the single source of truth `Ipc::CallbackExport` (`shared/Ipc.h`) rather
+than a hard-coded literal, so a typo can't silently diverge the DLL's export from the
+launcher's `GetProcAddress` lookup.
 
-| Token | Meaning |
-|-------|---------|
-| `?` | start of a C++ decorated name |
-| `SplitgateCallBack` | the function name |
-| `@@` | no enclosing class/namespace → a free function |
-| `Y` | ordinary (non-member) function |
-| `A` | calling convention `__cdecl` (on x64 all conventions collapse to one, so `CALLBACK` → `A`) |
-| `_J` | return type `__int64` — i.e. `LRESULT` (`LONG_PTR`) on x64 |
-| `H` | param 1 `int` (`code`) |
-| `_K` | param 2 `unsigned __int64` — `WPARAM` (`UINT_PTR`) on x64 |
-| `_J` | param 3 `__int64` — `LPARAM` (`LONG_PTR`) on x64 |
-| `@Z` | end of parameter list / function marker |
-
-So the string encodes `__int64 __cdecl SplitgateCallBack(int, unsigned __int64, __int64)`.
-
-> [!WARNING]
-> This decorated name is tied to the exact signature **and** to x64. Changing a parameter
-> type, the calling convention, or wrapping the function in a namespace changes the mangled
-> name and silently breaks the launcher's `GetProcAddress` (it returns null → injection
-> fails). For a stable export, use `extern "C"` or a `.def` `EXPORTS` entry so the launcher
-> can resolve a plain `SplitgateCallBack`.
+> [!NOTE]
+> **Why `extern "C"`.** Without it, MSVC C++ name decoration exports the mangled symbol
+> `?SplitgateCallBack@@YA_JH_K_J@Z` — encoding `__int64 __cdecl SplitgateCallBack(int, unsigned
+> __int64, __int64)` on x64. That decorated name is tied to the exact signature, the calling
+> convention, the enclosing scope, **and** the architecture, so changing a parameter type or
+> wrapping the function in a namespace would change the mangled string and silently break the
+> launcher's `GetProcAddress` (null → injection fails). `extern "C"` suppresses decoration and
+> gives the stable name above. (`SplitgateCallBack` is a free function in `dllmain.cpp` and,
+> as a `WH_GETMESSAGE` `HOOKPROC`, is never overloaded, so C linkage costs nothing.)
 
 ### Trigger message id
 
@@ -262,12 +252,12 @@ On unload the DLL reverses everything, in order:
 1. `MH_DisableHook(MH_ALL_HOOKS)` + `MH_Uninitialize()` — remove the MinHook trampolines.
 2. `SetHook(...)` with the saved original — restore the `PostRender` vtable entry.
 3. Destroy the console, disable the exception handler, destroy the GUI.
-4. `UnhookWindowsHookEx(Hook::g_hook)` — remove the injection hook (guarded so it only runs
-   when the handle was actually captured; see §1).
+4. `UnhookWindowsHookEx(Hook::injectionHook)` — remove the injection hook (guarded so it only
+   runs when the handle was actually captured; see §1).
 
 ### Injection-state globals
 
-`Hook::g_hook` and `Hook::g_initialized` (both declared in `Hook.h`) hold the injection
+`Hook::injectionHook` and `Hook::initialized` (both declared in `Hook.h`) hold the injection
 state. They're declared **`inline`** so the header can define them safely even if it's ever
 included in more than one translation unit — the correct C++17 idiom for a header-scope
 global, and zero-cost.
