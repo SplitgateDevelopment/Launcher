@@ -33,6 +33,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <!-- Keep the test binary (and its gtest runtime DLLs) out of the shipping
+         output by nesting it in a test\ subfolder of the Release directory. -->
+    <OutDir>$(SolutionDir)x64\$(Configuration)\test\</OutDir>
     <!-- Compile the settings/feature modules in place; they have no game dependencies. -->
     <IncludePath>$(ProjectDir)..\Internal\features;$(ProjectDir)..\Internal\settings;$(ProjectDir)..\Internal\scripting;$(ProjectDir)..\Internal\network;$(ProjectDir)..\shared;$(IncludePath)</IncludePath>
   </PropertyGroup>

@@ -19,7 +19,7 @@
   • Use the `Ins` button to show/hide the gui
 
 ## Compile
-To compile the project make sure you have [Visual Studio 22](https://visualstudio.microsoft.com/it/downloads/), [vcpkg](https://vcpkg.io/en/getting-started) integrated with `MSBuild` and any [Python](https://www.python.org/downloads/) 3.x installed
+To compile the project make sure you have [Visual Studio 22](https://visualstudio.microsoft.com/en/downloads/), [vcpkg](https://vcpkg.io/en/getting-started) integrated with `MSBuild` and any [Python](https://www.python.org/downloads/) 3.x installed
 
 > [!IMPORTANT]
 > `Internal` embeds Python (via pybind11 + `<Python.h>`), so a Python 3.x installation is required to compile.
