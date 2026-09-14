@@ -1,5 +1,9 @@
 #pragma once
 
+/// @file
+/// @brief Custom ImGui widgets and helpers (tooltips, key-name conversion, hotkey capture, toggle switches)
+/// added into the ImGui namespace and reused across the menu sections.
+
 #include <string>
 #include <Windows.h>
 
@@ -8,6 +12,7 @@
 
 namespace ImGui
 {
+	/// @brief Shows a tooltip with @p text when the previous item is hovered; no-op for empty text.
 	void Tooltip(const char* text)
 	{
 		if (strlen(text) && ImGui::IsItemHovered())
@@ -18,6 +23,12 @@ namespace ImGui
 		}
 	}
 
+	/**
+	 * @brief Converts a Win32 virtual-key code into a human-readable key name.
+	 * @param virtualKey The VK_* code to translate.
+	 * @return Names mouse buttons explicitly (MOUSE0/MOUSE1/MBUTTON/XBUTTON1/XBUTTON2) and otherwise
+	 *         resolves the key name via the keyboard layout, flagging extended keys where required.
+	 */
 	std::string VirtualKeyCodeToString(UCHAR virtualKey)
 	{
 		UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
@@ -47,12 +58,21 @@ namespace ImGui
 		int result = 0;
 		switch (virtualKey)
 		{
-		case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN:
-		case VK_RCONTROL: case VK_RMENU:
-		case VK_LWIN: case VK_RWIN: case VK_APPS:
-		case VK_PRIOR: case VK_NEXT:
-		case VK_END: case VK_HOME:
-		case VK_INSERT: case VK_DELETE:
+		case VK_LEFT:
+		case VK_UP:
+		case VK_RIGHT:
+		case VK_DOWN:
+		case VK_RCONTROL:
+		case VK_RMENU:
+		case VK_LWIN:
+		case VK_RWIN:
+		case VK_APPS:
+		case VK_PRIOR:
+		case VK_NEXT:
+		case VK_END:
+		case VK_HOME:
+		case VK_INSERT:
+		case VK_DELETE:
 		case VK_DIVIDE:
 		case VK_NUMLOCK:
 			scanCode |= KF_EXTENDED;
@@ -63,50 +83,58 @@ namespace ImGui
 		return szName;
 	}
 
+	/**
+	 * @brief Button that rebinds a hotkey: click to enter capture mode, then the next pressed key is stored.
+	 * @param key In/out virtual-key code; updated to the newly captured key.
+	 * @param size_arg Optional button size.
+	 * @note Mouse buttons are ignored during capture so a click cannot bind itself.
+	 */
+	/// Which key pointer is currently being rebound (only one hotkey captures at a time). Shared, but
+	/// per-key state is derived from this — NOT a shared keyName string, which previously made every
+	/// hotkey button render identical text and collide on the ImGui id.
+	inline int* g_capturingHotKey = nullptr;
+	inline bool g_hotKeyArmed = false; ///< true once the initiating click is released, so we can bind mouse buttons too
+
 	void HotKeyEx(int* key, const ImVec2& size_arg = ImVec2(0, 0))
 	{
-		static const std::vector<int> ignoredKeys =
-		{
-			VK_LBUTTON, VK_RBUTTON, VK_MBUTTON
-		};
-
-		static std::string keyName = VirtualKeyCodeToString(*key);
-		static bool isPressed = false;
+		const bool capturing = (g_capturingHotKey == key);
+		const std::string keyName = capturing ? "..." : VirtualKeyCodeToString(*key);
 
 		if (ImGui::Button(keyName.c_str(), size_arg))
 		{
-			keyName = "...";
-			isPressed = true;
+			g_capturingHotKey = key;
+			g_hotKeyArmed = false; // wait for the click to release before capturing
 		}
-		if (isPressed)
-		{
-			bool ignore = false;
-			for (auto ignoredKey : ignoredKeys) {
-				if (GetAsyncKeyState(ignoredKey) & 0x8000) {
-					ignore = true;
-					break;
-				}
-			};
 
-			if (!ignore)
-			{
-				for (int code = 0; code < 255; code++)
-				{
-					if (GetAsyncKeyState(code) & 0x8000) {
-						*key = code;
-						isPressed = false;
-					}
-				}
-			}
-		}
-		else
+		if (g_capturingHotKey != key) return;
+
+		// Arm only once the mouse buttons from the initiating click are released — then the next
+		// pressed key OR mouse button (left/right/middle/x) is bound.
+		if (!g_hotKeyArmed)
 		{
-			keyName = VirtualKeyCodeToString(*key);
+			const bool anyMouseDown = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) || (GetAsyncKeyState(VK_RBUTTON) & 0x8000) ||
+									  (GetAsyncKeyState(VK_MBUTTON) & 0x8000);
+			if (!anyMouseDown) g_hotKeyArmed = true;
+			return;
+		}
+
+		for (int code = 1; code < 256; code++) // VK_LBUTTON..: mouse buttons are now bindable
+		{
+			if (GetAsyncKeyState(code) & 0x8000)
+			{
+				*key = code;
+				g_capturingHotKey = nullptr;
+				g_hotKeyArmed = false;
+				break;
+			}
 		}
 	}
 
+	/// @brief Labeled hotkey row: draws @p label on the left and a right-aligned HotKeyEx capture button.
 	void HotKey(const char* label, int* key, float width = 50.0f, float pad = 2.0f)
 	{
+		ImGui::PushID(label); // scope the capture button's id so multiple hotkeys never collide
+
 		ImGuiStyle* style = &ImGui::GetStyle();
 
 		ImGui::BeginGroup();
@@ -118,12 +146,22 @@ namespace ImGui
 		ImGui::TextUnformatted(label);
 		ImGui::EndGroup();
 
-		ImGui::SameLine(ImGui::GetWindowSize().x - width - style->WindowPadding.x);
+		// Match the extra right gap ToggleButton uses, so hotkey buttons line up with the toggles.
+		const float extraRightPad = ImGui::GetFontSize();
+		ImGui::SameLine(ImGui::GetWindowSize().x - width - style->WindowPadding.x - extraRightPad);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(pad, pad));
 		HotKeyEx(key, ImVec2(width, ImGui::GetFontSize() + pad * 2));
 		ImGui::PopStyleVar();
+
+		ImGui::PopID();
 	}
 
+	/**
+	 * @brief Animated on/off toggle switch drawn as a sliding pill with a trailing label.
+	 * @param label Widget label (also used for the ImGui id).
+	 * @param v In/out boolean state; flipped when the switch is clicked.
+	 * @return True on the frame the switch was toggled.
+	 */
 	bool ToggleButtonEx(const char* label, bool* v)
 	{
 		using namespace ImGui;
@@ -137,7 +175,7 @@ namespace ImGui
 		const ImGuiID id = window->GetID(label);
 		const ImVec2 label_size = CalcTextSize(label, NULL, true);
 
-		//float height = ImGui::GetFrameHeight( );
+		// float height = ImGui::GetFrameHeight( );
 		float height = ImGui::GetFontSize();
 		const ImVec2 pos = window->DC.CursorPos;
 
@@ -146,7 +184,7 @@ namespace ImGui
 
 		const ImRect total_bb(pos, ImVec2(pos.x + width + (label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f), pos.y + label_size.y /*+ style.FramePadding.y * 2.0f*/));
 
-		ItemSize(total_bb/*, style.FramePadding.y*/);
+		ItemSize(total_bb /*, style.FramePadding.y*/);
 		if (!ItemAdd(total_bb, id))
 			return false;
 
@@ -172,7 +210,9 @@ namespace ImGui
 			t = *v ? (t_anim) : (1.0f - t_anim);
 		}
 
-		ImU32 col_bg = GetColorU32((held && hovered) ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgActive : hovered ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgHovered : *v ? ImGuiCol_SliderGrab : ImGuiCol_FrameBg);
+		ImU32 col_bg = GetColorU32((held && hovered) ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgActive : hovered ? *v ? ImGuiCol_SliderGrabActive : ImGuiCol_FrameBgHovered
+																											 : *v		 ? ImGuiCol_SliderGrab
+																														 : ImGuiCol_FrameBg);
 
 		const ImRect frame_bb(pos, ImVec2(pos.x + width, pos.y + height));
 
@@ -186,14 +226,20 @@ namespace ImGui
 		return pressed;
 	}
 
+	/// @brief Row wrapper around ToggleButtonEx: left-aligned @p label with the switch pushed to the right edge.
+	/// @return True on the frame the switch was toggled.
 	bool ToggleButton(const char* label, bool* v)
 	{
 		ImGuiStyle* style = &ImGui::GetStyle();
 
+		// Gap between the switch's right edge and the window border, on top of WindowPadding, so toggles
+		// don't sit flush against the edge.
+		const float extraRightPad = ImGui::GetFontSize();
+
 		ImGui::TextUnformatted(label);
-		ImGui::SameLine(ImGui::GetWindowSize().x - style->WindowPadding.x - ImGui::GetFontSize() * 2);
+		ImGui::SameLine(ImGui::GetWindowSize().x - style->WindowPadding.x - extraRightPad - ImGui::GetFontSize() * 2);
 		std::string str1 = "##";
 		std::string str2 = label;
 		return ToggleButtonEx((str1 + str2).c_str(), v);
 	}
-}
+} // namespace ImGui

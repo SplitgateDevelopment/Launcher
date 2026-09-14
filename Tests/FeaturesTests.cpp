@@ -1,0 +1,336 @@
+/// @file
+/// @brief Unit tests for the feature framework (Feature base class + Features::Execute).
+
+// Unit tests for the feature framework (Feature base class + Features::Execute).
+//
+// The concrete, game-specific features live behind the UE SDK and cannot be
+// exercised off the game; instead we register fake features against the same
+// Feature interface and drive them through Features::Execute().
+#define NOMINMAX
+
+#include <gtest/gtest.h>
+
+#include <chrono>
+#include <memory>
+#include <stdexcept>
+#include <string>
+
+#include "FeatureRunner.h"
+
+namespace
+{
+
+	/// A Feature stand-in that records how the framework drove it.
+	struct FakeFeature : public Feature
+	{
+		int initCount = 0;
+		int checkCount = 0;
+		int runCount = 0;
+		int destroyCount = 0;
+		bool checkResult = true;
+		bool throwOnRun = false;
+		bool legacyCheck = false; // emulate the old contract where Check() returns Enabled
+
+		explicit FakeFeature(std::string name = "Fake") { Name = name; }
+
+		void Init() override
+		{
+			initCount++;
+			Initialized = true;
+		}
+		void UpdateEnabled() override {}
+		bool Check() override
+		{
+			checkCount++;
+			return legacyCheck ? Enabled : checkResult;
+		}
+		void Destroy() override { destroyCount++; }
+		void Run() override
+		{
+			runCount++;
+			if (throwOnRun) throw std::runtime_error("boom");
+		}
+	};
+
+	/// A feature that overrides the event-only Run(event) overload, to test the runner forwards the
+	/// triggering event and the base delegates the (event, payload) call down to it.
+	struct EventFake : public Feature
+	{
+		int runs = 0;
+		Events::Type lastEvent = Events::Type::Render;
+
+		EventFake() { Name = "EventFake"; }
+		void Init() override { Initialized = true; }
+		void UpdateEnabled() override {}
+		bool Check() override { return true; }
+		void Destroy() override {}
+		void Run(Events::Type event) override
+		{
+			runs++;
+			lastEvent = event;
+		}
+	};
+
+	/// A feature that overrides the full Run(event, payload) overload, to test both are forwarded.
+	struct PayloadFake : public Feature
+	{
+		int runs = 0;
+		Events::Type lastEvent = Events::Type::Render;
+		float lastValue = -1.f;
+		std::string lastName;
+
+		PayloadFake() { Name = "PayloadFake"; }
+		void Init() override { Initialized = true; }
+		void UpdateEnabled() override {}
+		bool Check() override { return true; }
+		void Destroy() override {}
+		void Run(Events::Type event, const Events::Payload& payload) override
+		{
+			runs++;
+			lastEvent = event;
+			lastValue = payload.value;
+			lastName = payload.name ? payload.name : "";
+		}
+	};
+
+	/// Registers a new FakeFeature in the global registry and returns a non-owning pointer to it.
+	FakeFeature* add(std::string name = "Fake")
+	{
+		auto feature = std::make_unique<FakeFeature>(name);
+		FakeFeature* raw = feature.get();
+		Features::Features.push_back(std::move(feature));
+		return raw;
+	}
+
+	/// Fixture that clears the feature registry and event bus around every test.
+	class FeaturesTest : public ::testing::Test
+	{
+	  protected:
+		void SetUp() override
+		{
+			Features::Features.clear();
+			Events::Clear();
+		}
+		void TearDown() override
+		{
+			Features::Features.clear();
+			Events::Clear();
+		}
+	};
+
+	TEST_F(FeaturesTest, InitializesUninitializedFeatures)
+	{
+		FakeFeature* f = add();
+		ASSERT_FALSE(f->Initialized);
+		Features::Execute();
+		EXPECT_EQ(1, f->initCount);
+		EXPECT_TRUE(f->Initialized);
+	}
+
+	TEST_F(FeaturesTest, DoesNotReinitializeInitializedFeatures)
+	{
+		FakeFeature* f = add();
+		Features::Execute();
+		Features::Execute();
+		EXPECT_EQ(1, f->initCount);
+	}
+
+	TEST_F(FeaturesTest, SkipsRunAndDestroyWhenCheckFails)
+	{
+		FakeFeature* f = add();
+		f->checkResult = false;
+		f->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(1, f->checkCount);
+		EXPECT_EQ(0, f->runCount);
+		EXPECT_EQ(0, f->destroyCount);
+	}
+
+	TEST_F(FeaturesTest, RunsWhenEnabledAndCheckPasses)
+	{
+		FakeFeature* f = add();
+		f->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(1, f->runCount);
+		EXPECT_EQ(0, f->destroyCount);
+	}
+
+	TEST_F(FeaturesTest, DoesNotDestroyWhenNeverApplied)
+	{
+		FakeFeature* f = add();
+		f->Enabled = false; // disabled from the start, so nothing was ever applied
+		Features::Execute();
+		Features::Execute();
+		EXPECT_EQ(0, f->runCount);
+		EXPECT_EQ(0, f->destroyCount);
+	}
+
+	TEST_F(FeaturesTest, SkipsValidityCheckForIdleDisabledFeatures)
+	{
+		FakeFeature* f = add();
+		f->Enabled = false; // disabled, nothing applied
+		Features::Execute();
+		Features::Execute();
+		EXPECT_EQ(0, f->checkCount); // Check() (the validity walk) is skipped
+		EXPECT_EQ(1, f->initCount);	 // but it is still initialized once
+	}
+
+	TEST_F(FeaturesTest, DestroysOnceOnDisableTransition)
+	{
+		FakeFeature* f = add();
+
+		f->Enabled = true;
+		Features::Execute(); // applied
+		EXPECT_EQ(1, f->runCount);
+
+		f->Enabled = false;
+		Features::Execute(); // enabled -> disabled edge: revert once
+		Features::Execute(); // still disabled: no repeated Destroy
+		Features::Execute();
+		EXPECT_EQ(1, f->destroyCount);
+	}
+
+	TEST_F(FeaturesTest, OneTimeRunsOncePerEnable)
+	{
+		FakeFeature* f = add();
+		f->OneTime = true;
+		f->Enabled = true;
+		Features::Execute();
+		Features::Execute();
+		Features::Execute();
+		EXPECT_EQ(1, f->runCount);
+	}
+
+	TEST_F(FeaturesTest, OneTimeReArmsAfterDisable)
+	{
+		FakeFeature* f = add();
+		f->OneTime = true;
+
+		f->Enabled = true;
+		Features::Execute(); // run #1
+		f->Enabled = false;
+		Features::Execute(); // disable re-arms
+		f->Enabled = true;
+		Features::Execute(); // run #2
+		EXPECT_EQ(2, f->runCount);
+	}
+
+	// A legacy feature whose Check() returns Enabled keeps its old behavior: when
+	// disabled, Check() returns false, the loop skips it, and Destroy() is never
+	// reached. This guards the migration path for features still on the old contract.
+	TEST_F(FeaturesTest, LegacyCheckReturningEnabledNeverDestroys)
+	{
+		FakeFeature* f = add();
+		f->legacyCheck = true;
+
+		f->Enabled = true;
+		Features::Execute(); // Check() true, Run
+		f->Enabled = false;
+		Features::Execute(); // Check() returns Enabled == false -> skipped
+		Features::Execute();
+		EXPECT_EQ(1, f->runCount);
+		EXPECT_EQ(0, f->destroyCount);
+	}
+
+	TEST_F(FeaturesTest, ProcessesEveryRegisteredFeature)
+	{
+		FakeFeature* a = add("A");
+		FakeFeature* b = add("B");
+		a->Enabled = true;
+		b->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(1, a->runCount);
+		EXPECT_EQ(1, b->runCount);
+	}
+
+	// Execute only guards against a thrown char* (the codebase's error convention);
+	// its logging path also requires the game's Logger, which a standalone test
+	// process can't initialize. So we document the boundary instead: any other
+	// exception type propagates out of Execute. If the catch is ever broadened,
+	// this test is the deliberate place to revisit.
+	TEST_F(FeaturesTest, PropagatesNonCharPointerExceptions)
+	{
+		FakeFeature* f = add();
+		f->Enabled = true;
+		f->throwOnRun = true;
+		EXPECT_THROW(Features::Execute(), std::runtime_error);
+	}
+
+	// Execute() only drives render features; event-driven ones run from the bus.
+	TEST_F(FeaturesTest, ExecuteSkipsEventDrivenFeatures)
+	{
+		FakeFeature* f = add();
+		f->Triggers = {Events::Type::Shutdown};
+		f->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(0, f->runCount);
+	}
+
+	// An event feature runs when its event is dispatched (this is how Features::Init
+	// wires non-render features onto the bus).
+	TEST_F(FeaturesTest, EventFeatureRunsWhenDispatched)
+	{
+		FakeFeature f;
+		f.Triggers = {Events::Type::Shutdown};
+		f.Enabled = true;
+		Events::Register(Events::Type::Shutdown, [&]
+						 { Features::RunFeature(f); });
+
+		Events::Dispatch(Events::Type::Render);
+		EXPECT_EQ(0, f.runCount); // wrong event
+
+		Events::Dispatch(Events::Type::Shutdown);
+		EXPECT_EQ(1, f.runCount); // fires on its event
+	}
+
+	// A feature can list several triggers; Execute() drives it as long as Render is one of them.
+	TEST_F(FeaturesTest, ExecuteRunsWhenRenderIsAmongTriggers)
+	{
+		FakeFeature* f = add();
+		f->Triggers = {Events::Type::Shutdown, Events::Type::Render};
+		f->Enabled = true;
+		Features::Execute();
+		EXPECT_EQ(1, f->runCount);
+	}
+
+	// ThrottleMs caps how often Run() fires: a second immediate tick is skipped, and it runs again
+	// once the interval has elapsed (simulated by back-dating lastRun rather than sleeping).
+	TEST_F(FeaturesTest, ThrottleGatesRepeatedRuns)
+	{
+		FakeFeature* f = add();
+		f->Enabled = true;
+		f->ThrottleMs = 10000;
+
+		Features::Execute(); // first run stamps lastRun
+		Features::Execute(); // within the interval -> throttled
+		EXPECT_EQ(1, f->runCount);
+
+		f->lastRun = std::chrono::steady_clock::now() - std::chrono::milliseconds(20000); // interval elapsed
+		Features::Execute();
+		EXPECT_EQ(2, f->runCount);
+	}
+
+	// The runner forwards the triggering event to a feature that overrides Run(event) (the base
+	// delegates its Run(event, payload) down to it).
+	TEST_F(FeaturesTest, ForwardsEventToRunOverload)
+	{
+		EventFake f;
+		f.Enabled = true;
+		Features::RunFeature(f, Events::Type::PlayerDeath);
+		EXPECT_EQ(1, f.runs);
+		EXPECT_EQ(Events::Type::PlayerDeath, f.lastEvent);
+	}
+
+	// The runner forwards both the event and the payload to a feature that overrides the full overload.
+	TEST_F(FeaturesTest, ForwardsEventAndPayloadToRunOverload)
+	{
+		PayloadFake f;
+		f.Enabled = true;
+		Features::RunFeature(f, Events::Type::HotKeyPressed, Events::Payload{.value = 3.f, .name = "hello"});
+		EXPECT_EQ(1, f.runs);
+		EXPECT_EQ(Events::Type::HotKeyPressed, f.lastEvent);
+		EXPECT_EQ(3.f, f.lastValue);
+		EXPECT_EQ("hello", f.lastName);
+	}
+
+} // namespace

@@ -2,16 +2,6 @@ name: MSBuild
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "master" ]
-    paths:
-      - 'Internal/**'
-      - 'Launcher/**'
-  pull_request:
-    branches: [ "master" ]
-    paths:
-      - 'Internal/**'
-      - 'Launcher/**'
 
 env:
   SOLUTION_FILE_PATH: .
@@ -24,16 +14,16 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: recursive
-    - uses: actions/setup-python@v5
-      id: cp310
+    - uses: actions/setup-python@v7
+      id: cpy
       with:
-        python-version: '3.10'
+        python-version: '3.14'
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
 
     - name: Install vcpkg
       run: |
@@ -53,10 +43,14 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
+      env:
+        # setup-python installs into the tool cache, not C:\Python3XY, so point
+        # python.props straight at that root via the override env var.
+        SPLITGATE_PYTHON_DIR: ${{ env.pythonLocation }}
       run: Tools/build.bat
 
     - name: Upload Release Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Release
         path: ${{env.SOLUTION_FILE_PATH}}/x64/Release

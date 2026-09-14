@@ -18,11 +18,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(ProjectDir)python.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -33,7 +34,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\external\pybind11\include;C:\Python310\include;C:\Python313\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\external\pybind11\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)external\discord-rpc\lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
@@ -62,20 +63,59 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Python310\libs;C:\Python313\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="hook\Feature.h" />
-    <ClInclude Include="hook\features\DrawActors.h" />
-    <ClInclude Include="hook\features\GodMode.h" />
-    <ClInclude Include="hook\features\InfiniteJetpack.h" />
-    <ClInclude Include="hook\features\LoadIntoMap.h" />
-    <ClInclude Include="hook\features\NoRecoil.h" />
-    <ClInclude Include="hook\features\PlayerModifications.h" />
-    <ClInclude Include="hook\features\SpinBot.h" />
-    <ClInclude Include="hook\features\UserScripts.h" />
-    <ClInclude Include="hook\features\WeaponModifications.h" />
+    <ClInclude Include="cache\ActorCache.h" />
+    <ClInclude Include="cache\ClassCache.h" />
+    <ClInclude Include="cache\FontCache.h" />
+    <ClInclude Include="cache\NameCache.h" />
+    <ClInclude Include="render\Vec2.h" />
+    <ClInclude Include="render\Color.h" />
+    <ClInclude Include="render\Colors.h" />
+    <ClInclude Include="render\Renderer.h" />
+    <ClInclude Include="render\CanvasRenderer.h" />
+    <ClInclude Include="render\ImGuiRenderer.h" />
+    <ClInclude Include="render\NullRenderer.h" />
+    <ClInclude Include="render\Render.h" />
+    <ClInclude Include="render\Adapters.h" />
+    <ClInclude Include="render\adapters\Ue.h" />
+    <ClInclude Include="render\adapters\ImGui.h" />
+    <ClInclude Include="render\adapters\Settings.h" />
+    <ClInclude Include="features\Feature.h" />
+    <ClInclude Include="network\Network.h" />
+    <ClInclude Include="network\Redirect.h" />
+    <ClInclude Include="network\HttpLogger.h" />
+    <ClInclude Include="network\WinHttpHook.h" />
+    <ClInclude Include="network\CurlHook.h" />
+    <ClInclude Include="features\Esp.h" />
+    <ClInclude Include="features\GodMode.h" />
+    <ClInclude Include="features\InfiniteJetpack.h" />
+    <ClInclude Include="features\NoRecoil.h" />
+    <ClInclude Include="features\PlayerModifications.h" />
+    <ClInclude Include="features\SpinBot.h" />
+    <ClInclude Include="features\UserScripts.h" />
+    <ClInclude Include="features\WeaponModifications.h" />
+    <ClInclude Include="features\Camera.h" />
+    <ClInclude Include="features\Radar.h" />
+    <ClInclude Include="features\DebugNames.h" />
+    <ClInclude Include="features\Watermark.h" />
+    <ClInclude Include="features\Aimbot.h" />
+    <ClInclude Include="features\Triggerbot.h" />
+    <ClInclude Include="features\AimFov.h" />
+    <ClInclude Include="features\AnnounceToggles.h" />
+    <ClInclude Include="features\Crosshair.h" />
+    <ClInclude Include="features\BulletTraces.h" />
+    <ClInclude Include="features\Glow.h" />
+    <ClInclude Include="features\Phasing.h" />
+    <ClInclude Include="features\BulletTp.h" />
+    <ClInclude Include="features\BulletSpeed.h" />
+    <ClInclude Include="features\AimAssist.h" />
+    <ClInclude Include="features\SuperJump.h" />
+    <ClInclude Include="features\Teleport.h" />
+    <ClInclude Include="features\DiscordPresence.h" />
+    <ClInclude Include="menu\sections\Aim.h" />
     <ClInclude Include="menu\gui\Config.h" />
     <ClInclude Include="menu\gui\Custom.h" />
     <ClInclude Include="menu\gui\Gui.h" />
@@ -84,31 +124,201 @@
     <ClInclude Include="menu\sections\Debug.h" />
     <ClInclude Include="menu\sections\Exploits.h" />
     <ClInclude Include="menu\sections\Misc.h" />
-    <ClInclude Include="menu\sections\Settings.h" />
-    <ClInclude Include="menu\sections\Watermark.h" />
+    <ClInclude Include="menu\sections\Scripts.h" />
+    <ClInclude Include="menu\sections\Sdk.h" />
+    <ClInclude Include="menu\sections\Discord.h" />
+    <ClInclude Include="menu\sections\Network.h" />
+    <ClInclude Include="menu\sections\Config.h" />
+    <ClInclude Include="settings\Profiles.h" />
+    <ClInclude Include="utils\Base64.h" />
     <ClInclude Include="scripting\modules\Logger.h" />
     <ClInclude Include="scripting\modules\Settings.h" />
+    <ClInclude Include="scripting\modules\Actors.h" />
+    <ClInclude Include="scripting\modules\Player.h" />
+    <ClInclude Include="scripting\modules\Engine.h" />
+    <ClInclude Include="scripting\modules\Render.h" />
+    <ClInclude Include="scripting\modules\Input.h" />
+    <ClInclude Include="scripting\modules\Game.h" />
     <ClInclude Include="scripting\Scripts.h" />
     <ClInclude Include="ue\Engine.h" />
+    <ClInclude Include="ue\sdk.h" />
+    <ClInclude Include="ue\custom.h" />
+    <ClInclude Include="ue\sdk\AActor.h" />
+    <ClInclude Include="ue\sdk\ABaseGun.h" />
+    <ClInclude Include="ue\sdk\ACharacter.h" />
+    <ClInclude Include="ue\sdk\ACharacterSkin.h" />
+    <ClInclude Include="ue\sdk\AController.h" />
+    <ClInclude Include="ue\sdk\ACullableActor.h" />
+    <ClInclude Include="ue\sdk\AGun.h" />
+    <ClInclude Include="ue\sdk\AHUD.h" />
+    <ClInclude Include="ue\sdk\AInfo.h" />
+    <ClInclude Include="ue\sdk\APawn.h" />
+    <ClInclude Include="ue\sdk\APlayerCameraManager.h" />
+    <ClInclude Include="ue\sdk\APlayerController.h" />
+    <ClInclude Include="ue\sdk\APlayerState.h" />
+    <ClInclude Include="ue\sdk\APortalWarsBasePlayerController.h" />
+    <ClInclude Include="ue\sdk\APortalWarsCharacter.h" />
+    <ClInclude Include="ue\sdk\APortalWarsPlayerController.h" />
+    <ClInclude Include="ue\sdk\APortalWarsPlayerState.h" />
+    <ClInclude Include="ue\sdk\Enums.h" />
+    <ClInclude Include="ue\sdk\FAutoAimData.h" />
+    <ClInclude Include="ue\sdk\FCameraCacheEntry.h" />
+    <ClInclude Include="ue\sdk\FColor.h" />
+    <ClInclude Include="ue\sdk\FDirectoryPath.h" />
+    <ClInclude Include="ue\sdk\FEquippedCustomizations.h" />
+    <ClInclude Include="ue\sdk\FErrorData.h" />
+    <ClInclude Include="ue\sdk\FErrorInfo.h" />
+    <ClInclude Include="ue\sdk\FFloatRange.h" />
+    <ClInclude Include="ue\sdk\FFloatRangeBound.h" />
+    <ClInclude Include="ue\sdk\FFrameRate.h" />
+    <ClInclude Include="ue\sdk\FFuzzyConfig.h" />
+    <ClInclude Include="ue\sdk\FGameplayTag.h" />
+    <ClInclude Include="ue\sdk\FHitResult.h" />
+    <ClInclude Include="ue\sdk\FKey.h" />
+    <ClInclude Include="ue\sdk\FLinearColor.h" />
+    <ClInclude Include="ue\sdk\FMatrix.h" />
+    <ClInclude Include="ue\sdk\FMinimalViewInfo.h" />
+    <ClInclude Include="ue\sdk\FMulticastInlineDelegate.h" />
+    <ClInclude Include="ue\sdk\FName.h" />
+    <ClInclude Include="ue\sdk\FNameEntry.h" />
+    <ClInclude Include="ue\sdk\FNameEntryHandle.h" />
+    <ClInclude Include="ue\sdk\FNamePool.h" />
+    <ClInclude Include="ue\sdk\FPlayerStatsInfo.h" />
+    <ClInclude Include="ue\sdk\FPlayerStatsInfo_InDepth.h" />
+    <ClInclude Include="ue\sdk\FQuat.h" />
+    <ClInclude Include="ue\sdk\FRecoilData.h" />
+    <ClInclude Include="ue\sdk\FRotator.h" />
+    <ClInclude Include="ue\sdk\FShotInfo.h" />
+    <ClInclude Include="ue\sdk\FSoftClassPath.h" />
+    <ClInclude Include="ue\sdk\FSoftObjectPath.h" />
+    <ClInclude Include="ue\sdk\FString.h" />
+    <ClInclude Include="ue\sdk\FTViewTarget.h" />
+    <ClInclude Include="ue\sdk\FText.h" />
+    <ClInclude Include="ue\sdk\FTextChatData.h" />
+    <ClInclude Include="ue\sdk\FTextData.h" />
+    <ClInclude Include="ue\sdk\FTransform.h" />
+    <ClInclude Include="ue\sdk\FUniqueNetIdRepl.h" />
+    <ClInclude Include="ue\sdk\FUniqueNetIdWrapper.h" />
+    <ClInclude Include="ue\sdk\FUserRankInfo.h" />
+    <ClInclude Include="ue\sdk\FVector.h" />
+    <ClInclude Include="ue\sdk\FVector2D.h" />
+    <ClInclude Include="ue\sdk\FWeaponData.h" />
+    <ClInclude Include="ue\sdk\Fwd.h" />
+    <ClInclude Include="ue\sdk\TArray.h" />
+    <ClInclude Include="ue\sdk\TUObjectArray.h" />
+    <ClInclude Include="ue\sdk\UActorComponent.h" />
+    <ClInclude Include="ue\sdk\UBlueprintFunctionLibrary.h" />
+    <ClInclude Include="ue\sdk\UCanvas.h" />
+    <ClInclude Include="ue\sdk\UClass.h" />
+    <ClInclude Include="ue\sdk\UConsole.h" />
+    <ClInclude Include="ue\sdk\UEngine.h" />
+    <ClInclude Include="ue\sdk\UField.h" />
+    <ClInclude Include="ue\sdk\UFont.h" />
+    <ClInclude Include="ue\sdk\UFunction.h" />
+    <ClInclude Include="ue\sdk\UGameInstance.h" />
+    <ClInclude Include="ue\sdk\UGameViewportClient.h" />
+    <ClInclude Include="ue\sdk\UGameplayStatics.h" />
+    <ClInclude Include="ue\sdk\UInputSettings.h" />
+    <ClInclude Include="ue\sdk\UKismetStringLibrary.h" />
+    <ClInclude Include="ue\sdk\UKismetTextLibrary.h" />
+    <ClInclude Include="ue\sdk\ULevel.h" />
+    <ClInclude Include="ue\sdk\ULocalPlayer.h" />
+    <ClInclude Include="ue\sdk\UMeshComponent.h" />
+    <ClInclude Include="ue\sdk\UNetConnection.h" />
+    <ClInclude Include="ue\sdk\UNetDriver.h" />
+    <ClInclude Include="ue\sdk\UObject.h" />
+    <ClInclude Include="ue\sdk\UPlayer.h" />
+    <ClInclude Include="ue\sdk\UPortalWarsGameInstance.h" />
+    <ClInclude Include="ue\sdk\UPortalWarsLocalPlayer.h" />
+    <ClInclude Include="ue\sdk\UPortalWarsNotificationManager.h" />
+    <ClInclude Include="ue\sdk\UPortalWarsSaveGame.h" />
+    <ClInclude Include="ue\sdk\UPrimitiveComponent.h" />
+    <ClInclude Include="ue\sdk\USaveGame.h" />
+    <ClInclude Include="ue\sdk\USceneComponent.h" />
+    <ClInclude Include="ue\sdk\UScriptViewportClient.h" />
+    <ClInclude Include="ue\sdk\USkeletalMeshComponent.h" />
+    <ClInclude Include="ue\sdk\USkinnedMeshComponent.h" />
+    <ClInclude Include="ue\sdk\UStaticMeshComponent.h" />
+    <ClInclude Include="ue\sdk\UStruct.h" />
+    <ClInclude Include="ue\sdk\UWorld.h" />
+    <ClInclude Include="ue\sdk\Values.h" />
     <ClInclude Include="hook\Hook.h" />
-    <ClInclude Include="hook\Features.h" />
+    <ClInclude Include="hook\GuardHook.h" />
+    <ClInclude Include="features\Features.h" />
+    <ClInclude Include="features\FeatureRunner.h" />
     <ClInclude Include="discord\handlers.h" />
     <ClInclude Include="discord\rpc.h" />
     <ClInclude Include="hook\functions\PostRender.h" />
     <ClInclude Include="hook\functions\ProcessEvent.h" />
     <ClInclude Include="settings\Settings.h" />
-    <ClInclude Include="utils\Globals.h" />
+    <ClInclude Include="utils\Input.h" />
     <ClInclude Include="utils\Logger.h" />
-    <ClInclude Include="ue\UObjects.h" />
+    <ClInclude Include="..\shared\Ipc.h" />
+    <ClInclude Include="..\shared\Logger.h" />
+    <ClInclude Include="..\shared\ExceptionHandler.h" />
+    <ClInclude Include="..\shared\Settings.h" />
+    <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="..\shared\Version.h" />
     <ClInclude Include="utils\ExceptionHandler.h" />
-    <ClInclude Include="utils\Util.h" />
+    <ClInclude Include="native\ActorLocation.h" />
+    <ClInclude Include="native\Visibility.h" />
+    <ClInclude Include="native\WorldToScreen.h" />
+    <ClInclude Include="memory\Memory.h" />
+    <ClInclude Include="utils\Rgb.h" />
     <ClInclude Include="menu\Menu.h" />
+    <ClInclude Include="menu\canvas\Colors.h" />
+    <ClInclude Include="menu\canvas\UCanvasGUI.h" />
+    <ClInclude Include="menu\canvas\components\Core.h" />
+    <ClInclude Include="menu\canvas\components\Window.h" />
+    <ClInclude Include="menu\canvas\components\Text.h" />
+    <ClInclude Include="menu\canvas\components\Tab.h" />
+    <ClInclude Include="menu\canvas\components\Button.h" />
+    <ClInclude Include="menu\canvas\components\Checkbox.h" />
+    <ClInclude Include="menu\canvas\components\Slider.h" />
+    <ClInclude Include="menu\canvas\components\Combobox.h" />
+    <ClInclude Include="menu\canvas\components\Hotkey.h" />
+    <ClInclude Include="menu\canvas\components\ColorPicker.h" />
+    <ClInclude Include="menu\canvas\components\TextField.h" />
+    <ClInclude Include="menu\canvas\components\Selectable.h" />
+    <ClInclude Include="menu\canvas\components\CollapsingHeader.h" />
+    <ClInclude Include="menu\canvas\components\Combo.h" />
+    <ClInclude Include="menu\canvas\components\Child.h" />
+    <ClInclude Include="menu\ui\UI.h" />
+    <ClInclude Include="menu\backend\Backend.h" />
+    <ClInclude Include="menu\backend\ImGuiBackend.h" />
+    <ClInclude Include="menu\backend\CanvasBackend.h" />
+    <ClInclude Include="menu\backend\Backends.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ue\Engine.cpp" />
+    <ClCompile Include="ue\custom.cpp" />
+    <ClCompile Include="ue\sdk\AActor.cpp" />
+    <ClCompile Include="ue\sdk\ABaseGun.cpp" />
+    <ClCompile Include="ue\sdk\ACharacter.cpp" />
+    <ClCompile Include="ue\sdk\AController.cpp" />
+    <ClCompile Include="ue\sdk\APlayerCameraManager.cpp" />
+    <ClCompile Include="ue\sdk\APlayerController.cpp" />
+    <ClCompile Include="ue\sdk\APortalWarsCharacter.cpp" />
+    <ClCompile Include="ue\sdk\APortalWarsPlayerController.cpp" />
+    <ClCompile Include="ue\sdk\UCanvas.cpp" />
+    <ClCompile Include="ue\sdk\UGameplayStatics.cpp" />
+    <ClCompile Include="ue\sdk\UKismetStringLibrary.cpp" />
+    <ClCompile Include="ue\sdk\UKismetTextLibrary.cpp" />
+    <ClCompile Include="ue\sdk\UPortalWarsNotificationManager.cpp" />
+    <ClCompile Include="ue\sdk\UPrimitiveComponent.cpp" />
+    <ClCompile Include="ue\sdk\USceneComponent.cpp" />
+    <ClCompile Include="ue\sdk\USkinnedMeshComponent.cpp" />
     <ClCompile Include="settings\Settings.cpp" />
-    <ClCompile Include="utils\Util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Shared VERSIONINFO/StringFileInfo; SPLITGATE_DLL selects the DLL variant. -->
+    <ResourceCompile Include="..\shared\manifest.rc">
+      <PreprocessorDefinitions>SPLITGATE_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="python.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,73 +1,18 @@
 #pragma once
 
-#include <iostream>
-#include <format>
-#include <Windows.h>
-#include <strsafe.h>
+/// @file
+/// @brief Launcher-specific Logger: binds Shared::Logger to the existing console and launcher.log.
 
-struct logDTO {
-	std::string text;
-};
+#include "../../shared/Logger.h"
+#include "../../shared/Settings.h"			  // Shared::AppDataPath
+#include "../../Internal/settings/Settings.h" // SettingsHelper::AppFolder
 
-class Logger {
-public:
-	void error(std::string message) {
-		return _log({
-			"ERROR",
-		}, message);
-	};
-
-	void success(std::string message) {
-		return _log({
-			"SUCCESS",
-			}, message);
-	};
-
-	void info(std::string message) {
-		return _log({
-			"INFO",
-			}, message);
-	};
-
-	//https://learn.microsoft.com/en-us/windows/win32/debug/retrieving-the-last-error-code
-	void errorBox(LPCTSTR lpszFunction) {
-		LPVOID lpMsgBuf;
-		LPVOID lpDisplayBuf;
-		DWORD dw = GetLastError();
-
-		FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM |
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			dw,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&lpMsgBuf,
-			0, NULL);
-
-		// Display the error message and exit the process
-
-		lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
-			(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
-		StringCchPrintf((LPTSTR)lpDisplayBuf,
-			LocalSize(lpDisplayBuf) / sizeof(TCHAR),
-			TEXT("%s failed with error %d: %s"),
-			lpszFunction, dw, lpMsgBuf);
-		MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-		LocalFree(lpMsgBuf);
-		LocalFree(lpDisplayBuf);
-	}
-
-	int stop(int code) {
-		info("Press any key to exit...");
-		std::cin.get();
-		return code;
-	};
-
-private:
-	void _log(logDTO logDTO, std::string message) {
-
-		std::cout << format("[{}] ", logDTO.text) << message << std::endl;
-	};
+// The launcher runs in its own console window, so it just binds Shared::Logger to that existing
+// console and mirrors output to launcher.log. That log now lives alongside the DLL's internal.log
+// under Documents\<AppFolder>\logs\ (rather than next to the exe), so both logs are in one place.
+/// Thin Shared::Logger subclass that attaches to the launcher's console and mirrors to launcher.log.
+class Logger : public Shared::Logger
+{
+  public:
+	Logger() { attachConsole(Shared::AppDataPath(SettingsHelper::AppFolder, "logs/launcher.log").string()); }
 };

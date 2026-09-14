@@ -4,6 +4,9 @@
     <Filter Include="ue">
       <UniqueIdentifier>{cba0e87a-7725-4fbc-852a-e49c67c0cf54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ue\sdk">
+      <UniqueIdentifier>{7d3e5a10-4c2b-4f8e-9a1d-2b6c9f0e1a77}</UniqueIdentifier>
+    </Filter>
     <Filter Include="settings">
       <UniqueIdentifier>{ade22a2e-c9d7-474f-85b4-d6ae11a5a684}</UniqueIdentifier>
     </Filter>
@@ -18,6 +21,12 @@
     </Filter>
     <Filter Include="hook\functions">
       <UniqueIdentifier>{8f847682-7656-4f88-946c-1f9d0c174975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features">
+      <UniqueIdentifier>{2c9f4b1a-3d7e-4a2b-9f10-6b5c8d0e1f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{7a1e6c2d-9b48-4f31-8e05-2c7d3a9b1e64}</UniqueIdentifier>
     </Filter>
     <Filter Include="discord">
       <UniqueIdentifier>{f288a2eb-1b81-401e-a5b6-140931ba6bfb}</UniqueIdentifier>
@@ -48,16 +57,328 @@
     <ClInclude Include="ue\Engine.h">
       <Filter>ue</Filter>
     </ClInclude>
-    <ClInclude Include="ue\UObjects.h">
+    <ClInclude Include="ue\sdk.h">
       <Filter>ue</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\custom.h">
+      <Filter>ue</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\AActor.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ABaseGun.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ACharacter.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ACharacterSkin.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\AController.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ACullableActor.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\AGun.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\AHUD.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\AInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APawn.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APlayerCameraManager.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APlayerController.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APlayerState.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APortalWarsBasePlayerController.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APortalWarsCharacter.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APortalWarsPlayerController.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\APortalWarsPlayerState.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\Enums.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FAutoAimData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FCameraCacheEntry.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FColor.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FDirectoryPath.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FEquippedCustomizations.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FErrorData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FErrorInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FFloatRange.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FFloatRangeBound.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FFrameRate.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FFuzzyConfig.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FGameplayTag.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FHitResult.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FKey.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FLinearColor.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FMatrix.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FMinimalViewInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FMulticastInlineDelegate.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FName.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FNameEntry.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FNameEntryHandle.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FNamePool.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FPlayerStatsInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FPlayerStatsInfo_InDepth.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FQuat.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FRecoilData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FRotator.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FShotInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FSoftClassPath.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FSoftObjectPath.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FString.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FTViewTarget.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FText.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FTextChatData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FTextData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FTransform.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FUniqueNetIdRepl.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FUniqueNetIdWrapper.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FUserRankInfo.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FVector.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FVector2D.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\FWeaponData.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\Fwd.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\TArray.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\TUObjectArray.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UActorComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UBlueprintFunctionLibrary.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UCanvas.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UClass.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UConsole.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UEngine.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UField.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UFont.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UFunction.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UGameInstance.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UGameViewportClient.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UGameplayStatics.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UInputSettings.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UKismetStringLibrary.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UKismetTextLibrary.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ULevel.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\ULocalPlayer.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UMeshComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UNetConnection.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UNetDriver.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UObject.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPlayer.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPortalWarsGameInstance.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPortalWarsLocalPlayer.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPortalWarsNotificationManager.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPortalWarsSaveGame.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UPrimitiveComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\USaveGame.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\USceneComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UScriptViewportClient.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\USkeletalMeshComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\USkinnedMeshComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UStaticMeshComponent.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UStruct.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\UWorld.h">
+      <Filter>ue\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ue\sdk\Values.h">
+      <Filter>ue\sdk</Filter>
     </ClInclude>
     <ClInclude Include="settings\Settings.h">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="utils\Util.h">
+    <ClInclude Include="utils\Rgb.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="utils\Logger.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Ipc.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Logger.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ExceptionHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Settings.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="menu\Menu.h">
@@ -69,8 +390,8 @@
     <ClInclude Include="hook\Hook.h">
       <Filter>hook</Filter>
     </ClInclude>
-    <ClInclude Include="hook\Features.h">
-      <Filter>hook</Filter>
+    <ClInclude Include="features\Features.h">
+      <Filter>features</Filter>
     </ClInclude>
     <ClInclude Include="hook\functions\ProcessEvent.h">
       <Filter>hook\functions</Filter>
@@ -93,17 +414,14 @@
     <ClInclude Include="menu\sections\Exploits.h">
       <Filter>menu\sections</Filter>
     </ClInclude>
-    <ClInclude Include="menu\sections\Watermark.h">
-      <Filter>menu\sections</Filter>
+    <ClInclude Include="features\Watermark.h">
+      <Filter>features</Filter>
     </ClInclude>
     <ClInclude Include="scripting\modules\Logger.h">
       <Filter>scripting\modules</Filter>
     </ClInclude>
     <ClInclude Include="scripting\modules\Settings.h">
       <Filter>scripting\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\Globals.h">
-      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="menu\sections\Debug.h">
       <Filter>menu\sections</Filter>
@@ -126,27 +444,130 @@
     <ClInclude Include="menu\gui\Custom.h">
       <Filter>menu\gui</Filter>
     </ClInclude>
-    <ClInclude Include="hook\features\GodMode.h" />
-    <ClInclude Include="hook\Feature.h" />
-    <ClInclude Include="hook\features\NoRecoil.h" />
-    <ClInclude Include="hook\features\LoadIntoMap.h" />
-    <ClInclude Include="hook\features\PlayerModifications.h" />
-    <ClInclude Include="hook\features\InfiniteJetpack.h" />
-    <ClInclude Include="hook\features\UserScripts.h" />
-    <ClInclude Include="hook\features\DrawActors.h" />
-    <ClInclude Include="hook\features\SpinBot.h" />
-    <ClInclude Include="hook\features\WeaponModifications.h" />
+    <ClInclude Include="features\Feature.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="network\Network.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\Redirect.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\HttpLogger.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\WinHttpHook.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\CurlHook.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="menu\sections\Network.h">
+      <Filter>menu\sections</Filter>
+    </ClInclude>
+    <ClInclude Include="features\FeatureRunner.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\GodMode.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\NoRecoil.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\PlayerModifications.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\InfiniteJetpack.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\UserScripts.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\Esp.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\SpinBot.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\WeaponModifications.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\ThirdPerson.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\FreeCam.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="features\Radar.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="..\shared\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ue\Engine.cpp">
       <Filter>ue</Filter>
     </ClCompile>
+    <ClCompile Include="ue\custom.cpp">
+      <Filter>ue</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\AActor.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\ABaseGun.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\ACharacter.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\AController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APlayerCameraManager.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APlayerController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APortalWarsCharacter.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\APortalWarsPlayerController.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UCanvas.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UGameplayStatics.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UKismetStringLibrary.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UKismetTextLibrary.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UPortalWarsNotificationManager.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\UPrimitiveComponent.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\USceneComponent.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ue\sdk\USkinnedMeshComponent.cpp">
+      <Filter>ue\sdk</Filter>
+    </ClCompile>
     <ClCompile Include="settings\Settings.cpp">
       <Filter>settings</Filter>
     </ClCompile>
-    <ClCompile Include="utils\Util.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\shared\manifest.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="python.props" />
   </ItemGroup>
 </Project>

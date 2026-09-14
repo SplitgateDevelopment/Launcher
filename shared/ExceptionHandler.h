@@ -1,0 +1,234 @@
+#pragma once
+
+/// @file
+/// @brief Reusable last-chance crash handler: symbolized stack-trace reports plus a recovery hook.
+
+#include <Windows.h>
+#include <DbgHelp.h>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <format>
+#include <functional>
+#include <string>
+#include <chrono>
+#include <ctime>
+
+#include "Utilities.h"
+
+#pragma comment(lib, "DbgHelp.lib")
+
+// Reusable last-chance crash handler shared by the launcher and the DLL. It installs a
+// SetUnhandledExceptionFilter that writes a symbolized stack trace to a per-crash folder.
+// Everything project-specific is injected through Config callbacks: `log` receives progress
+// lines, and `onCrash` runs an app-specific recovery action (the DLL deletes its settings;
+// the launcher passes nothing). x64 only.
+/// Reusable SetUnhandledExceptionFilter-based crash handler shared by the launcher and DLL.
+namespace Shared::ExceptionHandler
+{
+	namespace fs = std::filesystem;
+
+	/// What the exception filter returns to the OS after writing the report.
+	enum class ExitMode
+	{
+		Silent = EXCEPTION_EXECUTE_HANDLER, // swallow the exception and continue
+		Crash = EXCEPTION_CONTINUE_SEARCH,	// let the crash propagate
+	};
+
+	using LogFn = std::function<void(const std::string& level, const std::string& message)>; ///< Progress-line sink.
+	using CrashFn = std::function<void()>;													 ///< App-specific recovery action.
+
+	/// Injected, project-specific configuration for the otherwise generic handler.
+	struct Config
+	{
+		fs::path crashDir;					  // reports go under crashDir / <timestamp> /
+		ExitMode exitMode = ExitMode::Silent; ///< Filter return code after a crash.
+		LogFn log;							  // optional progress sink
+		CrashFn onCrash;					  // optional recovery action, run after the report
+		/// What goes into Crash.dmp. Default is a small stacks-only dump; widen it (e.g.
+		/// MiniDumpWithDataSegs | MiniDumpWithIndirectlyReferencedMemory) for locals/heap at the
+		/// cost of size.
+		MINIDUMP_TYPE dumpType = MiniDumpNormal;
+	};
+
+	/// Local time formatted for a folder name, e.g. 2026-09-03-16-42-05.
+	inline std::string CrashTimestamp()
+	{
+		const std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		tm local;
+		localtime_s(&local, &now);
+
+		std::ostringstream ss;
+		ss << std::put_time(&local, "%Y-%m-%d-%H-%M-%S");
+		return ss.str();
+	}
+
+	/// Walks the stack for `context` and writes one line per frame to `out`
+	/// (module!symbol [file:line], or a raw offset when symbols are unavailable).
+	inline void WriteStackTrace(CONTEXT* context, std::ostream& out)
+	{
+		if (!context) return;
+
+		HANDLE process = GetCurrentProcess();
+		SymInitialize(process, NULL, TRUE);
+
+		STACKFRAME64 frame{};
+#ifdef _M_X64
+		const DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
+		frame.AddrPC.Offset = context->Rip;
+		frame.AddrPC.Mode = AddrModeFlat;
+		frame.AddrFrame.Offset = context->Rsp;
+		frame.AddrFrame.Mode = AddrModeFlat;
+		frame.AddrStack.Offset = context->Rsp;
+		frame.AddrStack.Mode = AddrModeFlat;
+#else
+#error "Platform not supported (x64 only)!"
+#endif
+
+		while (StackWalk64(machineType, process, GetCurrentThread(), &frame, context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+		{
+			const DWORD64 moduleBase = SymGetModuleBase64(process, frame.AddrPC.Offset);
+			char moduleName[MAX_PATH];
+			if (GetModuleFileNameA((HMODULE)moduleBase, moduleName, MAX_PATH) == 0)
+			{
+				out << "  " << std::hex << frame.AddrPC.Offset << std::endl;
+				continue;
+			}
+
+			const std::string moduleFileName = fs::path(moduleName).filename().string();
+
+			char symbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
+			PSYMBOL_INFO symbol = (PSYMBOL_INFO)symbolBuffer;
+			symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+			symbol->MaxNameLen = MAX_SYM_NAME;
+
+			DWORD64 displacement = 0;
+			if (!SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol))
+			{
+				out << "  " << moduleFileName << " + " << frame.AddrPC.Offset - moduleBase << std::endl;
+				continue;
+			}
+
+			out << "  " << moduleFileName << "!" << symbol->Name;
+
+			IMAGEHLP_LINE64 line;
+			line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+			DWORD lineDisplacement;
+			if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &lineDisplacement, &line))
+				out << "    [" << line.FileName << ":" << line.LineNumber << "]";
+
+			out << std::endl;
+		}
+
+		SymCleanup(process);
+	}
+
+	/// Writes a Crash.dmp minidump into @p folder for post-mortem debugging (open in Visual Studio
+	/// or WinDbg). Best-effort: failures are logged, never thrown. @p exceptionInfo may be null (a
+	/// dump is still written, just without the faulting exception's context).
+	inline void WriteMinidump(const Config& config, const fs::path& folder, EXCEPTION_POINTERS* exceptionInfo,
+							  const std::function<void(const std::string&, const std::string&)>& log)
+	{
+		const fs::path dumpPath = folder / "Crash.dmp";
+
+		HANDLE dumpFile = CreateFileW(dumpPath.wstring().c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (dumpFile == INVALID_HANDLE_VALUE)
+		{
+			log("ERROR", "Failed to create crash dump file");
+			return;
+		}
+
+		MINIDUMP_EXCEPTION_INFORMATION info{};
+		info.ThreadId = GetCurrentThreadId();
+		info.ExceptionPointers = exceptionInfo;
+		info.ClientPointers = FALSE;
+
+		const BOOL wrote = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), dumpFile,
+											 config.dumpType, exceptionInfo ? &info : nullptr, nullptr, nullptr);
+		CloseHandle(dumpFile);
+
+		log(wrote ? "INFO" : "ERROR", wrote ? std::format("Crash dump: {}", dumpPath.string()) : "Failed to write crash dump");
+	}
+
+	/**
+	 * @brief Writes a crash report and runs the recovery hook — the testable core of the handler.
+	 *
+	 * Writes to `config.crashDir/<timestamp>/StackTrace.log`, then runs `config.onCrash`
+	 * (which runs even if the report could not be written). Pure enough to call directly
+	 * (e.g. from a test with an RtlCaptureContext context).
+	 * @param config         Destination folder, exit mode, dump type, and optional log/recovery callbacks.
+	 * @param exceptionCode  The Win32 exception code, recorded in the report.
+	 * @param context        Thread context to unwind; may be null (then no stack is walked).
+	 * @param exceptionInfo  Full exception pointers for the minidump; null (e.g. from a test) still
+	 *                       writes a dump, just without exception context.
+	 * @return The exception-filter code corresponding to `config.exitMode`.
+	 */
+	inline LONG WriteCrashLog(const Config& config, DWORD exceptionCode, CONTEXT* context, EXCEPTION_POINTERS* exceptionInfo = nullptr)
+	{
+		const auto logLine = [&](const std::string& level, const std::string& message)
+		{
+			if (config.log) config.log(level, message);
+		};
+
+		logLine("ERROR", "Exception thrown");
+		logLine("ERROR", std::format("Exception Code: 0x{:x}", exceptionCode));
+
+		const fs::path folder = config.crashDir / CrashTimestamp();
+		std::error_code ec;
+		fs::create_directories(folder, ec);
+
+		const fs::path file = folder / "StackTrace.log";
+		logLine("ERROR", std::format("Crash stack trace located at: {}", file.string()));
+
+		// Build the report once so it can go to both the log file and the clipboard.
+		std::ostringstream report;
+		report << std::format("Exception: (0x{:x})\n", exceptionCode);
+		report << "== Stack Trace ==\n";
+		WriteStackTrace(context, report);
+		const std::string reportText = report.str();
+
+		std::ofstream out(file, std::ios::out);
+		if (out.is_open())
+		{
+			out << reportText;
+			out.close();
+		}
+		else
+		{
+			logLine("ERROR", "Failed to open crash log file for writing");
+		}
+
+		// Also copy the stack to the clipboard so it can be pasted straight into a bug report.
+		if (Shared::Utilities::CopyToClipboard(reportText))
+			logLine("INFO", "Crash stack copied to clipboard");
+
+		WriteMinidump(config, folder, exceptionInfo, logLine);
+
+		// Recovery runs regardless of whether the report could be written.
+		if (config.onCrash) config.onCrash();
+
+		return static_cast<LONG>(config.exitMode);
+	}
+
+	inline Config g_config; ///< Config captured by Install(), read by the installed Filter.
+
+	/// SetUnhandledExceptionFilter callback: forwards the crash to WriteCrashLog using g_config.
+	inline LONG WINAPI Filter(EXCEPTION_POINTERS* info)
+	{
+		return WriteCrashLog(g_config, info->ExceptionRecord->ExceptionCode, info->ContextRecord, info);
+	}
+
+	/// Stores `config` and installs Filter as the process's last-chance exception filter.
+	inline void Install(const Config& config)
+	{
+		g_config = config;
+		SetUnhandledExceptionFilter(Filter);
+	}
+
+	/// Removes the installed filter (restores the OS default).
+	inline void Uninstall()
+	{
+		SetUnhandledExceptionFilter(NULL);
+	}
+}; // namespace Shared::ExceptionHandler

@@ -1,9 +1,22 @@
 #pragma once
+
+/// @file
+/// @brief The menu's ImGui theme: spacing/rounding metrics and the full color palette.
+
 #include "imgui.h"
 
-namespace GUI {
-	namespace Styles {
-		void Init() {
+#include "../../render/Colors.h"
+#include "../../render/adapters/ImGui.h" // provides ColorTraits<ImVec4> for Palette::X.To<ImVec4>()
+
+namespace GUI
+{
+	/// @brief Visual theme for the menu.
+	namespace Styles
+	{
+		/// @brief Applies the menu's style metrics (padding, rounding, spacing) and the cream/red color palette
+		/// to the active ImGui style. Called once during overlay initialization.
+		void Init()
+		{
 			ImGuiStyle* style = &ImGui::GetStyle();
 
 			style->WindowPadding = ImVec2(15, 15);
@@ -20,59 +33,61 @@ namespace GUI {
 
 			ImVec4* colors = style->Colors;
 
-			colors[ImGuiCol_Text] = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
-			colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.39f, 0.38f, 0.77f);
-			colors[ImGuiCol_WindowBg] = ImVec4(0.92f, 0.91f, 0.88f, 0.82f);
-			colors[ImGuiCol_ChildBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.58f);
-			colors[ImGuiCol_PopupBg] = ImVec4(0.92f, 0.91f, 0.88f, 0.92f);
-			colors[ImGuiCol_Border] = ImVec4(0.84f, 0.83f, 0.80f, 0.65f);
-			colors[ImGuiCol_BorderShadow] = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
-			colors[ImGuiCol_FrameBg] = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
-			colors[ImGuiCol_FrameBgHovered] = ImVec4(1.00f, 0.40f, 0.40f, 0.78f);
-			colors[ImGuiCol_FrameBgActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_TitleBg] = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
-			colors[ImGuiCol_TitleBgActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_TitleBgCollapsed] = ImVec4(1.00f, 0.98f, 0.95f, 0.75f);
-			colors[ImGuiCol_MenuBarBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.47f);
-			colors[ImGuiCol_ScrollbarBg] = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
-			colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.21f);
-			colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.78f);
-			colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_CheckMark] = ImVec4(1.00f, 0.00f, 0.00f, 0.80f);
-			colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 0.00f, 0.00f, 0.14f);
-			colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.98f, 0.98f, 1.00f);
-			colors[ImGuiCol_Button] = ImVec4(0.00f, 0.00f, 0.00f, 0.12f);
-			colors[ImGuiCol_ButtonHovered] = ImVec4(1.00f, 0.22f, 0.22f, 0.86f);
-			colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_Header] = ImVec4(1.00f, 0.00f, 0.00f, 0.76f);
-			colors[ImGuiCol_HeaderHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.86f);
-			colors[ImGuiCol_HeaderActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
-			colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
-			colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
-			colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.04f);
-			colors[ImGuiCol_ResizeGripHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.78f);
-			colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_Tab] = ImVec4(0.00f, 0.00f, 0.00f, 0.11f);
-			colors[ImGuiCol_TabHovered] = ImVec4(1.00f, 0.00f, 0.00f, 0.78f);
-			colors[ImGuiCol_TabActive] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.10f, 0.15f, 0.97f);
-			colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.26f, 0.42f, 1.00f);
-			colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-			colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-			colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
-			colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
-			colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
-			colors[ImGuiCol_TableRowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-			colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-			colors[ImGuiCol_TextSelectedBg] = ImVec4(1.00f, 0.00f, 0.00f, 0.43f);
-			colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 0.00f, 0.00f, 0.90f);
-			colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-			colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
-			colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-			colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
+			using namespace Render;
+
+			colors[ImGuiCol_Text] = Palette::Text.To<ImVec4>();
+			colors[ImGuiCol_TextDisabled] = Palette::Text.Alpha(0.77f).To<ImVec4>();
+			colors[ImGuiCol_WindowBg] = Palette::Background.Alpha(0.82f).To<ImVec4>();
+			colors[ImGuiCol_ChildBg] = Palette::Frame.Alpha(0.58f).To<ImVec4>();
+			colors[ImGuiCol_PopupBg] = Palette::Background.Alpha(0.92f).To<ImVec4>();
+			colors[ImGuiCol_Border] = Palette::Border.Alpha(0.65f).To<ImVec4>();
+			colors[ImGuiCol_BorderShadow] = Palette::Background.Alpha(0.00f).To<ImVec4>();
+			colors[ImGuiCol_FrameBg] = Palette::Frame.To<ImVec4>();
+			colors[ImGuiCol_FrameBgHovered] = ImVec4(1.00f, 0.40f, 0.40f, 0.78f); // one-off light red
+			colors[ImGuiCol_FrameBgActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_TitleBg] = Palette::Frame.To<ImVec4>();
+			colors[ImGuiCol_TitleBgActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_TitleBgCollapsed] = Palette::Frame.Alpha(0.75f).To<ImVec4>();
+			colors[ImGuiCol_MenuBarBg] = Palette::Frame.Alpha(0.47f).To<ImVec4>();
+			colors[ImGuiCol_ScrollbarBg] = Palette::Frame.To<ImVec4>();
+			colors[ImGuiCol_ScrollbarGrab] = Palette::Black.Alpha(0.21f).To<ImVec4>();
+			colors[ImGuiCol_ScrollbarGrabHovered] = Palette::Primary.Alpha(0.78f).To<ImVec4>();
+			colors[ImGuiCol_ScrollbarGrabActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_CheckMark] = Palette::Primary.Alpha(0.80f).To<ImVec4>();
+			colors[ImGuiCol_SliderGrab] = Palette::Black.Alpha(0.14f).To<ImVec4>();
+			colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.98f, 0.98f, 1.00f); // one-off near-white
+			colors[ImGuiCol_Button] = Palette::Black.Alpha(0.12f).To<ImVec4>();
+			colors[ImGuiCol_ButtonHovered] = ImVec4(1.00f, 0.22f, 0.22f, 0.86f); // one-off bright red
+			colors[ImGuiCol_ButtonActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_Header] = Palette::Primary.Alpha(0.76f).To<ImVec4>();
+			colors[ImGuiCol_HeaderHovered] = Palette::Primary.Alpha(0.86f).To<ImVec4>();
+			colors[ImGuiCol_HeaderActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_Separator] = Palette::Slate.Alpha(0.50f).To<ImVec4>();
+			colors[ImGuiCol_SeparatorHovered] = Palette::Blue.Alpha(0.78f).To<ImVec4>();
+			colors[ImGuiCol_SeparatorActive] = Palette::Blue.To<ImVec4>();
+			colors[ImGuiCol_ResizeGrip] = Palette::Black.Alpha(0.04f).To<ImVec4>();
+			colors[ImGuiCol_ResizeGripHovered] = Palette::Primary.Alpha(0.78f).To<ImVec4>();
+			colors[ImGuiCol_ResizeGripActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_Tab] = Palette::Black.Alpha(0.11f).To<ImVec4>();
+			colors[ImGuiCol_TabHovered] = Palette::Primary.Alpha(0.78f).To<ImVec4>();
+			colors[ImGuiCol_TabActive] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.10f, 0.15f, 0.97f);		  // one-off dark blue
+			colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.26f, 0.42f, 1.00f); // one-off blue
+			colors[ImGuiCol_PlotLines] = Palette::Text.Alpha(0.63f).To<ImVec4>();
+			colors[ImGuiCol_PlotLinesHovered] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_PlotHistogram] = Palette::Text.Alpha(0.63f).To<ImVec4>();
+			colors[ImGuiCol_PlotHistogramHovered] = Palette::Primary.To<ImVec4>();
+			colors[ImGuiCol_TableHeaderBg] = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);	 // one-off table gray
+			colors[ImGuiCol_TableBorderStrong] = ImVec4(0.31f, 0.31f, 0.35f, 1.00f); // one-off table gray
+			colors[ImGuiCol_TableBorderLight] = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);	 // one-off table gray
+			colors[ImGuiCol_TableRowBg] = Palette::Black.Alpha(0.00f).To<ImVec4>();
+			colors[ImGuiCol_TableRowBgAlt] = Palette::White.Alpha(0.06f).To<ImVec4>();
+			colors[ImGuiCol_TextSelectedBg] = Palette::Primary.Alpha(0.43f).To<ImVec4>();
+			colors[ImGuiCol_DragDropTarget] = Palette::Primary.Alpha(0.90f).To<ImVec4>();
+			colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f); // one-off nav blue
+			colors[ImGuiCol_NavWindowingHighlight] = Palette::White.Alpha(0.70f).To<ImVec4>();
+			colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f); // one-off gray
+			colors[ImGuiCol_ModalWindowDimBg] = Palette::Frame.Alpha(0.73f).To<ImVec4>();
 		}
-	}
-};
+	} // namespace Styles
+}; // namespace GUI

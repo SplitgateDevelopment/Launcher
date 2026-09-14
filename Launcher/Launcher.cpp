@@ -1,59 +1,113 @@
-#include "utils/Logger.h"
 #include <thread>
 #include <chrono>
+#include "../shared/Ipc.h"
+#include "utils/Logger.h"
+#include "utils/handles/UniqueHandle.h"
+#include "utils/handles/UniqueHook.h"
+#include "utils/handles/UniqueLibrary.h"
+#include "utils/ProxyConfig.h"
+#include "utils/Mitmproxy.h"
+#include "utils/ExceptionHandler.h"
 
-int main() {
+int main()
+{
 	SetConsoleTitleA("Splitgate Launcher");
-	Logger* logger = new Logger();
-	logger->info("Loading...");
 
-	HMODULE lib = LoadLibraryA("internal.dll");
-	if (!lib) {
-		logger->error("Failed to load target module!");
-		logger->errorBox(TEXT("LoadLibraryA"));
-		return logger->stop(-1);
+	Logger logger;
+	Launcher::ExceptionHandler::Init(logger);
+
+	logger.info("Loading...");
+
+	const auto network = Launcher::ReadNetworkSettings();
+	logger.info(std::format("Network proxy mode: {}", network.Proxy));
+
+	Launcher::UniqueHandle initEvent(Ipc::Create(Ipc::Event::Initialized));
+	if (!initEvent)
+	{
+		logger.errorBox(TEXT("CreateEventW"));
+		return logger.stop(-1);
 	}
-	logger->success("Loaded target module!");
 
-	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib, "?SplitgateCallBack@@YA_JH_K_J@Z"));
-	if (!proc) {
-		logger->error("Failed to get exported function address!");
-		logger->errorBox(TEXT("HOOKPROC"));
-		return logger->stop(-1);
+	Launcher::UniqueLibrary lib(LoadLibraryA("Internal.dll"));
+	if (!lib)
+	{
+		logger.errorBox(TEXT("LoadLibraryA"));
+		return logger.stop(-1);
 	}
-	logger->success("Got exported function address!");
+	logger.success("Loaded target module!");
 
-	HWND GameWindow = FindWindowA(0, "PortalWars  ");
-	if (!GameWindow) {
-		logger->error("Failed to get game window!");
-		return logger->stop(-1);
+	HOOKPROC proc = reinterpret_cast<HOOKPROC>(GetProcAddress(lib.get(), "?SplitgateCallBack@@YA_JH_K_J@Z"));
+	if (!proc)
+	{
+		logger.errorBox(TEXT("GetProcAddress"));
+		return logger.stop(-1);
 	}
-	logger->success("Got game window!");
+	logger.success("Got exported function address!");
 
-	DWORD ProcessID = 0, ThreadID = GetWindowThreadProcessId(GameWindow, &ProcessID);
-	if (!ThreadID) {
-		logger->error("Failed to get thread id!");
-		logger->errorBox(TEXT("GetWindowThreadProcessId"));
-		return logger->stop(-1);
+	HWND GameWindow = FindWindowA(nullptr, "PortalWars  ");
+	if (!GameWindow)
+	{
+		logger.error("Failed to get game window!");
+		logger.errorBox(TEXT("FindWindowA"));
+
+		return logger.stop(-1);
 	}
-	logger->success(std::format("Thread id: {}", ThreadID));
-	logger->success(std::format("Process id: {}", ProcessID));
+	logger.success("Got game window!");
 
-	HHOOK hook = SetWindowsHookExW(WH_GETMESSAGE, proc, lib, ThreadID);
-	if (!hook) {
-		logger->error("Failed to place hook");
-		logger->errorBox(TEXT("SetWindowsHookExW"));
-		return logger->stop(-1);
-	};
-	logger->success("Placed hook!");
+	DWORD processId = 0, threadId = GetWindowThreadProcessId(GameWindow, &processId);
+	if (!threadId)
+	{
+		logger.error("Failed to get thread id!");
+		logger.errorBox(TEXT("GetWindowThreadProcessId"));
 
-	if (!PostThreadMessageW(ThreadID, HCBT_CREATEWND, 0, reinterpret_cast<LPARAM>(hook))) {
-		logger->error("Failed to post thread message!");
-		logger->errorBox(TEXT("PostThreadMessageW"));
-		return logger->stop(-1);
+		return logger.stop(-1);
 	}
-	logger->success("DLL injected into process!");
+	logger.success(std::format("Thread id: {}", threadId));
+	logger.success(std::format("Process id: {}", processId));
+	
+	if (network.Proxy == ProxyMode::Mitmproxy)
+	{
+		if (Launcher::Mitmproxy::Spawn(network.Redirects, processId, &logger))
+			logger.success("Spawned mitmproxy");
+		else
+			logger.error("Failed to spawn mitmproxy (is mitmdump on PATH?)");
+	}
+
+	Launcher::UniqueHook hook(SetWindowsHookExW(WH_GETMESSAGE, proc, lib.get(), threadId));
+	if (!hook)
+	{
+		logger.errorBox(TEXT("SetWindowsHookExW"));
+		return logger.stop(-1);
+	}
+	logger.success("Placed hook!");
+
+	const UINT initMsg = RegisterWindowMessageW(L"SplitgateInit");
+	if (!initMsg)
+	{
+		logger.errorBox(TEXT("RegisterWindowMessageW"));
+		return logger.stop(-1);
+	}
+	logger.success("Registered window message!");
+
+	constexpr UINT WM_SPLITGATE_INIT = WM_APP + 1;
+	if (!PostThreadMessageW(threadId, initMsg, 0, reinterpret_cast<LPARAM>(hook.get())))
+	{
+		logger.errorBox(TEXT("PostThreadMessageW"));
+		return logger.stop(-1);
+	}
+	logger.success("DLL injected into process!");
+
+	constexpr DWORD TIMEOUT = 15000;
+	if (!Ipc::Wait(initEvent.get(), TIMEOUT))
+	{
+		logger.error("DLL failed to initialize (timed out)!");
+		return logger.stop(-1);
+	}
+	logger.success("DLL initialized successfully!");
 
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+	hook.release();
+	Launcher::ExceptionHandler::Disable();
+
 	return 0;
 }

@@ -1,5 +1,9 @@
 #pragma once
 
+/// @file
+/// @brief Windowing and D3D11 plumbing for the overlay: a throwaway device used to harvest the DXGI/D3D
+/// vtables for hooking, render-target management, the subclassed window procedure, and MinHook helpers.
+
 #include <Windows.h>
 
 #include <d3d11.h>
@@ -14,21 +18,30 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-namespace Window {
-	HWND WindowHandle{};
-	static UINT ResizeWidth = 0, ResizeHeight = 0;
+// Defined on Windows 10 2004+ SDKs; provide a fallback so older SDKs still build (the call just
+// no-ops at runtime on pre-2004 Windows).
+#ifndef WDA_EXCLUDEFROMCAPTURE
+#define WDA_EXCLUDEFROMCAPTURE 0x00000011
+#endif
+
+/// @brief Overlay windowing/D3D11 state and the hook plumbing that backs the GUI.
+namespace Window
+{
+	HWND WindowHandle{}; ///< Target game window (or the temporary dummy window during init).
 
 	static ID3D11Device* Device{};
 	static ID3D11DeviceContext* DeviceContext{};
 	static IDXGISwapChain* SwapChain = nullptr;
 	static ID3D11RenderTargetView* RenderTargetView{};
 
-	WNDPROC			OldWindowProcess{};
+	WNDPROC OldWindowProcess{}; ///< Original game window procedure, saved when subclassing.
 
-	namespace {
+	namespace
+	{
 		WNDCLASSEX WindowClass;
-		static uint64_t* MethodsTable = NULL;
+		static uint64_t* MethodsTable = NULL; ///< Copied DXGI/D3D vtable entries, indexed by CreateHook.
 
+		/// @brief Destroys and unregisters the temporary window. @return True once the handle is cleared.
 		bool DeleteWindow()
 		{
 			DestroyWindow(WindowHandle);
@@ -37,6 +50,7 @@ namespace Window {
 			return (WindowHandle == 0);
 		};
 
+		/// @brief Registers the window class and creates the temporary window used to build a swap chain. @return True on success.
 		bool InitWindow()
 		{
 			WindowClass.cbSize = sizeof(WNDCLASSEX);
@@ -57,27 +71,55 @@ namespace Window {
 
 			return (WindowHandle != NULL);
 		}
-	}
+	} // namespace
 
+	/// @brief Subclassed game window procedure: while the menu is open it feeds input to ImGui and swallows the
+	/// message; otherwise it queues resizes, blocks the ALT menu, and forwards to the original procedure.
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (Settings.MENU.ShowMenu)
 		{
-			ImGui_ImplWin32_WndProcHandler((HWND)OldWindowProcess, msg, wParam, lParam);
-			return true;
+			ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
+
+			// Swallow only mouse/keyboard input (so the game doesn't also react to it while the menu
+			// has focus). Everything else — resize, activation, system/paint messages — must still
+			// reach the game, or its swap chain desyncs when the window is minimized/restored with the
+			// menu open (freeze/crash). Previously every message was swallowed, which caused that.
+			switch (msg)
+			{
+			case WM_INPUT: // raw mouse/keyboard — the game reads camera movement from this
+			case WM_MOUSEMOVE:
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_LBUTTONDBLCLK:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			case WM_RBUTTONDBLCLK:
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+			case WM_MBUTTONDBLCLK:
+			case WM_XBUTTONDOWN:
+			case WM_XBUTTONUP:
+			case WM_XBUTTONDBLCLK:
+			case WM_MOUSEWHEEL:
+			case WM_MOUSEHWHEEL:
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+			case WM_SYSKEYDOWN:
+			case WM_SYSKEYUP:
+			case WM_CHAR:
+			case WM_SETCURSOR:
+				return true; // consumed by the menu
+			default:
+				break; // fall through to the game (resize, focus, sys, ...)
+			}
 		}
 
 		switch (msg)
 		{
-		case WM_SIZE:
-			if (wParam == SIZE_MINIMIZED)
-				return 0;
-
-			// Queue resize
-			ResizeWidth = (UINT)LOWORD(lParam);
-			ResizeHeight = (UINT)HIWORD(lParam);
-
-			return 0;
+			// WM_SIZE is intentionally forwarded (via CallWindowProc below) so the game resizes its
+			// own viewport/swap chain — otherwise the view stayed zoomed. Our render target is
+			// released/recreated around the game's ResizeBuffers by GUI::HookResizeBuffers.
 
 		case WM_SYSCOMMAND:
 			// Disable ALT application menu
@@ -94,6 +136,7 @@ namespace Window {
 		return CallWindowProc((WNDPROC)OldWindowProcess, hWnd, msg, wParam, lParam);
 	}
 
+	/// @brief Creates the render target view from the swap chain's back buffer.
 	void CreateRenderTarget()
 	{
 		ID3D11Texture2D* pBackBuffer = nullptr;
@@ -107,6 +150,7 @@ namespace Window {
 		pBackBuffer->Release();
 	}
 
+	/// @brief Releases the render target view if present.
 	void CleanupRenderTarget()
 	{
 		if (!RenderTargetView) return;
@@ -115,16 +159,27 @@ namespace Window {
 		RenderTargetView = nullptr;
 	}
 
+	/**
+	 * @brief Installs a MinHook detour on the vtable entry at @p Index of the harvested methods table.
+	 * @param Index Slot in @ref MethodsTable to hook.
+	 * @param Original Out: receives the trampoline to the original function.
+	 * @param Function The detour to install.
+	 * @return True if the hook was created and enabled.
+	 */
 	bool CreateHook(uint16_t Index, void** Original, void* Function)
 	{
 		assert(Index >= 0 && Original != NULL && Function != NULL);
 		void* target = (void*)MethodsTable[Index];
-		if (MH_CreateHook(target, Function, Original) != MH_OK || MH_EnableHook(target) != MH_OK) {
+		if (MH_CreateHook(target, Function, Original) != MH_OK || MH_EnableHook(target) != MH_OK)
+		{
 			return FALSE;
 		}
 		return TRUE;
 	}
 
+	/// @brief Builds a throwaway device + swap chain to copy the DXGI/D3D11 vtables into @ref MethodsTable,
+	/// then releases all temporaries. Populates the table so CreateHook can target the game's real objects.
+	/// @return True on success.
 	bool Init()
 	{
 		if (!InitWindow())
@@ -133,7 +188,7 @@ namespace Window {
 		HMODULE D3D11Module = GetModuleHandleA("d3d11.dll");
 
 		D3D_FEATURE_LEVEL FeatureLevel;
-		const D3D_FEATURE_LEVEL FeatureLevels[] = { D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_11_0 };
+		const D3D_FEATURE_LEVEL FeatureLevels[] = {D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_11_0};
 
 		DXGI_RATIONAL RefreshRate;
 		RefreshRate.Numerator = 60;
@@ -162,9 +217,8 @@ namespace Window {
 		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	
 		UINT createDeviceFlags = 0;
-		//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+		// createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
 		HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, FeatureLevels, 2, D3D11_SDK_VERSION, &SwapChainDesc, &SwapChain, &Device, &FeatureLevel, &DeviceContext);
 		if (res == DXGI_ERROR_UNSUPPORTED) // Try high-performance WARP software driver if hardware is not available.
@@ -199,7 +253,17 @@ namespace Window {
 		return TRUE;
 	}
 
-	void Destroy() {
+	/// @brief Releases the render target and the swap chain/device/context held by the overlay.
+	void Destroy()
+	{
+		// Restore the game's original window procedure before we unload — otherwise the window is left
+		// pointing at WndProc in freed DLL memory and all input dies (or crashes) after an unload.
+		if (WindowHandle && OldWindowProcess)
+		{
+			SetWindowLongPtr(WindowHandle, GWLP_WNDPROC, (LONG_PTR)OldWindowProcess);
+			OldWindowProcess = nullptr;
+		}
+
 		CleanupRenderTarget();
 
 		SwapChain->Release();
@@ -209,4 +273,4 @@ namespace Window {
 		DeviceContext->Release();
 		DeviceContext = NULL;
 	}
-}
+} // namespace Window

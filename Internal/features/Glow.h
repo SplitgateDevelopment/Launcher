@@ -1,0 +1,132 @@
+#pragma once
+
+/// @file
+/// The Glow feature: forces a custom-depth outline (chams) on characters so they show through
+/// walls, in a per-team color (or the RGB rainbow). Reuses the game's own stencil-outline
+/// post-process — see the class comment for the in-game caveats.
+
+#include "Feature.h"
+#include "../ue/Engine.h"
+#include "../cache/ActorCache.h"
+#include "../utils/Rgb.h"
+#include "../render/Color.h"
+#include "../render/adapters/Ue.h"		 // Render::Color -> FLinearColor for the outline fields
+#include "../render/adapters/Settings.h" // settings ::Color -> Render::Color
+
+// Chams / glow: for each cached enemy (and optionally teammate) character, turns on the mesh's
+// custom-depth rendering and sets its stencil value + outline color, so the game's outline
+// post-process draws the player through walls in our color. The color path overwrites the
+// character's Blue/RedOutlineColor fields (both, so it wins whichever the post-process samples).
+//
+// NOTE: this rides on the game's existing team-outline post-process. Whether it maps an arbitrary
+// color (vs a fixed per-team one) can only be confirmed in-game; if the stock post-process ignores
+// the color, a custom outline material would be needed. The stencil values come from the
+// character's own EnemyStencilValue / FriendlyStencilValue so they match what the game expects.
+class Glow : public Feature
+{
+  private:
+	/// Turn custom-depth on/off for one mesh at a stencil value.
+	static void SetMesh(USkeletalMeshComponent* mesh, bool on, int stencil)
+	{
+		if (!mesh) return;
+		mesh->SetRenderCustomDepth(on);
+		if (on) mesh->CustomDepthStencilValue = stencil;
+	}
+
+	/// Force the through-wall outline on @p character with the given stencil + color. Applies to the
+	/// base Mesh AND the skin's rendered 3P mesh (the skin's mesh is what's actually drawn, so the
+	/// base mesh alone often doesn't glow).
+	static void Apply(APortalWarsCharacter* character, int stencil, const FLinearColor& color)
+	{
+		SetMesh(character->Mesh, true, stencil);
+		if (character->CharacterSkin) SetMesh(character->CharacterSkin->GetMesh3P(), true, stencil);
+		character->BlueOutlineColor = color;
+		character->RedOutlineColor = color;
+	}
+
+	/// Reset our forced custom depth on a character's meshes (base + skin).
+	static void Reset(APortalWarsCharacter* character)
+	{
+		if (!character) return;
+		SetMesh(character->Mesh, false, 0);
+		if (character->CharacterSkin) SetMesh(character->CharacterSkin->GetMesh3P(), false, 0);
+	}
+
+  public:
+	Glow()
+	{
+		Name = "Glow";
+		UpdateEnabled();
+
+		Log("Created");
+	};
+
+	void UpdateEnabled()
+	{
+		Enabled = Settings.VISUALS.GlowEnemy || Settings.VISUALS.GlowFriendly || Settings.VISUALS.GlowSelf;
+	};
+
+	bool Check()
+	{
+		if (!Initialized) return false;
+		if (!Engine::PlayerController) return false;
+		if (!Engine::IsInGame) return false;
+
+		return true;
+	};
+
+	void Init()
+	{
+		Initialized = true;
+		Log("Initialized");
+	};
+
+	/// Turn our forced outline back off for every character still in the cache; the game restores
+	/// its own outlines as usual. Only touches valid, cached meshes (never a despawned pointer).
+	void Destroy()
+	{
+		for (const auto& cached : ActorCache::Players())
+			Reset(cached.character);
+
+		Reset(reinterpret_cast<APortalWarsCharacter*>(Engine::PlayerController->Character));
+	};
+
+	/// Enable the through-wall outline + color for each wanted character. Players that shouldn't
+	/// glow are left untouched, so the game keeps managing its own outlines for them.
+	void Run()
+	{
+		const auto& v = Settings.VISUALS;
+		const bool rgb = Settings.MENU.Rgb;
+		const FLinearColor rgbColor = rgb ? Render::Color(Rgb::Current()).To<FLinearColor>() : FLinearColor{};
+
+		auto* controller = Engine::PlayerController;
+		auto* localPawn = controller->AcknowledgedPawn;
+
+		// Source the stencil values from the local character: they're reliably populated there, whereas
+		// a freshly-seen enemy's own Enemy/FriendlyStencilValue can still read 0 (→ stencil 0 = no
+		// outline, the "glow doesn't glow" case). These are the values the game's outline post-process
+		// already maps to a through-wall color.
+		auto* self = reinterpret_cast<APortalWarsCharacter*>(controller->Character);
+		if (!self) return;
+		const char localTeam = self->GetTeamNum();
+		const int enemyStencil = self->EnemyStencilValue;
+		const int friendlyStencil = self->FriendlyStencilValue;
+
+		for (const auto& cached : ActorCache::Players())
+		{
+			auto* character = cached.character;
+			if (reinterpret_cast<AActor*>(character) == reinterpret_cast<AActor*>(localPawn)) continue;
+			if (ActorCache::IsDead(cached)) continue; // don't glow a dead body on the ground
+
+			const bool friendly = (localTeam >= 0 && cached.team == localTeam);
+			if (!(friendly ? v.GlowFriendly : v.GlowEnemy)) continue; // this team's glow is off
+
+			const FLinearColor color = rgb ? rgbColor : Render::Color(friendly ? v.GlowFriendlyColor : v.GlowEnemyColor).To<FLinearColor>();
+			Apply(character, friendly ? friendlyStencil : enemyStencil, color);
+		}
+
+		// The local player's own pawn (its 3P mesh — only visible in third person).
+		if (v.GlowSelf)
+			Apply(self, friendlyStencil, rgb ? rgbColor : Render::Color(v.GlowSelfColor).To<FLinearColor>());
+	};
+};

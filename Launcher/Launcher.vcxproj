@@ -13,11 +13,15 @@
     <RootNamespace>Launcher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgInstalledDir>.\vcpkg_installed</VcpkgInstalledDir>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -51,7 +55,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="utils/Logger.h" />
     <ClCompile Include="Launcher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -59,11 +62,41 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data/Logo.h" />
+    <ClInclude Include="utils/handles/UniqueHandle.h" />
+    <ClInclude Include="utils/handles/UniqueLibrary.h" />
+    <ClInclude Include="utils/handles/UniqueHook.h" />
+    <ClInclude Include="..\shared\Ipc.h" />
+    <ClInclude Include="..\shared\Logger.h" />
+    <ClInclude Include="..\shared\ExceptionHandler.h" />
+    <ClInclude Include="..\shared\Settings.h" />
+    <ClInclude Include="..\shared\LauncherSettings.h" />
+    <ClInclude Include="..\shared\Version.h" />
+    <ClInclude Include="utils\Logger.h" />
+    <ClInclude Include="utils\ExceptionHandler.h" />
+    <ClInclude Include="utils\ProxyConfig.h" />
+    <ClInclude Include="utils\Mitmproxy.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="data/Logo.rc" />
+    <ResourceCompile Include="..\shared\manifest.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Win32 application manifest (merged into the linker's asInvoker manifest by mt.exe). -->
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Bundled mitmproxy addon scripts, copied next to the exe (see CopyMitmproxyScripts). -->
+    <None Include="scripts\default_proxy.py" />
+    <None Include="scripts\watchdog.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <!-- Ship the mitmproxy addon scripts alongside Launcher.exe (in a scripts\ subfolder). -->
+  <Target Name="CopyMitmproxyScripts" AfterTargets="Build">
+    <ItemGroup>
+      <MitmproxyScripts Include="$(ProjectDir)scripts\*.py" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MitmproxyScripts)" DestinationFolder="$(OutDir)scripts" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

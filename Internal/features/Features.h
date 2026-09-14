@@ -1,0 +1,117 @@
+#pragma once
+
+/// @file
+/// Concrete feature wiring: pulls in every feature header, registers one
+/// instance of each in the runner, and connects them to the event bus
+/// (SettingsChanged, event-driven features, and the LoadIntoMap one-shot).
+
+#include "FeatureRunner.h"
+#include "../ue/Engine.h"
+#include "../scripting/Events.h"
+
+#include "GodMode.h"
+#include "PlayerModifications.h"
+#include "NoRecoil.h"
+#include "SpinBot.h"
+#include "Esp.h"
+#include "UserScripts.h"
+#include "InfiniteJetpack.h"
+#include "WeaponModifications.h"
+#include "Camera.h"
+#include "Radar.h"
+#include "DebugNames.h"
+#include "Watermark.h"
+#include "Aimbot.h"
+#include "Triggerbot.h"
+#include "AimFov.h"
+#include "AnnounceToggles.h"
+#include "Crosshair.h"
+#include "BulletTraces.h"
+#include "Glow.h"
+#include "Phasing.h"
+#include "BulletTp.h"
+#include "BulletSpeed.h"
+#include "AimAssist.h"
+#include "SuperJump.h"
+#include "Teleport.h"
+#include "DiscordPresence.h"
+#include "../network/Network.h"
+
+namespace Features
+{
+	/// Populate the registry with one instance of each feature, seed their
+	/// Enabled state, and wire event-bus subscriptions. Call once at startup,
+	/// after Globals and the event system are ready.
+	void Init()
+	{
+		Features.push_back(std::make_unique<GodMode>());
+		Features.push_back(std::make_unique<PlayerModifications>());
+		Features.push_back(std::make_unique<NoRecoil>());
+		Features.push_back(std::make_unique<SpinBot>());
+		Features.push_back(std::make_unique<Esp>());
+		Features.push_back(std::make_unique<UserScripts>());
+		Features.push_back(std::make_unique<InfiniteJetpack>());
+		Features.push_back(std::make_unique<WeaponModifications>());
+		Features.push_back(std::make_unique<Camera>());
+		Features.push_back(std::make_unique<Radar>());
+		Features.push_back(std::make_unique<DebugNames>());
+		Features.push_back(std::make_unique<Watermark>());
+		Features.push_back(std::make_unique<Aimbot>());
+		Features.push_back(std::make_unique<Triggerbot>());
+		Features.push_back(std::make_unique<AimFov>());
+		Features.push_back(std::make_unique<AnnounceToggles>());
+		Features.push_back(std::make_unique<Crosshair>());
+		Features.push_back(std::make_unique<BulletTraces>());
+		Features.push_back(std::make_unique<Glow>());
+		Features.push_back(std::make_unique<Phasing>());
+		Features.push_back(std::make_unique<BulletTp>());
+		Features.push_back(std::make_unique<BulletSpeed>());
+		Features.push_back(std::make_unique<AimAssist>());
+		Features.push_back(std::make_unique<SuperJump>());
+		Features.push_back(std::make_unique<Teleport>());
+		Features.push_back(std::make_unique<DiscordPresence>());
+
+		// The network subsystem (redirect + HTTP logging) is not a per-frame feature: install
+		// its hooks once here. They self-gate on Settings.NETWORK, and MinHook is already
+		// initialized by this point (Hook::Init runs before Features::Init).
+		Network::Init();
+
+		// Seed Enabled from current settings, then keep it in sync reactively:
+		// the menu dispatches SettingsChanged on every change, so features no
+		// longer poll their setting every frame.
+		for (auto& feature : Features)
+			feature->UpdateEnabled();
+		Events::Register(Events::Type::SettingsChanged, []
+						 {
+			for (auto& feature : Features) feature->UpdateEnabled();
+
+			// Autosave: persist on every change when enabled.
+			if (Settings.MISC.AutoSave) SettingsHelper::File().Save(); });
+
+		// Subscribe each non-Render trigger to the event bus, forwarding the event + payload to the
+		// feature's Run(); Render triggers run from Features::Execute each frame instead. A feature
+		// may list several triggers (e.g. DiscordPresence on EnteredGame + EnteredLobby).
+		for (auto& feature : Features)
+		{
+			for (Events::Type trigger : feature->Triggers)
+			{
+				if (trigger == Events::Type::Render) continue;
+				Events::Register(trigger, [ptr = feature.get(), trigger](const Events::Payload& payload)
+								 { RunFeature(*ptr, trigger, payload); });
+			}
+		}
+
+		// One-shot action, triggered from the "Load into map" button. Replaces
+		// the old LoadIntoMap feature + Settings.MISC.LoadIntoMap flag. The target
+		// level rides in on payload.name (chosen in the Misc tab's dropdown); it points
+		// at a static string in the menu, valid for this synchronous dispatch.
+		Events::Register(Events::Type::LoadIntoMap, [](const Events::Payload& payload)
+						 {
+			auto* controller = Engine::PlayerController;
+			if (!controller || Engine::IsInGame) return;
+
+			const char* level = (payload.name && *payload.name) ? payload.name : "Simulation_Alpha";
+			Logger::Log("INFO", std::string("Loading into map: ") + level);
+			controller->SwitchLevel(std::string(level)); });
+	};
+}; // namespace Features

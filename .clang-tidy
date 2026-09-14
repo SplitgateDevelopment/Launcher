@@ -1,0 +1,23 @@
+# clang-tidy — the C++ linter for this repo (the "Biome/SwiftLint lint" step).
+# A curated, deliberately lenient set: correctness/perf/modernization checks
+# without the noisiest ones. Run: clang-tidy <file> (needs a compilation
+# database, or pass compiler flags after --).
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-bool-literals,
+  readability-braces-around-statements,
+  readability-redundant-member-init,
+  readability-redundant-string-init,
+  readability-container-size-empty,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,
+  -bugprone-narrowing-conversions
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '(Internal|Launcher)[/\\](?!external).*'
+FormatStyle: file
