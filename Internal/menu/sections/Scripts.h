@@ -23,7 +23,6 @@ namespace Menu
 
 			if (UI::Toggle("Enable", &Settings.MISC.UserScriptsEnabled))
 				Events::Dispatch(Events::Type::SettingsChanged);
-			UI::SameLine();
 			if (UI::Button("Reload")) Scripts::Reload();
 			UI::Tooltip("Re-scan the UserScripts folder and re-import every script (edits take effect\n"
 						"without a relaunch). Previously-registered script event handlers are cleared\n"

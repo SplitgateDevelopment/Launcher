@@ -151,7 +151,7 @@ struct DebugSettings
 	bool ShowStyleEditor = false;
 	bool DeleteSettingsOnCrash = true; ///< wipe settings on an unhandled crash so the next launch is clean
 
-	bool NativeWorldToScreen = true; ///< project overlays with math; off falls back to the ProjectWorldLocationToScreen UFunction
+	bool NativeWorldToScreen = false; ///< project overlays with math; off falls back to the ProjectWorldLocationToScreen UFunction
 	bool NativeBones = true;		 ///< project the ESP skeleton via native GetBoneMatrix + math; off uses the game's bone projection
 	bool NativeActorLocation = true; ///< read actor location from RootComponent->RelativeLocation (no ProcessEvent); off uses K2_GetActorLocation
 	bool CustomProjection = false;	 ///< when the native math W2S is off, use ProjectWorldLocationToScreenCustom instead of the stock UFunction
@@ -175,7 +175,7 @@ struct VisualsSettings
 	float MaxDistance = 0.f; ///< only draw enemies within this many metres (0 = unlimited)
 
 	bool EspVisibleCheck = false;	///< recolor enemies that are currently visible (recently rendered) in VisibleColor
-	bool BotTag = false;			///< draw a "[BOT]" label before an AI-bot player's name
+	bool BotTag = true;				///< draw a "[BOT]" label before an AI-bot player's name
 	bool HideBots = false;			///< don't draw AI bots in the ESP at all
 
 	bool Radar = false;				///< separate 2D radar feature
